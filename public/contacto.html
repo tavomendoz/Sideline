@@ -282,7 +282,7 @@
     $('next').disabled = true; $('next').textContent = 'Enviando…';
     try {
       const res = await fetch('/api/leads', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(d) });
-      if (!res.ok) throw new Error('http ' + res.status);
+      if (!res.ok) { const e = new Error('http ' + res.status); e.status = res.status; throw e; }
       steps.forEach(s => s.hidden = true);
       $('qnav').hidden = true; err('');
       form.querySelector('.progress').hidden = true;
@@ -291,7 +291,7 @@
       $('done').hidden = false;
       $('done').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     } catch (e) {
-      err('No se pudo enviar. Revisa tu conexión e inténtalo otra vez.');
+      err(e.status === 429 ? 'Ya recibimos varias solicitudes desde tu conexión. Intenta más tarde.' : 'No se pudo enviar. Revisa tu conexión e inténtalo otra vez.');
       $('next').disabled = false; $('next').textContent = 'Enviar';
     }
   }

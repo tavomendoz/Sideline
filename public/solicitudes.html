@@ -60,17 +60,18 @@
 (() => {
   const $ = id => document.getElementById(id);
   const KEY = 'salavideo:coachkey';
-  let key = ''; try { key = localStorage.getItem(KEY) || ''; } catch (e) {}
+  // la clave solo se guarda mientras la pestaña esté abierta
+  let key = ''; try { localStorage.removeItem(KEY); key = sessionStorage.getItem(KEY) || ''; } catch (e) {}
   let leads = [];
   const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const err = m => { $('err').textContent = m || ''; $('err').hidden = !m; };
   async function load() {
     err('');
     const r = await fetch('/api/leads', { headers: { 'x-coach-key': key } });
-    if (r.status === 401) { key = ''; try { localStorage.removeItem(KEY); } catch (e) {} $('keyForm').hidden = false; $('bar').hidden = true; $('tw').hidden = true; err('Clave incorrecta.'); return; }
-    if (!r.ok) { err('No se pudieron cargar las solicitudes.'); return; }
+    if (r.status === 401) { key = ''; try { sessionStorage.removeItem(KEY); } catch (e) {} $('keyForm').hidden = false; $('bar').hidden = true; $('tw').hidden = true; err('Clave incorrecta.'); return; }
+    if (!r.ok) { err(r.status === 429 ? 'Demasiados intentos. Espera 15 minutos.' : 'No se pudieron cargar las solicitudes.'); return; }
     leads = (await r.json()).leads || [];
-    try { localStorage.setItem(KEY, key); } catch (e) {}
+    try { sessionStorage.setItem(KEY, key); } catch (e) {}
     $('keyForm').hidden = true; $('bar').hidden = false; $('tw').hidden = false;
     $('count').textContent = leads.length === 1 ? '1 solicitud' : `${leads.length} solicitudes`;
     $('rows').innerHTML = leads.length ? leads.map(l => {
@@ -84,7 +85,7 @@
     }).join('') : '<tr><td colspan="8" class="muted">Todavía no hay solicitudes. Comparte la página de contacto.</td></tr>';
   }
   $('keyForm').onsubmit = e => { e.preventDefault(); key = $('key').value.trim(); if (key) load(); };
-  $('out').onclick = () => { key = ''; try { localStorage.removeItem(KEY); } catch (e) {} location.reload(); };
+  $('out').onclick = () => { key = ''; try { sessionStorage.removeItem(KEY); } catch (e) {} location.reload(); };
   $('csv').onclick = async () => {
     const cols = ['created_at', 'nombre', 'rol', 'whatsapp', 'correo', 'equipo', 'ciudad', 'categoria', 'equipos', 'grabacion', 'herramienta', 'prioridad', 'presupuesto', 'plan', 'mensaje'];
     const q = v => { v = Array.isArray(v) ? v.join('; ') : String(v ?? ''); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };

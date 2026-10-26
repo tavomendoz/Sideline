@@ -98,14 +98,15 @@
 (() => {
   const $ = id => document.getElementById(id);
   const KEY = 'salavideo:coachkey';
-  let key = ''; try { key = localStorage.getItem(KEY) || ''; } catch (e) {}
+  // la clave solo se guarda mientras la pestaña esté abierta
+  let key = ''; try { localStorage.removeItem(KEY); key = sessionStorage.getItem(KEY) || ''; } catch (e) {}
   const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const err = m => { $('err').textContent = m || ''; $('err').hidden = !m; };
   const open = new Set();
   async function api(path, opts = {}) {
     const r = await fetch('/api/' + path, { ...opts, headers: { 'content-type': 'application/json', 'x-coach-key': key } });
     let b = null; try { b = await r.json(); } catch (e) {}
-    if (r.status === 401) { key = ''; try { localStorage.removeItem(KEY); } catch (e) {} $('main').hidden = true; $('keyForm').hidden = false; $('out').hidden = true; throw new Error('Clave incorrecta.'); }
+    if (r.status === 401) { key = ''; try { sessionStorage.removeItem(KEY); } catch (e) {} $('main').hidden = true; $('keyForm').hidden = false; $('out').hidden = true; throw new Error('Clave incorrecta.'); }
     if (!r.ok) throw new Error((b && b.message) || 'No se pudo completar. Revisa tu conexión.');
     return b;
   }
@@ -124,7 +125,7 @@
   async function load() {
     err('');
     const r = await api('admin/teams');
-    try { localStorage.setItem(KEY, key); } catch (e) {}
+    try { sessionStorage.setItem(KEY, key); } catch (e) {}
     $('keyForm').hidden = true; $('main').hidden = false; $('out').hidden = false;
     const teams = r.teams || [];
     $('migrate').hidden = !(r.legacy_plays > 0 && teams.length);
@@ -201,7 +202,7 @@
     catch (x) { err(x.message); }
   };
   $('keyForm').onsubmit = e => { e.preventDefault(); key = $('key').value.trim(); if (key) load().catch(x => err(x.message)); };
-  $('out').onclick = () => { try { localStorage.removeItem(KEY); } catch (e) {} location.reload(); };
+  $('out').onclick = () => { try { sessionStorage.removeItem(KEY); } catch (e) {} location.reload(); };
   if (key) load().catch(x => err(x.message)); else $('keyForm').hidden = false;
 })();
 </script>
