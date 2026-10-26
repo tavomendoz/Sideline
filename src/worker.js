@@ -154,6 +154,8 @@ async function handleApi(request, env, path) {
     if (path === 'login' && method === 'POST') {
       const b = await body();
       const username = str(b.username, 32).toLowerCase(), password = String(b.password || '');
+      // un usuario inválido no puede existir; tampoco se cuenta (evita claves de límite fabricadas, p. ej. "ana|1.2.3.4")
+      if (!USERNAME.test(username)) return json({ error: 'bad_login', message: 'Usuario o contraseña incorrectos.' }, 401);
       const now = Date.now(), ip = clientIp(request);
       const locked = json({ error: 'locked', message: 'Demasiados intentos. Espera 15 minutos o pide a tu coach que restablezca tu contraseña.' }, 429);
       // se cuenta el intento antes de comprobar la contraseña, así los intentos en paralelo no saltan el límite:
@@ -381,6 +383,12 @@ export default {
     if (url.pathname.startsWith('/api/')) {
       return handleApi(request, env, url.pathname.slice(5).replace(/\/+$/, ''));
     }
-    return env.ASSETS.fetch(request);
+    // cabeceras de seguridad para las páginas: no se pueden incrustar en otros sitios
+    const asset = await env.ASSETS.fetch(request);
+    const res = new Response(asset.body, asset);
+    res.headers.set('x-frame-options', 'DENY');
+    res.headers.set('x-content-type-options', 'nosniff');
+    res.headers.set('referrer-policy', 'strict-origin-when-cross-origin');
+    return res;
   },
 };
