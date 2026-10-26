@@ -67,6 +67,30 @@ function isAdmin(request, env) {
   for (let i = 0; i < secret.length; i++) diff |= secret.charCodeAt(i) ^ given.charCodeAt(i);
   return diff === 0;
 }
+// límite de intentos: cuenta cada intento dentro de una ventana (atómico en D1).
+// Reutiliza la tabla login_fail: username = clave, count = intentos, until = fin de la ventana.
+const LOCK_MS = 15 * 60000;
+const clientIp = request => request.headers.get('cf-connecting-ip') || '';
+async function hit(db, key, now, windowMs = LOCK_MS) {
+  const r = await db.prepare(`INSERT INTO login_fail (username, count, until) VALUES (?1, 1, ?2)
+      ON CONFLICT(username) DO UPDATE SET
+        count = CASE WHEN login_fail.until <= ?3 THEN 1 ELSE login_fail.count + 1 END,
+        until = CASE WHEN login_fail.until <= ?3 THEN ?2 ELSE login_fail.until END
+      RETURNING count`).bind(key, now + windowMs, now).first();
+  return r ? r.count : 1;
+}
+async function overLimit(db, key, max, now) {
+  const r = await db.prepare('SELECT count, until FROM login_fail WHERE username = ?1').bind(key).first();
+  return !!(r && r.until > now && r.count >= max);
+}
+// clave de administrador con límite de intentos fallidos por IP
+async function adminDenied(request, env, db) {
+  const now = Date.now(), key = 'admin:' + clientIp(request);
+  if (await overLimit(db, key, 10, now)) return json({ error: 'locked', message: 'Demasiados intentos. Espera 15 minutos.' }, 429);
+  if (isAdmin(request, env)) return null;
+  await hit(db, key, now);
+  return json({ error: 'bad_key' }, 401);
+}
 function cookieToken(request) {
   const m = (request.headers.get('cookie') || '').match(/(?:^|;\s*)sl_session=([a-f0-9]{64})/);
   return m ? m[1] : '';
@@ -94,8 +118,13 @@ async function createUser(db, teamId, { name, username, role }) {
   if (exists) return { error: `El usuario "${username}" ya existe. Elige otro.` };
   const temp = tempPassword();
   const id = randHex(8);
-  await db.prepare('INSERT INTO users (id, team_id, username, name, role, pass, must_change, active, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, 1, 1, ?7)')
-    .bind(id, teamId, username, name, role, await hashPass(temp), Date.now()).run();
+  try {
+    await db.prepare('INSERT INTO users (id, team_id, username, name, role, pass, must_change, active, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, 1, 1, ?7)')
+      .bind(id, teamId, username, name, role, await hashPass(temp), Date.now()).run();
+  } catch (e) {
+    if (/UNIQUE/i.test(String(e && e.message))) return { error: `El usuario "${username}" ya existe. Elige otro.` };
+    throw e;
+  }
   return { user: { id, username, name, role, must_change: true, active: true }, temp_password: temp };
 }
 async function resetUser(db, id, teamId) {
@@ -125,20 +154,22 @@ async function handleApi(request, env, path) {
     if (path === 'login' && method === 'POST') {
       const b = await body();
       const username = str(b.username, 32).toLowerCase(), password = String(b.password || '');
-      const now = Date.now();
-      const fail = await db.prepare('SELECT count, until FROM login_fail WHERE username = ?1').bind(username).first();
-      if (fail && fail.until > now) return json({ error: 'locked', message: 'Demasiados intentos. Espera 15 minutos o pide a tu coach que restablezca tu contraseña.' }, 429);
+      const now = Date.now(), ip = clientIp(request);
+      const locked = json({ error: 'locked', message: 'Demasiados intentos. Espera 15 minutos o pide a tu coach que restablezca tu contraseña.' }, 429);
+      // se cuenta el intento antes de comprobar la contraseña, así los intentos en paralelo no saltan el límite:
+      // 5 por usuario desde una IP, 50 por usuario en total, 30 fallos por IP
+      if (await overLimit(db, 'ip:' + ip, 30, now)) return locked;
+      const [perIp, perUser] = await Promise.all([hit(db, `u:${username}|${ip}`, now), hit(db, 'u:' + username, now)]);
+      if (perIp > 5 || perUser > 50) return locked;
       const u = await db.prepare(`SELECT u.*, t.name AS team_name, t.active AS team_active FROM users u JOIN teams t ON t.id = u.team_id WHERE u.username = ?1`).bind(username).first();
       const ok = u && u.active && u.team_active && await checkPass(password, u.pass);
       if (!ok) {
-        const count = (fail && fail.until <= now && fail.count >= 5 ? 0 : (fail ? fail.count : 0)) + 1;
-        const until = count >= 5 ? now + 15 * 60000 : 0;
-        await db.prepare('INSERT INTO login_fail (username, count, until) VALUES (?1, ?2, ?3) ON CONFLICT(username) DO UPDATE SET count = excluded.count, until = excluded.until').bind(username, count, until).run();
+        await hit(db, 'ip:' + ip, now);
         return json({ error: 'bad_login', message: 'Usuario o contraseña incorrectos.' }, 401);
       }
-      await db.prepare('DELETE FROM login_fail WHERE username = ?1').bind(username).run();
       const token = randHex(32);
       await db.batch([
+        db.prepare('DELETE FROM login_fail WHERE username IN (?1, ?2) OR until < ?3').bind(`u:${username}|${ip}`, 'u:' + username, now),
         db.prepare('DELETE FROM sessions WHERE expires_at < ?1').bind(now),
         db.prepare('INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?1, ?2, ?3)').bind(await sha256(token), u.id, now + SESSION_DAYS * 864e5),
       ]);
@@ -151,9 +182,10 @@ async function handleApi(request, env, path) {
     }
 
     // ---------- administrador (clave COACH_KEY) ----------
-    if (path === 'check') return isAdmin(request, env) ? json({ ok: true }) : json({ error: 'bad_key' }, 401);
+    if (path === 'check') return (await adminDenied(request, env, db)) || json({ ok: true });
     if (path.startsWith('admin/')) {
-      if (!isAdmin(request, env)) return json({ error: 'bad_key' }, 401);
+      const denied = await adminDenied(request, env, db);
+      if (denied) return denied;
       const sub = path.slice(6);
       if (sub === 'teams' && method === 'GET') {
         const r = await db.prepare(`SELECT t.id, t.name, t.active, t.created_at,
@@ -216,6 +248,7 @@ async function handleApi(request, env, path) {
         if (raw.length > 12000) return json({ error: 'too_large' }, 413);
         let b; try { b = JSON.parse(raw); } catch (e) { return json({ error: 'bad_request' }, 400); }
         if (b.sitio) return json({ ok: true }); // campo trampa para bots
+        if (await hit(db, 'lead:' + clientIp(request), Date.now(), 3600000) > 5) return json({ error: 'too_many', message: 'Ya recibimos varias solicitudes desde tu conexión. Intenta más tarde.' }, 429);
         const list = (v, n) => (Array.isArray(v) ? v : []).slice(0, 10).map(x => str(x, n));
         const lead = {
           rol: str(b.rol, 60), categoria: list(b.categoria, 40), equipos: str(b.equipos, 10),
@@ -229,7 +262,8 @@ async function handleApi(request, env, path) {
         return json({ ok: true });
       }
       if (method === 'GET') {
-        if (!isAdmin(request, env)) return json({ error: 'bad_key' }, 401);
+        const denied = await adminDenied(request, env, db);
+        if (denied) return denied;
         const r = await db.prepare('SELECT id, created_at, data FROM leads ORDER BY created_at DESC LIMIT 500').all();
         const leads = (r.results || []).map(row => { try { return { id: row.id, created_at: row.created_at, ...JSON.parse(row.data) }; } catch (e) { return null; } }).filter(Boolean);
         return json({ leads });
@@ -243,13 +277,19 @@ async function handleApi(request, env, path) {
     const team = u.team_id;
 
     if (path === 'me' && method === 'GET') return json(me(u));
+    // con contraseña temporal solo se permite cambiarla
+    if (u.must_change && path !== 'password') return json({ error: 'must_change', message: 'Primero crea tu propia contraseña.' }, 403);
 
     if (path === 'password' && method === 'POST') {
       const b = await body();
       const next = String(b.new || '');
       if (!(await checkPass(String(b.current || ''), u.pass))) return json({ error: 'bad_password', message: 'La contraseña actual no es correcta.' }, 400);
       if (next.length < 8) return json({ error: 'weak', message: 'La nueva contraseña debe tener al menos 8 caracteres.' }, 400);
-      await db.prepare('UPDATE users SET pass = ?1, must_change = 0 WHERE id = ?2').bind(await hashPass(next), u.id).run();
+      await db.batch([
+        db.prepare('UPDATE users SET pass = ?1, must_change = 0 WHERE id = ?2').bind(await hashPass(next), u.id),
+        // cierra las demás sesiones abiertas con la contraseña anterior
+        db.prepare('DELETE FROM sessions WHERE user_id = ?1 AND token_hash != ?2').bind(u.id, await sha256(cookieToken(request))),
+      ]);
       return json({ ok: true });
     }
 
@@ -274,7 +314,7 @@ async function handleApi(request, env, path) {
         const id = str(url.searchParams.get('id'), 20);
         if (id === u.id) return json({ error: 'bad_request', message: 'No puedes darte de baja a ti mismo.' }, 400);
         await db.batch([
-          db.prepare('DELETE FROM sessions WHERE user_id = ?1').bind(id),
+          db.prepare('DELETE FROM sessions WHERE user_id IN (SELECT id FROM users WHERE id = ?1 AND team_id = ?2)').bind(id, team),
           db.prepare('DELETE FROM users WHERE id = ?1 AND team_id = ?2').bind(id, team),
         ]);
         return json({ ok: true });
@@ -330,7 +370,8 @@ async function handleApi(request, env, path) {
 
     return json({ error: 'not_found' }, 404);
   } catch (e) {
-    return json({ error: 'server_error', message: String(e && e.message || e) }, 500);
+    console.error(e);
+    return json({ error: 'server_error', message: 'Error del servidor. Intenta de nuevo.' }, 500);
   }
 }
 
