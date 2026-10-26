@@ -493,14 +493,14 @@ function grabTitle() { try { const d = yt.getVideoData(); if (d && d.title) { co
 function parseId(u) {
   u = (u || '').trim();
   if (/^[\w-]{11}$/.test(u)) return u;
+  let id = null;
   try {
     const url = new URL(u);
-    if (url.hostname.includes('youtu.be')) return url.pathname.slice(1, 12);
-    if (url.searchParams.get('v')) return url.searchParams.get('v').slice(0, 11);
-    const m = url.pathname.match(/\/(live|embed|shorts|v)\/([\w-]{11})/);
-    if (m) return m[2];
+    if (url.hostname.includes('youtu.be')) id = url.pathname.slice(1, 12);
+    else if (url.searchParams.get('v')) id = url.searchParams.get('v').slice(0, 11);
+    else { const m = url.pathname.match(/\/(live|embed|shorts|v)\/([\w-]{11})/); if (m) id = m[2]; }
   } catch (e) {}
-  return null;
+  return id && /^[\w-]{11}$/.test(id) ? id : null;
 }
 function loadUrl(u) {
   const id = parseId(u);
@@ -567,6 +567,7 @@ async function api(path, opts = {}) {
 }
 function cleanPlay(p) { const o = JSON.parse(JSON.stringify(p)); delete o.id; delete o.ex; return o; }
 function sessionEnded() {
+  cloud.prevTeam = cloud.team && cloud.team.id;
   cloud.user = null; cloud.team = null; cloud.ok = false;
   clearInterval(cloud.poll);
   showGate('Tu sesión terminó. Vuelve a entrar.');
@@ -587,7 +588,7 @@ function flush(id) {
   const p = dirty.get(id), vid = S.vid; if (!p || !vid) return;
   api('plays', { method: 'POST', body: JSON.stringify({ video: vid, id, data: cleanPlay(p) }) })
     .then(() => { if (!timers.has(id)) dirty.delete(id); if (!timers.size) setStatus('Guardado en la nube', 'ok'); touchVideo(); })
-    .catch(e => { if (e.status === 401) dirty.delete(id); cloudError(e); });
+    .catch(cloudError);
 }
 // save one play (or everything when no play is given)
 function save(p) {
@@ -661,18 +662,23 @@ function showGate(msg) {
 async function signedIn(d, fresh) {
   cloud.user = d.user; cloud.team = d.team; cloud.ok = d.user.role === 'coach';
   $('gate').hidden = true;
-  $('gamesSel').hidden = false;
   paintAuth();
+  // con contraseña temporal el servidor no entrega datos hasta que la cambie
+  if (d.user.must_change) { openPw(true); return; }
+  // cambios pendientes de una sesión anterior: solo se suben si es el mismo equipo
+  if (cloud.prevTeam !== d.team.id || !cloud.ok) dirty.clear();
+  cloud.prevTeam = null;
+  $('gamesSel').hidden = false;
   if (S.vid) {
     S.key = 'salavideo-yt:' + cloud.team.id + ':' + S.vid;
     let saved = null; try { saved = JSON.parse(localStorage.getItem(S.key) || 'null'); } catch (e) {}
     S.plays = Array.isArray(saved) ? saved : []; S.sel = null; renderAll();
     subscribe(S.vid);
-  } else { S.plays = []; S.example = false; S.sel = null; setStatus('Conectado', 'ok'); }
+    dirty.forEach((p, k) => flush(k));
+  } else { S.plays = []; S.example = false; S.sel = null; dirty.clear(); setStatus('Conectado', 'ok'); }
   loadGames();
   renderAll();
-  if (d.user.must_change) openPw(true);
-  else if (fresh) toast(`Hola, ${d.user.name.split(' ')[0]}.`);
+  if (fresh) toast(`Hola, ${d.user.name.split(' ')[0]}.`);
 }
 $('loginForm').onsubmit = async e => {
   e.preventDefault();
@@ -709,7 +715,8 @@ $('pwForm').onsubmit = async e => {
   if ($('pwNew').value !== $('pwNew2').value) return err('Las dos contraseñas nuevas no coinciden.');
   try {
     await api('password', { method: 'POST', body: JSON.stringify({ current: $('pwCur').value, new: $('pwNew').value }) });
-    $('pwModal').hidden = true; cloud.user.must_change = false; toast('Contraseña guardada.');
+    $('pwModal').hidden = true; toast('Contraseña guardada.');
+    if (cloud.user.must_change) { cloud.user.must_change = false; signedIn({ user: cloud.user, team: cloud.team }, false); }
   } catch (x) { err(x.body && x.body.message ? x.body.message : 'No se pudo guardar. Revisa tu conexión.'); }
 };
 // team management (coaches)
@@ -958,7 +965,7 @@ function newPlay() {
 function select(id) {
   S.sel = id; renderAll();
   const p = selPlay();
-  if (p) { const row = document.querySelector(`.row[data-id="${p.id}"]`); row && row.scrollIntoView({ block: 'nearest' }); }
+  if (p) { const row = document.querySelector(`.row[data-id="${CSS.escape(p.id)}"]`); row && row.scrollIntoView({ block: 'nearest' }); }
 }
 function moveSel(dir) {
   const list = filtered(); if (!list.length) return;
@@ -1025,7 +1032,7 @@ function renderList() {
     const g = hasNum(p.gain) ? Number(p.gain) : '';
     const gCls = g === '' ? '' : g > 0 ? 'pos' : g < 0 ? 'neg' : '';
     const sub = [p.form, p.player, p.notes].filter(Boolean).join(' · ');
-    return `<button class="row${p.id === S.sel ? ' sel' : ''}" data-id="${p.id}">
+    return `<button class="row${p.id === S.sel ? ' sel' : ''}" data-id="${esc(p.id)}">
       <span class="n">${all.indexOf(p) + 1}</span>
       <span class="bar" style="background:${UNIT_COLOR[p.unit] || 'var(--muted)'}"></span>
       <span class="main">
@@ -1066,7 +1073,12 @@ $('importInput').onchange = async e => {
     if (!Array.isArray(plays)) throw new Error();
     if (data.youtube && data.youtube !== S.vid) loadUrl(data.youtube);
     if (cloud.on && !S.vid) { toast('Primero carga el partido de YouTube.'); return; }
-    S.plays = plays.map(p => { const o = { ...p, id: p.id || uid() }; delete o.ex; return o; }); S.example = false; S.sel = null;
+    const seen = new Set();
+    S.plays = plays.filter(p => p && typeof p === 'object').map(p => {
+      let id = typeof p.id === 'string' && /^[\w-]{1,40}$/.test(p.id) && !seen.has(p.id) ? p.id : uid();
+      seen.add(id);
+      const o = { ...p, id }; delete o.ex; return o;
+    }); S.example = false; S.sel = null;
     save(); renderAll();
     toast(`Se importaron ${plays.length} jugadas.`);
   } catch (err) { toast('No se pudo leer el archivo. Usa un .json exportado desde Sideline.'); }
