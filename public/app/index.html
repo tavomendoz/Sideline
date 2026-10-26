@@ -833,9 +833,10 @@ function redraw() {
   const all = S.cur ? [...S.strokes, S.cur] : S.strokes;
   const W = cv.width, H = cv.height, lw = Math.max(3, W / 260);
   for (const s of all) {
+    if (!s || typeof s !== 'object') continue;
     ctx.strokeStyle = s.color; ctx.fillStyle = s.color; ctx.lineWidth = lw; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = lw;
-    const Pt = s.pts.map(([x, y]) => [x * W, y * H]);
+    const Pt = (Array.isArray(s.pts) ? s.pts : []).map(([x, y] = []) => [x * W, y * H]);
     if (!Pt.length) continue;
     const [x0, y0] = Pt[0], [x1, y1] = Pt[Pt.length - 1];
     ctx.beginPath();
@@ -1053,7 +1054,7 @@ function renderList() {
 $('rows').addEventListener('click', e => {
   const r = e.target.closest('.row'); if (!r) return;
   const p = S.plays.find(x => x.id === r.dataset.id);
-  if (p && p.drawing && P.ok) {
+  if (p && p.drawing && Array.isArray(p.drawing.strokes) && P.ok) {
     select(p.id); S.clip = false;
     S.keepDrawUntil = Date.now() + 2500;
     P.seek(p.drawing.t);
@@ -1096,7 +1097,7 @@ $('exportJson').onclick = () => {
 $('exportCsv').onclick = () => {
   if (!S.plays.length) return toast('No hay jugadas para exportar.');
   const cols = [['#', (p, i) => i + 1], ['Inicio', p => fmt(p.start)], ['Fin', p => fmt(p.end)], ['Enlace', p => S.vid ? `https://youtu.be/${S.vid}?t=${Math.floor(p.start)}` : ''], ['Cuarto', p => p.q], ['Unidad', p => UNIT_NAME[p.unit]], ['Down', p => p.down], ['Yardas a avanzar', p => p.dist], ['Posición', p => posText(p)], ['Hash', p => p.hash], ['Formación', p => p.form], ['Tipo', p => p.type], ['Resultado', p => p.res], ['Yardas', p => p.gain], ['Jugadores', p => p.player], ['Notas', p => p.notes]];
-  const q = s => { s = String(s ?? ''); return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const q = s => { s = String(s ?? ''); if (/^[=+\-@\t\r]/.test(s) && !isFinite(Number(s))) s = "'" + s; return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
   download(baseName() + '-jugadas.csv', '﻿' + [cols.map(c => c[0]).join(','), ...sorted().map((p, i) => cols.map(c => q(c[1](p, i))).join(','))].join('\n'), 'text/csv');
 };
 
