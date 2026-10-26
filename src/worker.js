@@ -21,6 +21,9 @@ async function init(db) {
     // datos por equipo
     db.prepare(`CREATE TABLE IF NOT EXISTS tplays (team_id TEXT NOT NULL, video TEXT NOT NULL, id TEXT NOT NULL, data TEXT NOT NULL, updated_at INTEGER NOT NULL, PRIMARY KEY (team_id, video, id))`),
     db.prepare(`CREATE TABLE IF NOT EXISTS tvideos (team_id TEXT NOT NULL, id TEXT NOT NULL, title TEXT, updated_at INTEGER NOT NULL, PRIMARY KEY (team_id, id))`),
+    // playbooks: format = jugadores por lado (5, 7 u 11); side = O (ofensiva) o D (defensiva)
+    db.prepare(`CREATE TABLE IF NOT EXISTS pbooks (team_id TEXT NOT NULL, id TEXT NOT NULL, name TEXT NOT NULL, format INTEGER NOT NULL, side TEXT NOT NULL, updated_at INTEGER NOT NULL, PRIMARY KEY (team_id, id))`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS pbplays (team_id TEXT NOT NULL, book_id TEXT NOT NULL, id TEXT NOT NULL, pos INTEGER NOT NULL, data TEXT NOT NULL, updated_at INTEGER NOT NULL, PRIMARY KEY (team_id, book_id, id))`),
   ]);
   ready = true;
 }
@@ -366,6 +369,80 @@ async function handleApi(request, env, path) {
         const v = url.searchParams.get('v') || '', id = url.searchParams.get('id') || '';
         if (!VID.test(v) || !PID.test(id)) return json({ error: 'bad_request' }, 400);
         await db.prepare('DELETE FROM tplays WHERE team_id = ?1 AND video = ?2 AND id = ?3').bind(team, v, id).run();
+        return json({ ok: true });
+      }
+    }
+
+    // ---------- playbooks (coaches editan, jugadores solo ven) ----------
+    if (path === 'playbooks') {
+      if (method === 'GET') {
+        const r = await db.prepare(`SELECT b.id, b.name, b.format, b.side, b.updated_at,
+            (SELECT COUNT(*) FROM pbplays p WHERE p.team_id = b.team_id AND p.book_id = b.id) AS plays
+          FROM pbooks b WHERE b.team_id = ?1 ORDER BY b.name COLLATE NOCASE`).bind(team).all();
+        return json({ playbooks: r.results || [] });
+      }
+      if (!coach) return json({ error: 'forbidden', message: 'Solo los coaches editan los playbooks.' }, 403);
+      if (method === 'POST') {
+        const b = await body();
+        const id = str(b.id, 40), name = str(b.name, 80);
+        const format = [5, 7, 11].includes(+b.format) ? +b.format : 11, side = b.side === 'D' ? 'D' : 'O';
+        if (!PID.test(id)) return json({ error: 'bad_request' }, 400);
+        if (!name) return json({ error: 'bad_request', message: 'Escribe el nombre del playbook.' }, 400);
+        const n = await db.prepare('SELECT COUNT(*) AS n FROM pbooks WHERE team_id = ?1 AND id != ?2').bind(team, id).first();
+        if (n && n.n >= 100) return json({ error: 'too_many', message: 'Tu equipo llegó al máximo de 100 playbooks.' }, 400);
+        // el formato y el lado no cambian después de crear el playbook (las jugadas dependen de ellos)
+        await db.prepare(`INSERT INTO pbooks (team_id, id, name, format, side, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+          ON CONFLICT(team_id, id) DO UPDATE SET name = excluded.name, updated_at = excluded.updated_at`)
+          .bind(team, id, name, format, side, Date.now()).run();
+        return json({ ok: true });
+      }
+      if (method === 'DELETE') {
+        const id = str(url.searchParams.get('id'), 40);
+        await db.batch([
+          db.prepare('DELETE FROM pbplays WHERE team_id = ?1 AND book_id = ?2').bind(team, id),
+          db.prepare('DELETE FROM pbooks WHERE team_id = ?1 AND id = ?2').bind(team, id),
+        ]);
+        return json({ ok: true });
+      }
+    }
+    if (path === 'playbooks/plays' || path === 'playbooks/order') {
+      const b = method === 'POST' ? await body() : {};
+      const book = str(method === 'POST' ? b.book : url.searchParams.get('book'), 40);
+      if (!PID.test(book)) return json({ error: 'bad_request' }, 400);
+      const exists = await db.prepare('SELECT 1 FROM pbooks WHERE team_id = ?1 AND id = ?2').bind(team, book).first();
+      if (!exists) return json({ error: 'not_found', message: 'Ese playbook ya no existe.' }, 404);
+      if (path === 'playbooks/plays' && method === 'GET') {
+        const r = await db.prepare('SELECT id, pos, data FROM pbplays WHERE team_id = ?1 AND book_id = ?2 ORDER BY pos, updated_at').bind(team, book).all();
+        const plays = (r.results || []).map(row => { try { return { ...JSON.parse(row.data), id: row.id, pos: row.pos }; } catch (e) { return null; } }).filter(Boolean);
+        return json({ plays });
+      }
+      if (!coach) return json({ error: 'forbidden', message: 'Solo los coaches editan los playbooks.' }, 403);
+      const now = Date.now();
+      if (path === 'playbooks/plays' && method === 'POST') {
+        if (!PID.test(b.id || '')) return json({ error: 'bad_request' }, 400);
+        const data = JSON.stringify(b.data && typeof b.data === 'object' ? b.data : {});
+        if (data.length > 200000) return json({ error: 'too_large', message: 'La jugada es demasiado grande.' }, 413);
+        const old = await db.prepare('SELECT 1 FROM pbplays WHERE team_id = ?1 AND book_id = ?2 AND id = ?3').bind(team, book, b.id).first();
+        if (!old) {
+          const n = await db.prepare('SELECT COUNT(*) AS n FROM pbplays WHERE team_id = ?1 AND book_id = ?2').bind(team, book).first();
+          if (n && n.n >= 300) return json({ error: 'too_many', message: 'Este playbook llegó al máximo de 300 jugadas.' }, 400);
+        }
+        await db.batch([
+          db.prepare(`INSERT INTO pbplays (team_id, book_id, id, pos, data, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+            ON CONFLICT(team_id, book_id, id) DO UPDATE SET pos = excluded.pos, data = excluded.data, updated_at = excluded.updated_at`)
+            .bind(team, book, b.id, Math.max(0, Math.min(9999, Math.floor(+b.pos) || 0)), data, now),
+          db.prepare('UPDATE pbooks SET updated_at = ?1 WHERE team_id = ?2 AND id = ?3').bind(now, team, book),
+        ]);
+        return json({ ok: true });
+      }
+      if (path === 'playbooks/plays' && method === 'DELETE') {
+        const id = str(url.searchParams.get('id'), 40);
+        await db.prepare('DELETE FROM pbplays WHERE team_id = ?1 AND book_id = ?2 AND id = ?3').bind(team, book, id).run();
+        return json({ ok: true });
+      }
+      if (path === 'playbooks/order' && method === 'POST') {
+        const ids = (Array.isArray(b.ids) ? b.ids : []).slice(0, 300).filter(x => PID.test(String(x)));
+        if (ids.length) await db.batch(ids.map((id, i) => db.prepare('UPDATE pbplays SET pos = ?1 WHERE team_id = ?2 AND book_id = ?3 AND id = ?4').bind(i, team, book, id)));
         return json({ ok: true });
       }
     }

@@ -1,0 +1,955 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Playbooks · Sideline</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%230D0D0D%27/%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2723%27%20fill%3D%27none%27%20stroke%3D%27%23FFFFFF%27%20stroke-width%3D%276%27/%3E%3Cpath%20d%3D%27M26%2020%20L45%2032%20L26%2044%20Z%27%20fill%3D%27%23F26B1D%27%20stroke%3D%27%23F26B1D%27%20stroke-width%3D%273%27%20stroke-linejoin%3D%27round%27/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap">
+<style>
+/* Layout: lista de jugadas a la izquierda, campo al centro, propiedades a la derecha; se apila en teléfonos. Mismo look claro que la sala de video. */
+:root {
+  color-scheme: light;
+  --bg: #eef3f8;
+  --panel: #ffffff;
+  --panel-2: #f4f7fa;
+  --line: #d5dee7;
+  --fg: #1f2b37;
+  --muted: #5d6d7d;
+  --accent: #c9570f;
+  --accent-ink: #ffffff;
+  --good: #1f6b2e;
+  --bad: #d23f3f;
+  --font-body: "Segoe UI", "Open Sans", "Helvetica Neue", Arial, sans-serif;
+  --r: 6px;
+}
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 14px;
+  padding: 12px max(16px, env(safe-area-inset-right, 0px)) 12px max(16px, env(safe-area-inset-left, 0px));
+  box-sizing: border-box;
+}
+*, *::before, *::after { box-sizing: border-box; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+[hidden] { display: none !important; }
+
+.app { display: flex; flex-direction: column; gap: 12px; min-height: 100%; }
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+header .homelink { display: block; color: inherit; margin-right: 6px; }
+header .brandmark { display: block; height: 34px; width: auto; }
+.spacer { flex: 1; }
+.btn { background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r); padding: 7px 12px; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; text-decoration: none; color: var(--fg); }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+.btn.on { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.btn.sm { padding: 4px 9px; font-size: 13px; }
+.btn.danger { color: var(--bad); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.group { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+.status { font-size: 12px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+.status.ok { color: var(--good); border-color: var(--good); }
+.status.bad { color: var(--bad); border-color: var(--bad); }
+.status.busy { color: var(--accent); border-color: var(--accent); }
+.who { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 30ch; }
+.chip { font-size: 11px; font-weight: 600; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; color: var(--muted); }
+select, input, textarea { background: var(--bg); border: 1px solid var(--line); border-radius: var(--r); padding: 6px 8px; min-width: 0; }
+textarea { resize: vertical; min-height: 70px; }
+label { font-size: 12px; color: var(--muted); }
+
+.bookbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.bookbar #bookSel { flex: 0 1 320px; font-weight: 600; }
+
+main { display: grid; grid-template-columns: 250px minmax(0, 1fr) 270px; gap: 12px; align-items: start; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); box-shadow: 0 1px 3px rgba(20,40,60,.06); min-width: 0; }
+.card .hd { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.card h2 { font-weight: 700; text-transform: uppercase; letter-spacing: .02em; font-size: 12px; margin: 0; display: flex; align-items: center; gap: 8px; min-width: 0; }
+.card h2 span.t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: none; font-size: 14px; letter-spacing: 0; }
+
+.newplay { display: flex; gap: 6px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.newplay select { flex: 1; }
+.rows { display: flex; flex-direction: column; max-height: calc(100vh - 230px); overflow-y: auto; }
+.row { display: grid; grid-template-columns: 22px 64px minmax(0, 1fr); gap: 8px; align-items: center; padding: 6px 10px; border: 0; border-bottom: 1px solid var(--line); background: none; text-align: left; }
+.row:hover { background: var(--panel-2); }
+.row.sel { background: #fff4e5; box-shadow: inset 3px 0 0 var(--accent); }
+.row .n { font-size: 12px; color: var(--muted); text-align: right; }
+.row svg { width: 64px; height: 44px; border: 1px solid var(--line); border-radius: 3px; display: block; }
+.row .nm { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row .sub { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.emptylist { padding: 18px 12px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+
+.editor .hd { min-height: 46px; }
+.fieldwrap { position: relative; padding: 10px; }
+#field { display: block; width: 100%; height: auto; max-height: calc(100vh - 210px); touch-action: none; user-select: none; -webkit-user-select: none; border-radius: 4px; }
+#field.drawing { cursor: crosshair; }
+#field .pl { cursor: grab; }
+body.ro #field .pl { cursor: default; }
+.hint { font-size: 12px; color: var(--muted); padding: 0 12px 10px; min-height: 26px; }
+.hint b { color: var(--accent); }
+
+.props { display: flex; flex-direction: column; gap: 10px; padding: 12px; }
+.props .f { display: flex; flex-direction: column; gap: 4px; }
+.props .f > input, .props .f > select, .props .f > textarea { width: 100%; }
+.props .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+.props h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 6px 0 0; }
+.swatches { display: flex; flex-wrap: wrap; gap: 6px; }
+.sw { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--line); padding: 0; }
+.sw.on { box-shadow: 0 0 0 2px var(--fg); }
+.tree { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+.tree .btn { justify-content: center; padding: 4px 4px; font-size: 12px; }
+.check { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--fg); }
+.note { font-size: 12px; color: var(--muted); line-height: 1.45; }
+body.ro .coach { display: none !important; }
+
+.blank { padding: 40px 20px; text-align: center; color: var(--muted); line-height: 1.6; }
+.blank strong { display: block; color: var(--fg); font-size: 16px; margin-bottom: 6px; }
+
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 8px 14px; border-radius: var(--r); z-index: 80; max-width: calc(100vw - 32px); }
+.gate, .modal { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; overflow-y: auto; }
+.gate { background: var(--bg); }
+.modal { background: rgba(20,40,60,.35); }
+.gate .card, .modal .card { width: 100%; max-width: 420px; }
+.gate .card { padding: 28px; display: flex; flex-direction: column; gap: 14px; }
+.gate h2 { font-weight: 300; font-size: 24px; margin: 0; }
+.gate p { margin: 0; color: var(--muted); line-height: 1.5; }
+.modal .body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.modal .foot { display: flex; justify-content: flex-end; gap: 8px; }
+.err { color: var(--bad); font-size: 13px; }
+
+@media (max-width: 1100px) {
+  main { grid-template-columns: 220px minmax(0, 1fr); }
+  #propCard { grid-column: 1 / -1; }
+}
+@media (max-width: 760px) {
+  main { grid-template-columns: minmax(0, 1fr); }
+  .rows { max-height: 260px; }
+  #field { max-height: none; }
+}
+
+/* impresión */
+#print { display: none; }
+@media print {
+  @page { margin: 12mm; }
+  body { background: #fff; padding: 0; }
+  .app, .toast, .gate, .modal { display: none !important; }
+  #print { display: grid; gap: 8mm; color: #000; font-family: var(--font-body); }
+  #print.l1 { grid-template-columns: 1fr; }
+  #print.l1 .pc { break-after: page; }
+  #print.l4 { grid-template-columns: 1fr 1fr; }
+  #print.l4 .pc:nth-child(4n) { break-after: page; }
+  #print.lband { grid-template-columns: repeat(4, 1fr); gap: 2mm; }
+  #print .pc { break-inside: avoid; border: 1px solid #999; padding: 3mm; }
+  #print .pc h4 { margin: 0 0 2mm; font-size: 13px; }
+  #print .pc p { margin: 2mm 0 0; font-size: 11px; white-space: pre-wrap; }
+  #print.lband .pc { padding: 1mm; }
+  #print.lband .pc h4 { font-size: 10px; margin: 0; }
+  #print svg { width: 100%; height: auto; display: block; }
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header>
+    <a class="homelink" href="/" aria-label="Sideline, inicio"><svg class='brandmark' viewBox='0 0 593 104' height='34' role='img' aria-label='Sideline'><circle cx='52' cy='52' r='50' fill='var(--fg)'/>
+<rect x='48.25' y='8.25' width='7.50' height='7.50' rx='1.35' fill='var(--bg)' transform='rotate(0.0 52.00 12.00)'/>
+<rect x='65.61' y='12.21' width='7.50' height='7.50' rx='1.35' fill='var(--bg)' transform='rotate(25.7 69.36 15.96)'/>
+<rect x='79.52' y='23.31' width='7.50' height='7.50' rx='1.35' fill='var(--bg)' transform='rotate(51.4 83.27 27.06)'/>
+<rect x='87.25' y='39.35' width='7.50' height='7.50' rx='1.35' fill='var(--bg)' transform='rotate(77.1 91.00 43.10)'/>
+<rect x='87.25' y='57.15' width='7.50' height='7.50' rx='1.35' fill='var(--bg)' transform='rotate(102.9 91.00 60.90)'/>
+<rect x='79.52' y='73.19' width='7.50' height='7.50' rx='1.35' fill='var(--bg)' transform='rotate(128.6 83.27 76.94)'/>
+<rect x='65.61' y='84.29' width='7.50' height='7.50' rx='1.35' fill='var(--bg)' transform='rotate(154.3 69.36 88.04)'/>
+<rect x='48.25' y='88.25' width='7.50' height='7.50' rx='1.35' fill='var(--bg)' transform='rotate(180.0 52.00 92.00)'/>
+<rect x='30.89' y='84.29' width='7.50' height='7.50' rx='1.35' fill='var(--bg)' transform='rotate(205.7 34.64 88.04)'/>
+<rect x='16.98' y='73.19' width='7.50' height='7.50' rx='1.35' fill='var(--bg)' transform='rotate(231.4 20.73 76.94)'/>
+<rect x='9.25' y='57.15' width='7.50' height='7.50' rx='1.35' fill='var(--bg)' transform='rotate(257.1 13.00 60.90)'/>
+<rect x='9.25' y='39.35' width='7.50' height='7.50' rx='1.35' fill='var(--bg)' transform='rotate(282.9 13.00 43.10)'/>
+<rect x='16.98' y='23.31' width='7.50' height='7.50' rx='1.35' fill='var(--bg)' transform='rotate(308.6 20.73 27.06)'/>
+<rect x='30.89' y='12.21' width='7.50' height='7.50' rx='1.35' fill='var(--bg)' transform='rotate(334.3 34.64 15.96)'/>
+<circle cx='52' cy='52' r='31.00' fill='var(--bg)'/>
+<circle cx='52' cy='52' r='25.00' fill='none' stroke='var(--fg)' stroke-width='3.75'/>
+<path d='M42.25 39.00 L65.65 52.00 L42.25 65.00 Z' fill='#F26B1D' stroke='#F26B1D' stroke-width='2.50' stroke-linejoin='round'/><g transform='translate(128 85)'><path d='M3.588 -13.34Q28.796 -11.959999999999999 37.72 -11.959999999999999Q39.836 -11.959999999999999 41.078 -13.201999999999998Q42.32 -14.443999999999999 42.32 -16.56V-24.84H21.16Q11.5 -24.84 7.13 -29.21Q2.76 -33.58 2.76 -43.24V-46.0Q2.76 -55.66 7.13 -60.03Q11.5 -64.4 21.16 -64.4H53.452V-51.519999999999996H24.84Q19.32 -51.519999999999996 19.32 -46.0V-44.16Q19.32 -38.64 24.84 -38.64H41.4Q50.416 -38.64 54.647999999999996 -34.408Q58.879999999999995 -30.176 58.879999999999995 -21.16V-16.56Q58.879999999999995 -7.544 54.647999999999996 -3.312Q50.416 0.9199999999999999 41.4 0.9199999999999999Q36.708 0.9199999999999999 31.464 0.736L23.0 0.368Q13.616 -0.092 3.588 -0.9199999999999999ZM99.36000000000001 0.0H66.24000000000001V-12.879999999999999H74.52000000000001V-51.519999999999996H66.24000000000001V-64.4H99.36000000000001V-51.519999999999996H91.08V-12.879999999999999H99.36000000000001ZM145.36 -64.4Q155.756 -64.4 161.138 -59.018Q166.52 -53.635999999999996 166.52 -43.24V-21.16Q166.52 -10.764 161.138 -5.382Q155.756 0.0 145.36 0.0H109.48V-64.4ZM149.96 -43.24Q149.96 -51.519999999999996 141.68 -51.519999999999996H126.04V-12.879999999999999H141.68Q149.96 -12.879999999999999 149.96 -21.16ZM228.62 0.0H177.56000000000003V-64.4H228.62V-51.519999999999996H194.12V-39.1H221.26000000000002V-26.22H194.12V-12.879999999999999H228.62ZM254.38 -12.879999999999999H287.96000000000004V0.0H237.82000000000002V-64.4H254.38ZM326.6 0.0H293.48V-12.879999999999999H301.76000000000005V-51.519999999999996H293.48V-64.4H326.6V-51.519999999999996H318.32000000000005V-12.879999999999999H326.6ZM392.84000000000003 0.0H375.36L353.28000000000003 -38.64V0.0H336.72V-64.4H354.20000000000005L376.28000000000003 -25.759999999999998V-64.4H392.84000000000003ZM456.78000000000003 0.0H405.72V-64.4H456.78000000000003V-51.519999999999996H422.28000000000003V-39.1H449.4200000000001V-26.22H422.28000000000003V-12.879999999999999H456.78000000000003Z' fill='var(--fg)'/></g></svg></a>
+    <div class="group">
+      <a class="btn" href="/app/">Sala de video</a>
+      <span class="btn on" aria-current="page">Playbooks</span>
+    </div>
+    <span class="spacer"></span>
+    <span class="status" id="status">Conectando…</span>
+    <span class="who" id="who"></span>
+  </header>
+
+  <div class="bookbar">
+    <select id="bookSel" aria-label="Playbook"></select>
+    <span class="chip" id="bookInfo"></span>
+    <button class="btn sm coach" id="newBook">+ Playbook</button>
+    <button class="btn sm coach" id="renBook">Renombrar</button>
+    <button class="btn sm coach danger" id="delBook">Eliminar playbook</button>
+    <span class="spacer"></span>
+    <select id="printSel" aria-label="Imprimir">
+      <option value="">Imprimir…</option>
+      <option value="one">Esta jugada</option>
+      <option value="1">Playbook · 1 jugada por hoja</option>
+      <option value="4">Playbook · 4 jugadas por hoja</option>
+      <option value="band">Pulsera · jugadas numeradas</option>
+    </select>
+    <button class="btn sm" id="pngBtn">Descargar imagen</button>
+  </div>
+
+  <div class="card blank" id="blank" hidden></div>
+
+  <main id="main" hidden>
+    <aside class="card" id="listCard">
+      <div class="hd"><h2>Jugadas <span class="chip" id="count">0</span></h2></div>
+      <div class="newplay coach">
+        <select id="tplSel" aria-label="Formación de la nueva jugada"></select>
+        <button class="btn sm primary" id="newPlay">+ Nueva</button>
+      </div>
+      <div class="rows" id="rows"></div>
+    </aside>
+
+    <section class="card editor">
+      <div class="hd">
+        <h2><span class="t" id="playTitle">—</span></h2>
+        <span class="spacer"></span>
+        <span class="group coach">
+          <button class="btn sm" id="undoBtn" title="Deshacer (Ctrl+Z)">Deshacer</button>
+          <button class="btn sm" id="redoBtn" title="Rehacer (Ctrl+Y)">Rehacer</button>
+          <button class="btn sm" id="dupBtn">Duplicar</button>
+          <button class="btn sm" id="mirBtn" title="Voltear de izquierda a derecha">Espejo</button>
+          <button class="btn sm" id="upBtn" title="Subir en la lista">↑</button>
+          <button class="btn sm" id="downBtn" title="Bajar en la lista">↓</button>
+          <button class="btn sm danger" id="delPlay">Eliminar</button>
+        </span>
+      </div>
+      <div class="fieldwrap"><svg id="field" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagrama de la jugada"></svg></div>
+      <div class="hint" id="hint"></div>
+    </section>
+
+    <aside class="card" id="propCard">
+      <div class="hd"><h2 id="propTitle">Jugada</h2></div>
+      <div class="props" id="playProps">
+        <div class="f"><label for="pName">Nombre</label><input id="pName" maxlength="60" placeholder="Ej. Trips Der Slant-Flat"></div>
+        <div class="two">
+          <div class="f"><label for="pForm">Formación</label><input id="pForm" maxlength="40"></div>
+          <div class="f"><label for="pType">Tipo</label><select id="pType"></select></div>
+        </div>
+        <div class="f"><label for="pNotes">Notas / lecturas</label><textarea id="pNotes" maxlength="1500" placeholder="Progresión del QB, ajustes, contra qué defensa…"></textarea></div>
+        <div class="coach">
+          <h3>Jugadores</h3>
+          <div class="group" style="margin-top:6px">
+            <button class="btn sm" id="addO">+ Ofensivo</button>
+            <button class="btn sm" id="addD">+ Defensivo</button>
+          </div>
+          <h3>Defensa rival</h3>
+          <div class="group" style="margin-top:6px">
+            <select id="defSel" aria-label="Defensa"></select>
+            <button class="btn sm" id="defPut">Poner</button>
+            <button class="btn sm" id="defClear">Quitar</button>
+          </div>
+        </div>
+        <p class="note coach">Haz clic en un jugador para editarlo y darle ruta. Arrástralo para moverlo.</p>
+      </div>
+
+      <div class="props" id="playerProps" hidden>
+        <div class="two">
+          <div class="f"><label for="plLabel">Etiqueta</label><input id="plLabel" maxlength="3"></div>
+          <div class="f"><label for="plShape">Forma</label>
+            <select id="plShape"><option value="circle">Círculo</option><option value="square">Cuadro</option><option value="text">Letra (defensa)</option></select></div>
+        </div>
+        <div class="f"><label>Color</label><div class="swatches" id="plColors"></div></div>
+        <h3>Ruta</h3>
+        <div class="tree" id="tree"></div>
+        <div class="group">
+          <button class="btn sm primary" id="drawRoute" title="Tecla R">Dibujar ruta</button>
+          <button class="btn sm" id="drawMotion" title="Tecla M">Motion</button>
+          <button class="btn sm" id="clearRoute">Borrar ruta</button>
+        </div>
+        <div class="two">
+          <div class="f"><label for="rEnd">Final</label><select id="rEnd"><option value="arrow">Flecha</option><option value="block">Bloqueo ⊥</option><option value="none">Sin final</option></select></div>
+          <div class="f"><label for="rStyle">Línea</label><select id="rStyle"><option value="solid">Continua</option><option value="dashed">Punteada (opción)</option></select></div>
+        </div>
+        <label class="check"><input type="checkbox" id="rCurve"> Ruta curva</label>
+        <div class="group">
+          <button class="btn sm" id="plDone">Listo</button>
+          <button class="btn sm danger" id="plDel">Eliminar jugador</button>
+        </div>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<div class="gate" id="gate" hidden>
+  <div class="card">
+    <h2>Playbooks</h2>
+    <p id="gateMsg">Entra con tu usuario del equipo para ver los playbooks.</p>
+    <a class="btn primary" href="/app/" style="justify-content:center">Entrar</a>
+  </div>
+</div>
+
+<div class="modal" id="bookModal" hidden>
+  <form class="card" id="bookForm">
+    <div class="hd"><h2 id="bookModalTitle">Nuevo playbook</h2></div>
+    <div class="body">
+      <div class="props" style="padding:0">
+        <div class="f"><label for="bName">Nombre</label><input id="bName" maxlength="80" required placeholder="Ej. Ofensiva 2026"></div>
+        <div class="two" id="bNewOnly">
+          <div class="f"><label for="bFormat">Modalidad</label>
+            <select id="bFormat"><option value="11">Tacleo · 11 jugadores</option><option value="7">Flag · 7 vs 7</option><option value="5">Flag · 5 vs 5</option></select></div>
+          <div class="f"><label for="bSide">Lado</label>
+            <select id="bSide"><option value="O">Ofensiva</option><option value="D">Defensiva</option></select></div>
+        </div>
+      </div>
+      <div class="err" id="bErr" hidden></div>
+      <div class="foot">
+        <button type="button" class="btn" id="bCancel">Cancelar</button>
+        <button type="submit" class="btn primary">Guardar</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div id="print"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const NS = 'http://www.w3.org/2000/svg';
+
+// ---------- campo ----------
+// Coordenadas en yardas: x de 0 a W (ancho del campo), y = yardas desde la línea de golpeo (positivo = hacia el campo rival).
+const WIDTH = { 11: 53.3, 7: 40, 5: 30 };
+const VIEW = { top: 22, bottom: 12 };         // yardas visibles hacia adelante y hacia atrás de la línea
+const R = 1.15;                               // radio de un jugador
+const COLORS = ['#1f2b37', '#d23f3f', '#2f80d1', '#1f6b2e', '#e8742a', '#8a5cc2', '#c99a06', '#5d6d7d'];
+const TYPES = ['', 'Carrera', 'Pase', 'Play action', 'Pantalla', 'Opción / RPO', 'Trucada', 'Blitz', 'Cobertura', 'Equipos especiales'];
+
+// Formaciones: [etiqueta, x desde el centro, y, forma, color]. y negativo = detrás de la línea.
+const OL = [['T', -5, -1, 'circle', 7], ['G', -2.5, -1, 'circle', 7], ['C', 0, -1, 'square', 7], ['G', 2.5, -1, 'circle', 7], ['T', 5, -1, 'circle', 7]];
+const OFF = {
+  11: {
+    'Shotgun 2x2': [...OL, ['QB', 0, -5, 'circle', 0], ['RB', 2.5, -5, 'circle', 5], ['X', -20, -1, 'circle', 1], ['H', -13, -2, 'circle', 4], ['Y', 13, -2, 'circle', 3], ['Z', 20, -2, 'circle', 2]],
+    'Shotgun Trips Der': [...OL, ['QB', 0, -5, 'circle', 0], ['RB', -2.5, -5, 'circle', 5], ['X', -20, -1, 'circle', 1], ['H', 9, -2, 'circle', 4], ['Y', 14, -2, 'circle', 3], ['Z', 20, -1, 'circle', 2]],
+    'I Formation': [...OL, ['QB', 0, -3.4, 'circle', 0], ['FB', 0, -6, 'circle', 6], ['TB', 0, -8.6, 'circle', 5], ['Y', 7.5, -1, 'circle', 3], ['X', -20, -1, 'circle', 1], ['Z', 17, -2, 'circle', 2]],
+    'Singleback': [...OL, ['QB', 0, -3.4, 'circle', 0], ['RB', 0, -7, 'circle', 5], ['Y', 7.5, -1, 'circle', 3], ['X', -20, -1, 'circle', 1], ['H', -13, -2, 'circle', 4], ['Z', 17, -2, 'circle', 2]],
+    'Pistol': [...OL, ['QB', 0, -4, 'circle', 0], ['RB', 0, -7, 'circle', 5], ['Y', 7.5, -1, 'circle', 3], ['X', -20, -1, 'circle', 1], ['H', -13, -2, 'circle', 4], ['Z', 17, -2, 'circle', 2]],
+    'Empty': [...OL, ['QB', 0, -5, 'circle', 0], ['X', -20, -1, 'circle', 1], ['H', -14, -2, 'circle', 4], ['S', -8, -2, 'circle', 6], ['Y', 14, -2, 'circle', 3], ['Z', 20, -1, 'circle', 2]],
+  },
+  7: {
+    'Doble (2x2)': [['C', 0, -1, 'square', 7], ['QB', 0, -5, 'circle', 0], ['RB', 2.5, -5, 'circle', 5], ['X', -15, -1, 'circle', 1], ['H', -8, -2, 'circle', 4], ['Y', 8, -2, 'circle', 3], ['Z', 15, -1, 'circle', 2]],
+    'Trips Der': [['C', 0, -1, 'square', 7], ['QB', 0, -5, 'circle', 0], ['RB', -2.5, -5, 'circle', 5], ['X', -15, -1, 'circle', 1], ['H', 6, -2, 'circle', 4], ['Y', 10, -2, 'circle', 3], ['Z', 15, -1, 'circle', 2]],
+    'Bunch Der': [['C', 0, -1, 'square', 7], ['QB', 0, -5, 'circle', 0], ['RB', -2.5, -5, 'circle', 5], ['X', -15, -1, 'circle', 1], ['H', 8, -1, 'circle', 4], ['Y', 10, -3, 'circle', 3], ['Z', 12, -1, 'circle', 2]],
+    'Empty': [['C', 0, -1, 'square', 7], ['QB', 0, -5, 'circle', 0], ['X', -15, -1, 'circle', 1], ['H', -9, -2, 'circle', 4], ['S', -4, -2, 'circle', 6], ['Y', 9, -2, 'circle', 3], ['Z', 15, -1, 'circle', 2]],
+  },
+  5: {
+    'Doble (2x1)': [['C', 0, -1, 'square', 7], ['QB', 0, -5, 'circle', 0], ['X', -11, -1, 'circle', 1], ['Y', 7, -2, 'circle', 3], ['Z', 11, -1, 'circle', 2]],
+    'Trips Der': [['C', 0, -1, 'square', 7], ['QB', 0, -5, 'circle', 0], ['X', 5, -2, 'circle', 1], ['Y', 8, -2, 'circle', 3], ['Z', 11, -1, 'circle', 2]],
+    'Stack Izq': [['C', 0, -1, 'square', 7], ['QB', 0, -5, 'circle', 0], ['X', -8, -1, 'circle', 1], ['Y', -8, -3.5, 'circle', 3], ['Z', 10, -1, 'circle', 2]],
+    'RB atrás': [['C', 0, -1, 'square', 7], ['QB', 0, -5, 'circle', 0], ['RB', 2.5, -5, 'circle', 5], ['X', -11, -1, 'circle', 1], ['Z', 11, -1, 'circle', 2]],
+  },
+};
+const DEF = {
+  11: {
+    '4-3': [['E', -6, 1.3], ['T', -2, 1.3], ['T', 2, 1.3], ['E', 6, 1.3], ['W', -5, 5], ['M', 0, 5], ['S', 5, 5], ['C', -20, 6], ['C', 20, 6], ['FS', -6, 12], ['SS', 8, 10]],
+    '3-4': [['E', -4, 1.3], ['N', 0, 1.3], ['E', 4, 1.3], ['B', -8, 3], ['M', -2.5, 5], ['W', 2.5, 5], ['B', 8, 3], ['C', -20, 6], ['C', 20, 6], ['S', -7, 12], ['S', 7, 12]],
+    'Nickel 4-2-5': [['E', -6, 1.3], ['T', -2, 1.3], ['T', 2, 1.3], ['E', 6, 1.3], ['M', -2.5, 5], ['W', 2.5, 5], ['N', 13, 5], ['C', -20, 6], ['C', 20, 6], ['S', -8, 12], ['S', 8, 12]],
+  },
+  7: {
+    'Zona 3': [['C', -15, 6], ['C', 15, 6], ['S', 0, 13], ['L', -7, 5], ['M', 0, 5], ['L', 7, 5], ['R', 3, 7]],
+    'Hombre (Cover 1)': [['C', -15, 2], ['C', 15, 2], ['N', -8, 3], ['N', 8, 3], ['M', 0, 5], ['S', 0, 12], ['R', -3, 7]],
+  },
+  5: {
+    'Zona 2': [['C', -10, 6], ['C', 10, 6], ['S', -5, 12], ['S', 5, 12], ['R', 0, 7]],
+    'Hombre': [['C', -11, 2], ['C', 11, 2], ['N', 7, 3], ['S', 0, 10], ['R', 0, 7]],
+  },
+};
+// Rutas rápidas: [nombre, puntos (hacia afuera, hacia adelante), curva]
+const ROUTES = [
+  ['Slant', [[0, 2], [-5, 6]]], ['Hitch', [[0, 6], [-0.8, 5]]], ['Out', [[0, 6], [5, 6]]],
+  ['In', [[0, 6], [-6, 6]]], ['Curl', [[0, 10], [-1.5, 8.5]]], ['Comeback', [[0, 12], [2, 10]]],
+  ['Post', [[0, 10], [-6, 18]]], ['Corner', [[0, 10], [6, 16]]], ['Go', [[0, 18]]],
+  ['Flat', [[3, 1], [8, 2]], true], ['Wheel', [[4, 1], [6, 5], [6, 18]], true], ['Bloqueo', [[0, 2]]],
+];
+
+const uid = () => Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const snap = v => Math.round(v * 2) / 2;
+const color = c => /^#[0-9a-f]{6}$/i.test(c || '') ? c : COLORS[0];
+const num = (v, d = 0) => Number.isFinite(+v) ? +v : d;
+
+// ---------- estado ----------
+const S = {
+  me: null, team: null, coach: false,
+  books: [], book: null, plays: [], cur: null, sel: null,
+  mode: 'select', cursor: null, undo: [], redo: [],
+};
+const fieldW = () => WIDTH[S.book ? S.book.format : 11] || 53.3;
+
+function makePlayer(spec, team, W) {
+  const [label, dx, y, shape, ci] = spec;
+  return { id: uid(), team, label, x: clamp(W / 2 + dx, R, W - R), y, shape: team === 'D' ? 'text' : shape || 'circle', color: team === 'D' ? COLORS[0] : COLORS[ci || 0], route: null, motion: null };
+}
+function newPlayFrom(tpl) {
+  const W = fieldW(), side = S.book.side;
+  const off = OFF[S.book.format] || OFF[11], def = DEF[S.book.format] || DEF[11];
+  let players = [];
+  if (tpl && side === 'O' && off[tpl]) players = off[tpl].map(s => makePlayer(s, 'O', W));
+  if (tpl && side === 'D' && def[tpl]) players = def[tpl].map(s => makePlayer(s, 'D', W));
+  return { id: uid(), name: '', formation: tpl || '', type: '', notes: '', players };
+}
+
+// ---------- dibujo ----------
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function routeStart(p) { const m = p.motion && p.motion.pts && p.motion.pts.length ? p.motion.pts[p.motion.pts.length - 1] : null; return m ? { x: m[0], y: m[1] } : p; }
+function pathD(pts, curve) {
+  if (pts.length < 2) return '';
+  const P = pts.map(([x, y]) => [x, -y]);
+  if (!curve || P.length < 3) return 'M' + P.map(p => p.join(' ')).join(' L');
+  let d = 'M' + P[0].join(' ');
+  for (let i = 0; i < P.length - 1; i++) {
+    const p0 = P[i - 1] || P[i], p1 = P[i], p2 = P[i + 1], p3 = P[i + 2] || p2;
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+    d += ` C${c1.join(' ')} ${c2.join(' ')} ${p2.join(' ')}`;
+  }
+  return d;
+}
+function drawLine(g, pts, opt) {
+  if (pts.length < 2) return;
+  const c = color(opt.color);
+  el('path', { d: pathD(pts, opt.curve), fill: 'none', stroke: c, 'stroke-width': 0.32, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', ...(opt.dashed ? { 'stroke-dasharray': '0.8 0.55' } : {}) }, g);
+  // dirección final: con curva, la tangente final apunta del penúltimo al último punto igual que en la recta
+  const [x1, y1] = pts[pts.length - 1], [x0, y0] = pts[pts.length - 2];
+  const a = Math.atan2(-(y1 - y0), x1 - x0), X = x1, Y = -y1;
+  if (opt.end === 'arrow') {
+    const L = 1.25, w = 0.5;
+    el('path', { d: `M${X} ${Y} L${X - L * Math.cos(a - w)} ${Y - L * Math.sin(a - w)} L${X - L * Math.cos(a + w)} ${Y - L * Math.sin(a + w)} Z`, fill: c }, g);
+  } else if (opt.end === 'block') {
+    const h = 0.9, px = -Math.sin(a), py = Math.cos(a);
+    el('line', { x1: X + px * h, y1: Y + py * h, x2: X - px * h, y2: Y - py * h, stroke: c, 'stroke-width': 0.38, 'stroke-linecap': 'round' }, g);
+  }
+}
+function drawField(svg, W) {
+  el('rect', { x: 0, y: -VIEW.top, width: W, height: VIEW.top + VIEW.bottom, fill: '#fbfdfb' }, svg);
+  for (let y = -10; y <= VIEW.top; y += 5) if (y) el('line', { x1: 0, y1: -y, x2: W, y2: -y, stroke: '#d8e2da', 'stroke-width': 0.12 }, svg);
+  if (W > 50) for (let y = -VIEW.bottom + 1; y < VIEW.top; y++) {
+    if (y % 5 === 0) continue;
+    for (const hx of [W / 2 - 3.1, W / 2 + 3.1]) el('line', { x1: hx - 0.4, y1: -y, x2: hx + 0.4, y2: -y, stroke: '#d8e2da', 'stroke-width': 0.12 }, svg);
+  }
+  el('line', { x1: 0, y1: 0, x2: W, y2: 0, stroke: '#2f80d1', 'stroke-width': 0.18, 'stroke-dasharray': '0.9 0.5' }, svg);
+  el('rect', { x: 0.05, y: -VIEW.top + 0.05, width: W - 0.1, height: VIEW.top + VIEW.bottom - 0.1, fill: 'none', stroke: '#b8c6bb', 'stroke-width': 0.15 }, svg);
+}
+function drawPlayer(g, p, selected) {
+  const c = color(p.color), x = num(p.x), y = -num(p.y);
+  const pg = el('g', { class: 'pl', 'data-id': p.id }, g);
+  if (selected) el('circle', { cx: x, cy: y, r: R + 0.55, fill: 'none', stroke: '#c9570f', 'stroke-width': 0.25, 'stroke-dasharray': '0.5 0.3' }, pg);
+  if (p.shape === 'text') {
+    el('circle', { cx: x, cy: y, r: R, fill: 'transparent' }, pg);
+    const t = el('text', { x, y, 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': 1.7, 'font-weight': 700, fill: c, 'font-family': 'Segoe UI, Arial, sans-serif' }, pg);
+    t.textContent = String(p.label || '').slice(0, 3);
+    return;
+  }
+  if (p.shape === 'square') el('rect', { x: x - R, y: y - R, width: R * 2, height: R * 2, rx: 0.2, fill: c, stroke: '#fff', 'stroke-width': 0.18 }, pg);
+  else el('circle', { cx: x, cy: y, r: R, fill: c, stroke: '#fff', 'stroke-width': 0.18 }, pg);
+  const label = String(p.label || '').slice(0, 3);
+  const t = el('text', { x, y, 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': label.length > 2 ? 0.8 : 1.05, 'font-weight': 700, fill: '#fff', 'font-family': 'Segoe UI, Arial, sans-serif' }, pg);
+  t.textContent = label;
+}
+function pts(list) { return (Array.isArray(list) ? list : []).filter(q => Array.isArray(q) && q.length >= 2).map(q => [num(q[0]), num(q[1])]); }
+// Dibuja una jugada completa en un <svg>. opts.edit agrega selección y puntos editables.
+function renderPlay(svg, play, opts = {}) {
+  const W = fieldW();
+  svg.textContent = '';
+  svg.setAttribute('viewBox', `0 ${-VIEW.top} ${W} ${VIEW.top + VIEW.bottom}`);
+  drawField(svg, W);
+  if (!play) return;
+  const players = Array.isArray(play.players) ? play.players.filter(p => p && typeof p === 'object') : [];
+  const gR = el('g', {}, svg), gP = el('g', {}, svg), gH = el('g', {}, svg);
+  for (const p of players) {
+    const c = p.color, start = [num(p.x), num(p.y)];
+    const mot = pts(p.motion && p.motion.pts);
+    if (mot.length) drawLine(gR, [start, ...mot], { color: c, dashed: true, end: 'none' });
+    const s = routeStart({ x: start[0], y: start[1], motion: { pts: mot } });
+    const r = p.route || {};
+    const rp = pts(r.pts);
+    if (rp.length) drawLine(gR, [[num(s.x), num(s.y)], ...rp], { color: c, dashed: r.style === 'dashed', end: r.end || 'arrow', curve: !!r.curve });
+  }
+  if (opts.edit && S.mode !== 'select' && S.cursor) {
+    const p = players.find(x => x.id === S.sel);
+    if (p) {
+      const list = S.mode === 'motion' ? pts(p.motion && p.motion.pts) : pts(p.route && p.route.pts);
+      const from = list.length ? list[list.length - 1] : S.mode === 'motion' ? [p.x, p.y] : (s => [s.x, s.y])(routeStart(p));
+      el('line', { x1: from[0], y1: -from[1], x2: S.cursor[0], y2: -S.cursor[1], stroke: color(p.color), 'stroke-width': 0.22, 'stroke-dasharray': '0.4 0.3', opacity: 0.7 }, gR);
+    }
+  }
+  for (const p of players) drawPlayer(gP, p, opts.edit && p.id === S.sel);
+  // puntos editables de la ruta del jugador seleccionado
+  if (opts.edit && S.coach && S.mode === 'select') {
+    const p = players.find(x => x.id === S.sel);
+    if (p) {
+      pts(p.motion && p.motion.pts).forEach((q, i) => el('circle', { cx: q[0], cy: -q[1], r: 0.55, fill: '#fff', stroke: color(p.color), 'stroke-width': 0.2, class: 'hd-pt', 'data-kind': 'motion', 'data-i': i, style: 'cursor:move' }, gH));
+      pts(p.route && p.route.pts).forEach((q, i) => el('circle', { cx: q[0], cy: -q[1], r: 0.55, fill: '#fff', stroke: color(p.color), 'stroke-width': 0.2, class: 'hd-pt', 'data-kind': 'route', 'data-i': i, style: 'cursor:move' }, gH));
+    }
+  }
+}
+
+// ---------- API ----------
+async function api(path, opts = {}) {
+  const res = await fetch('/api/' + path, { ...opts, headers: { 'content-type': 'application/json' }, credentials: 'same-origin' });
+  let body = null; try { body = await res.json(); } catch (e) {}
+  if (!res.ok) {
+    const err = new Error((body && body.message) || 'No se pudo completar. Revisa tu conexión.'); err.status = res.status; err.body = body;
+    if (res.status === 401) gate('Tu sesión terminó. Vuelve a entrar.');
+    if (res.status === 403 && body && body.error === 'must_change') location.href = '/app/';
+    throw err;
+  }
+  return body;
+}
+function gate(msg) { $('gateMsg').textContent = msg; $('gate').hidden = false; }
+let toastT;
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 3200); }
+function setStatus(text, kind) { const s = $('status'); s.textContent = text; s.className = 'status' + (kind ? ' ' + kind : ''); }
+
+// guardado automático por jugada
+const timers = new Map();
+function cleanPlay(p) { return { name: p.name || '', formation: p.formation || '', type: p.type || '', notes: p.notes || '', players: p.players || [] }; }
+function save(p) {
+  if (!S.coach || !p) return;
+  clearTimeout(timers.get(p.id));
+  timers.set(p.id, setTimeout(() => flush(p), 600));
+  setStatus('Guardando…', 'busy');
+}
+function flush(p) {
+  timers.delete(p.id);
+  const book = S.book && S.book.id; if (!book) return;
+  api('playbooks/plays', { method: 'POST', body: JSON.stringify({ book, id: p.id, pos: S.plays.indexOf(p), data: cleanPlay(p) }) })
+    .then(() => { if (!timers.size) setStatus('Guardado', 'ok'); })
+    .catch(e => { setStatus('No se guardó', 'bad'); toast(e.message); });
+}
+function flushAll() { [...timers.keys()].forEach(id => { clearTimeout(timers.get(id)); const p = S.plays.find(x => x.id === id); if (p) flush(p); else timers.delete(id); }); }
+window.addEventListener('beforeunload', e => { if (timers.size) { flushAll(); e.preventDefault(); e.returnValue = ''; } });
+
+// ---------- deshacer ----------
+function snapshot() {
+  if (!S.cur) return;
+  S.undo.push(JSON.stringify(S.cur.players)); if (S.undo.length > 60) S.undo.shift();
+  S.redo = [];
+}
+function undo(dir) {
+  const from = dir > 0 ? S.redo : S.undo, to = dir > 0 ? S.undo : S.redo;
+  if (!S.cur || !from.length) return;
+  to.push(JSON.stringify(S.cur.players));
+  S.cur.players = JSON.parse(from.pop());
+  if (!S.cur.players.some(p => p.id === S.sel)) S.sel = null;
+  S.mode = 'select'; save(S.cur); renderAll();
+}
+function changed() { save(S.cur); renderField(); renderList(); paintPlayer(); }
+
+// ---------- playbooks ----------
+async function loadBooks(selectId) {
+  const r = await api('playbooks');
+  S.books = r.playbooks || [];
+  const sel = $('bookSel'); sel.textContent = '';
+  for (const b of S.books) sel.add(new Option(`${b.name} · ${b.format === 11 ? 'Tacleo' : 'Flag ' + b.format + 'v' + b.format} · ${b.side === 'D' ? 'Def' : 'Of'}`, b.id));
+  let last = null; try { last = localStorage.getItem('sideline:pb'); } catch (e) {}
+  const want = selectId || (S.book && S.book.id) || last;
+  const b = S.books.find(x => x.id === want) || S.books[0] || null;
+  await openBook(b);
+}
+async function openBook(b) {
+  flushAll();
+  S.book = b; S.plays = []; S.cur = null; S.sel = null; S.mode = 'select'; S.undo = []; S.redo = [];
+  $('blank').hidden = !!b; $('main').hidden = !b;
+  ['renBook', 'delBook', 'printSel', 'pngBtn'].forEach(id => $(id).disabled = !b);
+  if (!b) {
+    $('bookInfo').textContent = '';
+    $('blank').innerHTML = S.coach
+      ? '<strong>Crea tu primer playbook</strong>Un playbook agrupa tus jugadas: por ejemplo «Ofensiva 2026» o «Defensa vs. spread». Elige tacleo o flag y empieza a diagramar.<br><br><button class="btn primary" id="blankNew">+ Crear playbook</button>'
+      : '<strong>Aún no hay playbooks</strong>Cuando tu coach cree uno, lo verás aquí.';
+    if ($('blankNew')) $('blankNew').onclick = () => openBookModal(false);
+    return;
+  }
+  try { localStorage.setItem('sideline:pb', b.id); } catch (e) {}
+  $('bookSel').value = b.id;
+  $('bookInfo').textContent = (b.format === 11 ? 'Tacleo · 11' : `Flag · ${b.format} vs ${b.format}`) + (b.side === 'D' ? ' · Defensiva' : ' · Ofensiva');
+  const tpl = $('tplSel'); tpl.textContent = '';
+  const list = Object.keys((b.side === 'D' ? DEF : OFF)[b.format] || {});
+  list.forEach(n => tpl.add(new Option(n, n))); tpl.add(new Option('Campo vacío', ''));
+  const def = $('defSel'); def.textContent = '';
+  Object.keys(DEF[b.format] || {}).forEach(n => def.add(new Option(n, n)));
+  // en un playbook defensivo, «Defensa rival» pone la ofensiva rival
+  document.querySelectorAll('#playProps h3')[1].textContent = b.side === 'D' ? 'Ofensiva rival' : 'Defensa rival';
+  if (b.side === 'D') { def.textContent = ''; Object.keys(OFF[b.format] || {}).forEach(n => def.add(new Option(n, n))); }
+  setStatus('Cargando…', 'busy');
+  try {
+    const r = await api('playbooks/plays?book=' + encodeURIComponent(b.id));
+    if (S.book !== b) return;
+    S.plays = (r.plays || []).map(p => ({ ...p, players: Array.isArray(p.players) ? p.players.filter(x => x && typeof x === 'object' && typeof x.id === 'string') : [] }));
+    S.cur = S.plays[0] || null;
+    setStatus('Al día', 'ok');
+  } catch (e) { setStatus('Sin conexión', 'bad'); }
+  renderAll();
+}
+function openBookModal(rename) {
+  $('bookModal').hidden = false; $('bErr').hidden = true;
+  $('bookModalTitle').textContent = rename ? 'Renombrar playbook' : 'Nuevo playbook';
+  $('bNewOnly').hidden = rename;
+  $('bName').value = rename && S.book ? S.book.name : '';
+  $('bookForm').dataset.rename = rename ? '1' : '';
+  setTimeout(() => $('bName').focus(), 30);
+}
+$('newBook').onclick = () => openBookModal(false);
+$('renBook').onclick = () => openBookModal(true);
+$('bCancel').onclick = () => $('bookModal').hidden = true;
+$('bookForm').onsubmit = async e => {
+  e.preventDefault();
+  const rename = !!$('bookForm').dataset.rename;
+  const id = rename ? S.book.id : uid();
+  const b = rename ? { ...S.book, name: $('bName').value } : { id, name: $('bName').value, format: +$('bFormat').value, side: $('bSide').value };
+  try {
+    await api('playbooks', { method: 'POST', body: JSON.stringify(b) });
+    $('bookModal').hidden = true;
+    await loadBooks(id);
+    toast(rename ? 'Playbook renombrado.' : 'Playbook creado. Elige una formación y presiona «+ Nueva».');
+  } catch (x) { $('bErr').textContent = x.message; $('bErr').hidden = false; }
+};
+$('bookSel').onchange = () => openBook(S.books.find(b => b.id === $('bookSel').value) || null);
+let armBook = false, armT;
+$('delBook').onclick = async () => {
+  if (!S.book) return;
+  if (!armBook) { armBook = true; $('delBook').textContent = `¿Borrar «${S.book.name}» y sus ${S.plays.length} jugadas?`; clearTimeout(armT); armT = setTimeout(() => { armBook = false; $('delBook').textContent = 'Eliminar playbook'; }, 3500); return; }
+  armBook = false; $('delBook').textContent = 'Eliminar playbook';
+  try { timers.forEach(clearTimeout); timers.clear(); await api('playbooks?id=' + encodeURIComponent(S.book.id), { method: 'DELETE' }); S.book = null; await loadBooks(); toast('Playbook eliminado.'); }
+  catch (x) { toast(x.message); }
+};
+
+// ---------- jugadas ----------
+function selectPlay(p) { S.cur = p; S.sel = null; S.mode = 'select'; S.undo = []; S.redo = []; renderAll(); }
+function addPlay(p, at) {
+  S.plays.splice(at == null ? S.plays.length : at, 0, p);
+  selectPlay(p); saveOrder(); save(p);
+}
+$('newPlay').onclick = () => {
+  if (!S.book) return;
+  const p = newPlayFrom($('tplSel').value);
+  p.name = `Jugada ${S.plays.length + 1}`;
+  addPlay(p);
+  $('pName').focus(); $('pName').select();
+};
+$('dupBtn').onclick = () => {
+  if (!S.cur) return;
+  const p = JSON.parse(JSON.stringify(S.cur)); p.id = uid(); p.name = (S.cur.name || 'Jugada') + ' (copia)';
+  p.players.forEach(x => x.id = uid());
+  addPlay(p, S.plays.indexOf(S.cur) + 1);
+};
+$('mirBtn').onclick = () => {
+  if (!S.cur) return;
+  snapshot();
+  const W = fieldW(), f = q => [W - num(q[0]), num(q[1])];
+  for (const p of S.cur.players) {
+    p.x = W - num(p.x);
+    if (p.route && p.route.pts) p.route.pts = pts(p.route.pts).map(f);
+    if (p.motion && p.motion.pts) p.motion.pts = pts(p.motion.pts).map(f);
+  }
+  // el nombre de la formación también se voltea
+  const sw = s => s.replace(/\b(Der|Izq)\b/g, m => m === 'Der' ? 'Izq' : 'Der');
+  S.cur.formation = sw(S.cur.formation || ''); S.cur.name = sw(S.cur.name || '');
+  changed(); paintPlay();
+};
+function move(dir) {
+  const i = S.plays.indexOf(S.cur), j = i + dir;
+  if (i < 0 || j < 0 || j >= S.plays.length) return;
+  [S.plays[i], S.plays[j]] = [S.plays[j], S.plays[i]];
+  renderList(); saveOrder();
+}
+$('upBtn').onclick = () => move(-1);
+$('downBtn').onclick = () => move(1);
+let orderT;
+function saveOrder() {
+  if (!S.coach || !S.book) return;
+  clearTimeout(orderT);
+  const book = S.book.id;
+  orderT = setTimeout(() => api('playbooks/order', { method: 'POST', body: JSON.stringify({ book, ids: S.plays.map(p => p.id) }) }).catch(() => {}), 900);
+}
+let armPlay = false, armPT;
+$('delPlay').onclick = async () => {
+  if (!S.cur) return;
+  if (!armPlay) { armPlay = true; $('delPlay').textContent = '¿Seguro?'; clearTimeout(armPT); armPT = setTimeout(() => { armPlay = false; $('delPlay').textContent = 'Eliminar'; }, 2500); return; }
+  armPlay = false; $('delPlay').textContent = 'Eliminar';
+  const p = S.cur, i = S.plays.indexOf(p);
+  clearTimeout(timers.get(p.id)); timers.delete(p.id);
+  S.plays.splice(i, 1);
+  selectPlay(S.plays[Math.min(i, S.plays.length - 1)] || null);
+  try { await api(`playbooks/plays?book=${encodeURIComponent(S.book.id)}&id=${encodeURIComponent(p.id)}`, { method: 'DELETE' }); saveOrder(); toast('Jugada eliminada.'); }
+  catch (x) { toast(x.message); }
+};
+
+// propiedades de la jugada
+TYPES.forEach(t => $('pType').add(new Option(t || '—', t)));
+[['pName', 'name'], ['pForm', 'formation'], ['pType', 'type'], ['pNotes', 'notes']].forEach(([id, k]) => {
+  $(id).addEventListener('input', () => { if (!S.cur || !S.coach) return; S.cur[k] = $(id).value; save(S.cur); renderList(); $('playTitle').textContent = playName(S.cur); });
+});
+function addPlayer(team) {
+  if (!S.cur) return;
+  snapshot();
+  const W = fieldW();
+  const p = makePlayer([team === 'D' ? 'D' : 'J', 0, team === 'D' ? 4 : -3, 'circle', 4], team, W);
+  S.cur.players.push(p); S.sel = p.id; changed();
+}
+$('addO').onclick = () => addPlayer('O');
+$('addD').onclick = () => addPlayer('D');
+$('defPut').onclick = () => {
+  if (!S.cur || !S.book) return;
+  const theirs = S.book.side === 'D' ? 'O' : 'D';
+  const spec = (theirs === 'D' ? DEF : OFF)[S.book.format][$('defSel').value]; if (!spec) return;
+  snapshot();
+  const W = fieldW();
+  S.cur.players = S.cur.players.filter(p => p.team !== theirs).concat(spec.map(s => {
+    const p = makePlayer(s, theirs, W);
+    // la ofensiva rival se dibuja en gris para no confundirla con tu defensa
+    if (theirs === 'O') p.color = COLORS[7];
+    return p;
+  }));
+  changed();
+};
+$('defClear').onclick = () => {
+  if (!S.cur || !S.book) return;
+  const theirs = S.book.side === 'D' ? 'O' : 'D';
+  snapshot(); S.cur.players = S.cur.players.filter(p => p.team !== theirs);
+  if (!S.cur.players.some(p => p.id === S.sel)) S.sel = null;
+  changed(); paintPlayer();
+};
+
+// propiedades del jugador
+const selP = () => S.cur && S.cur.players.find(p => p.id === S.sel) || null;
+COLORS.forEach(c => { const b = document.createElement('button'); b.className = 'sw'; b.style.background = c; b.dataset.c = c; b.setAttribute('aria-label', 'Color ' + c); $('plColors').append(b); });
+$('plColors').onclick = e => { const b = e.target.closest('.sw'), p = selP(); if (!b || !p || !S.coach) return; snapshot(); p.color = b.dataset.c; changed(); };
+$('plLabel').addEventListener('focus', () => snapshot());
+$('plLabel').addEventListener('input', () => { const p = selP(); if (!p || !S.coach) return; p.label = $('plLabel').value.toUpperCase().slice(0, 3); save(S.cur); renderField(); renderList(); });
+$('plShape').onchange = () => { const p = selP(); if (!p) return; snapshot(); p.shape = $('plShape').value; changed(); };
+function routeOf(p) { if (!p.route) p.route = { pts: [], end: 'arrow', style: 'solid', curve: false }; return p.route; }
+$('rEnd').onchange = () => { const p = selP(); if (!p) return; snapshot(); routeOf(p).end = $('rEnd').value; changed(); };
+$('rStyle').onchange = () => { const p = selP(); if (!p) return; snapshot(); routeOf(p).style = $('rStyle').value; changed(); };
+$('rCurve').onchange = () => { const p = selP(); if (!p) return; snapshot(); routeOf(p).curve = $('rCurve').checked; changed(); };
+$('clearRoute').onclick = () => { const p = selP(); if (!p) return; snapshot(); p.route = null; p.motion = null; S.mode = 'select'; changed(); };
+$('plDel').onclick = () => { if (!selP()) return; snapshot(); S.cur.players = S.cur.players.filter(p => p.id !== S.sel); S.sel = null; S.mode = 'select'; changed(); paintPlayer(); };
+$('plDone').onclick = () => { finishDraw(); S.sel = null; renderField(); paintPlayer(); };
+ROUTES.forEach(([name, list, curve]) => {
+  const b = document.createElement('button'); b.className = 'btn sm'; b.textContent = name;
+  b.onclick = () => {
+    const p = selP(); if (!p) return;
+    snapshot();
+    const W = fieldW(), s = routeStart(p), out = num(s.x) >= W / 2 ? 1 : -1;
+    const r = routeOf(p);
+    r.pts = list.map(([o, d]) => [clamp(snap(num(s.x) + o * out), 0.5, W - 0.5), clamp(snap(num(s.y) + d), -VIEW.bottom + 0.5, VIEW.top - 0.5)]);
+    r.curve = !!curve; r.end = name === 'Bloqueo' ? 'block' : 'arrow';
+    S.mode = 'select'; changed();
+  };
+  $('tree').append(b);
+});
+function startDraw(kind) {
+  const p = selP(); if (!p || !S.coach) return;
+  snapshot();
+  if (kind === 'motion') p.motion = { pts: [] };
+  else { const r = routeOf(p); r.pts = []; }
+  S.mode = kind; S.cursor = null;
+  renderField(); paintPlayer();
+}
+function finishDraw() {
+  if (S.mode === 'select') return;
+  const p = selP();
+  if (p) {
+    const dedupe = l => l.filter((q, i) => !i || q[0] !== l[i - 1][0] || q[1] !== l[i - 1][1]);
+    if (S.mode === 'motion') { p.motion.pts = dedupe(p.motion.pts); if (!p.motion.pts.length) p.motion = null; }
+    else { p.route.pts = dedupe(p.route.pts); if (!p.route.pts.length) p.route = null; }
+  }
+  S.mode = 'select'; S.cursor = null;
+  changed();
+}
+$('drawRoute').onclick = () => S.mode === 'route' ? finishDraw() : startDraw('route');
+$('drawMotion').onclick = () => S.mode === 'motion' ? finishDraw() : startDraw('motion');
+
+// ---------- interacción con el campo ----------
+const svg = $('field');
+function toField(e) {
+  const m = svg.getScreenCTM(); if (!m) return [0, 0];
+  const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+  const q = pt.matrixTransform(m.inverse());
+  return [clamp(snap(q.x), 0.5, fieldW() - 0.5), clamp(snap(-q.y), -VIEW.bottom + 0.5, VIEW.top - 0.5)];
+}
+let drag = null;
+svg.addEventListener('pointerdown', e => {
+  if (!S.cur) return;
+  const at = toField(e);
+  if (S.mode !== 'select') {
+    if (!S.coach) return;
+    const p = selP(); if (!p) return;
+    const list = S.mode === 'motion' ? p.motion.pts : routeOf(p).pts;
+    const last = list[list.length - 1];
+    // clic sobre el último punto = terminar
+    if (last && last[0] === at[0] && last[1] === at[1]) { finishDraw(); return; }
+    list.push(at); renderField(); updateHint();
+    return;
+  }
+  const h = e.target.closest('.hd-pt'), g = e.target.closest('.pl');
+  if (h && S.coach) {
+    const p = selP(); if (!p) return;
+    drag = { kind: h.dataset.kind, i: +h.dataset.i, moved: false };
+  } else if (g) {
+    S.sel = g.dataset.id; paintPlayer();
+    if (S.coach) { const p = selP(); drag = { kind: 'player', from: at, x: num(p.x), y: num(p.y), moved: false }; }
+    renderField();
+  } else { S.sel = null; renderField(); paintPlayer(); return; }
+  if (drag) svg.setPointerCapture(e.pointerId);
+});
+svg.addEventListener('pointermove', e => {
+  if (S.mode !== 'select') { S.cursor = toField(e); renderField(); return; }
+  if (!drag) return;
+  const p = selP(); if (!p) return;
+  const at = toField(e);
+  if (!drag.moved) { snapshot(); drag.moved = true; }
+  if (drag.kind === 'player') {
+    const W = fieldW(), nx = clamp(snap(drag.x + at[0] - drag.from[0]), R, W - R), ny = clamp(snap(drag.y + at[1] - drag.from[1]), -VIEW.bottom + R, VIEW.top - R);
+    const dx = nx - num(p.x), dy = ny - num(p.y);
+    if (!dx && !dy) return;
+    p.x = nx; p.y = ny;
+    // la ruta y el motion se mueven con el jugador
+    const sh = l => pts(l).map(q => [q[0] + dx, q[1] + dy]);
+    if (p.route && p.route.pts) p.route.pts = sh(p.route.pts);
+    if (p.motion && p.motion.pts) p.motion.pts = sh(p.motion.pts);
+  } else {
+    const list = drag.kind === 'motion' ? p.motion.pts : p.route.pts;
+    list[drag.i] = at;
+  }
+  renderField();
+});
+const endDrag = () => { if (drag && drag.moved) changed(); drag = null; };
+svg.addEventListener('pointerup', endDrag);
+svg.addEventListener('pointercancel', endDrag);
+svg.addEventListener('pointerleave', () => { if (S.mode !== 'select' && S.cursor) { S.cursor = null; renderField(); } });
+svg.addEventListener('dblclick', () => { if (S.mode !== 'select') finishDraw(); });
+
+document.addEventListener('keydown', e => {
+  const t = e.target;
+  if (t.matches('input, textarea, select') || !S.cur || !S.coach) return;
+  const k = e.key;
+  if ((e.ctrlKey || e.metaKey) && (k === 'z' || k === 'Z')) { e.preventDefault(); undo(e.shiftKey ? 1 : -1); }
+  else if ((e.ctrlKey || e.metaKey) && (k === 'y' || k === 'Y')) { e.preventDefault(); undo(1); }
+  else if (k === 'Enter' || k === 'Escape') { if (S.mode !== 'select') finishDraw(); else if (k === 'Escape') { S.sel = null; renderField(); paintPlayer(); } }
+  else if ((k === 'Delete' || k === 'Backspace') && selP() && S.mode === 'select') { e.preventDefault(); $('plDel').click(); }
+  else if ((k === 'r' || k === 'R') && selP()) $('drawRoute').click();
+  else if ((k === 'm' || k === 'M') && selP()) $('drawMotion').click();
+});
+$('undoBtn').onclick = () => undo(-1);
+$('redoBtn').onclick = () => undo(1);
+
+// ---------- render ----------
+const playName = p => p ? (p.name || 'Sin nombre') : '—';
+function renderField() { renderPlay(svg, S.cur, { edit: true }); svg.classList.toggle('drawing', S.mode !== 'select'); updateHint(); $('undoBtn').disabled = !S.undo.length; $('redoBtn').disabled = !S.redo.length; }
+function updateHint() {
+  const h = $('hint');
+  if (!S.cur) { h.textContent = S.plays.length ? '' : (S.coach ? 'Elige una formación y presiona «+ Nueva» para crear la primera jugada.' : 'Este playbook aún no tiene jugadas.'); return; }
+  if (S.mode !== 'select') { h.innerHTML = `<b>${S.mode === 'motion' ? 'Motion' : 'Ruta'}:</b> haz clic en el campo para cada quiebre. Termina con doble clic, Enter o «Listo».`; return; }
+  h.textContent = S.coach ? (selP() ? 'Arrastra el jugador o los puntos blancos de su ruta. R = ruta, M = motion, Supr = eliminar.' : 'Clic en un jugador para editarlo. Arrástralo para moverlo.') : '';
+}
+function thumb(play) {
+  const s = document.createElementNS(NS, 'svg');
+  s.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  renderPlay(s, play);
+  return s;
+}
+function renderList() {
+  const rows = $('rows'); rows.textContent = '';
+  $('count').textContent = S.plays.length;
+  if (!S.plays.length) { const d = document.createElement('div'); d.className = 'emptylist'; d.textContent = S.coach ? 'Sin jugadas todavía. Elige una formación arriba y presiona «+ Nueva».' : 'Sin jugadas todavía.'; rows.append(d); return; }
+  S.plays.forEach((p, i) => {
+    const b = document.createElement('button'); b.className = 'row' + (p === S.cur ? ' sel' : '');
+    const n = document.createElement('span'); n.className = 'n'; n.textContent = i + 1;
+    const info = document.createElement('span');
+    const nm = document.createElement('div'); nm.className = 'nm'; nm.textContent = playName(p);
+    const sub = document.createElement('div'); sub.className = 'sub'; sub.textContent = [p.formation, p.type].filter(Boolean).join(' · ') || ' ';
+    info.append(nm, sub);
+    b.append(n, thumb(p), info);
+    b.onclick = () => { if (p !== S.cur) { finishDraw(); selectPlay(p); } };
+    rows.append(b);
+    if (p === S.cur) setTimeout(() => b.scrollIntoView({ block: 'nearest' }), 0);
+  });
+}
+function paintPlay() {
+  const p = S.cur, ro = !S.coach;
+  $('playTitle').textContent = playName(p);
+  [['pName', 'name'], ['pForm', 'formation'], ['pType', 'type'], ['pNotes', 'notes']].forEach(([id, k]) => { const e = $(id); if (document.activeElement !== e) e.value = p ? (p[k] || '') : ''; e.disabled = !p || ro; });
+  ['dupBtn', 'mirBtn', 'upBtn', 'downBtn', 'delPlay', 'addO', 'addD', 'defPut', 'defClear'].forEach(id => $(id).disabled = !p);
+}
+function paintPlayer() {
+  const p = selP();
+  $('playerProps').hidden = !p || !S.coach; $('playProps').hidden = !!(p && S.coach);
+  $('propTitle').textContent = p && S.coach ? `Jugador ${p.label || ''}` : 'Jugada';
+  if (!p) return;
+  if (document.activeElement !== $('plLabel')) $('plLabel').value = p.label || '';
+  $('plShape').value = p.shape || 'circle';
+  [...$('plColors').children].forEach(b => b.classList.toggle('on', b.dataset.c === p.color));
+  const r = p.route || {};
+  $('rEnd').value = r.end || 'arrow'; $('rStyle').value = r.style || 'solid'; $('rCurve').checked = !!r.curve;
+  $('drawRoute').textContent = S.mode === 'route' ? 'Terminar ruta' : 'Dibujar ruta';
+  $('drawMotion').textContent = S.mode === 'motion' ? 'Terminar motion' : 'Motion';
+  $('drawRoute').classList.toggle('on', S.mode === 'route'); $('drawMotion').classList.toggle('on', S.mode === 'motion');
+}
+function renderAll() { renderField(); renderList(); paintPlay(); paintPlayer(); }
+
+// ---------- imprimir e imagen ----------
+$('printSel').onchange = () => {
+  const v = $('printSel').value; $('printSel').value = ''; if (!v || !S.book) return;
+  flushAll();
+  const list = v === 'one' ? (S.cur ? [S.cur] : []) : S.plays;
+  if (!list.length) return toast('No hay jugadas para imprimir.');
+  const out = $('print'); out.textContent = ''; out.className = v === 'band' ? 'lband' : v === '4' ? 'l4' : 'l1';
+  list.forEach(p => {
+    const c = document.createElement('div'); c.className = 'pc';
+    const h = document.createElement('h4'); h.textContent = `${S.plays.indexOf(p) + 1}. ${playName(p)}${v !== 'band' && p.formation ? ' · ' + p.formation : ''}`;
+    c.append(h, thumb(p));
+    if (v !== 'band' && p.notes) { const n = document.createElement('p'); n.textContent = p.notes; c.append(n); }
+    out.append(c);
+  });
+  setTimeout(() => window.print(), 50);
+};
+$('pngBtn').onclick = () => {
+  if (!S.cur) return toast('Primero elige una jugada.');
+  const s = thumb(S.cur), W = fieldW(), H = VIEW.top + VIEW.bottom, scale = 24, title = 60;
+  s.setAttribute('xmlns', NS); s.setAttribute('width', W * scale); s.setAttribute('height', H * scale);
+  const img = new Image(), url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(s)], { type: 'image/svg+xml' }));
+  img.onload = () => {
+    const c = document.createElement('canvas'); c.width = W * scale; c.height = H * scale + title;
+    const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height);
+    x.fillStyle = '#1f2b37'; x.font = '600 28px Segoe UI, Arial, sans-serif'; x.fillText(`${playName(S.cur)}${S.cur.formation ? ' · ' + S.cur.formation : ''}`, 20, 40);
+    x.drawImage(img, 0, title); URL.revokeObjectURL(url);
+    c.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = (playName(S.cur).replace(/[^\w\- ]+/g, '').trim() || 'jugada') + '.png'; document.body.append(a); a.click(); a.remove(); });
+  };
+  img.src = url;
+};
+
+// ---------- inicio ----------
+(async () => {
+  try {
+    const d = await api('me');
+    if (d.user.must_change) { location.href = '/app/'; return; }
+    S.me = d.user; S.team = d.team; S.coach = d.user.role === 'coach';
+    document.body.classList.toggle('ro', !S.coach);
+    $('who').textContent = `${d.user.name} · ${S.coach ? 'Coach' : 'Jugador'} · ${d.team.name}`;
+    await loadBooks();
+    if (S.book) setStatus(S.coach ? 'Al día' : 'Solo lectura', 'ok');
+  } catch (e) {
+    if (e.status !== 401) { setStatus('Sin conexión', 'bad'); gate('No se pudo conectar. Revisa tu conexión y recarga la página.'); }
+  }
+})();
+})();
+</script>
+</body>
+</html>
