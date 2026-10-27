@@ -37,6 +37,7 @@
 <circle cx='52' cy='52' r='25.00' fill='none' stroke='#000000' stroke-width='3.75'/>
 <path d='M42.25 39.00 L65.65 52.00 L42.25 65.00 Z' fill='#F26B1D' stroke='#F26B1D' stroke-width='2.50' stroke-linejoin='round'/><g transform='translate(128 85)'><path d='M3.588 -13.34Q28.796 -11.959999999999999 37.72 -11.959999999999999Q39.836 -11.959999999999999 41.078 -13.201999999999998Q42.32 -14.443999999999999 42.32 -16.56V-24.84H21.16Q11.5 -24.84 7.13 -29.21Q2.76 -33.58 2.76 -43.24V-46.0Q2.76 -55.66 7.13 -60.03Q11.5 -64.4 21.16 -64.4H53.452V-51.519999999999996H24.84Q19.32 -51.519999999999996 19.32 -46.0V-44.16Q19.32 -38.64 24.84 -38.64H41.4Q50.416 -38.64 54.647999999999996 -34.408Q58.879999999999995 -30.176 58.879999999999995 -21.16V-16.56Q58.879999999999995 -7.544 54.647999999999996 -3.312Q50.416 0.9199999999999999 41.4 0.9199999999999999Q36.708 0.9199999999999999 31.464 0.736L23.0 0.368Q13.616 -0.092 3.588 -0.9199999999999999ZM99.36000000000001 0.0H66.24000000000001V-12.879999999999999H74.52000000000001V-51.519999999999996H66.24000000000001V-64.4H99.36000000000001V-51.519999999999996H91.08V-12.879999999999999H99.36000000000001ZM145.36 -64.4Q155.756 -64.4 161.138 -59.018Q166.52 -53.635999999999996 166.52 -43.24V-21.16Q166.52 -10.764 161.138 -5.382Q155.756 0.0 145.36 0.0H109.48V-64.4ZM149.96 -43.24Q149.96 -51.519999999999996 141.68 -51.519999999999996H126.04V-12.879999999999999H141.68Q149.96 -12.879999999999999 149.96 -21.16ZM228.62 0.0H177.56000000000003V-64.4H228.62V-51.519999999999996H194.12V-39.1H221.26000000000002V-26.22H194.12V-12.879999999999999H228.62ZM254.38 -12.879999999999999H287.96000000000004V0.0H237.82000000000002V-64.4H254.38ZM326.6 0.0H293.48V-12.879999999999999H301.76000000000005V-51.519999999999996H293.48V-64.4H326.6V-51.519999999999996H318.32000000000005V-12.879999999999999H326.6ZM392.84000000000003 0.0H375.36L353.28000000000003 -38.64V0.0H336.72V-64.4H354.20000000000005L376.28000000000003 -25.759999999999998V-64.4H392.84000000000003ZM456.78000000000003 0.0H405.72V-64.4H456.78000000000003V-51.519999999999996H422.28000000000003V-39.1H449.4200000000001V-26.22H422.28000000000003V-12.879999999999999H456.78000000000003Z' fill='#000000'/></g></svg></a>
     <div class="links">
+      <a class="btn btn-ghost hide-sm" href="#modulos">Módulos</a>
       <a class="btn btn-ghost hide-sm" href="#como-funciona">Cómo funciona</a>
       <a class="btn btn-ghost hide-sm" href="#preguntas">Preguntas</a>
       <a class="btn btn-ghost" href="/contacto">Contacto</a>
@@ -49,9 +50,9 @@
   <section class="hero">
     <div class="wrap hero-grid">
       <div>
-        <p class="eyebrow">Sala de video para football y flag</p>
+        <p class="eyebrow">Sala de video y playbook para football y flag</p>
         <h1 class="display">Analiza cada jugada con tu equipo, sin pagar de más.</h1>
-        <p class="lead">Sideline es la herramienta mexicana para que coaches etiqueten jugadas, dibujen sobre el video y compartan los clips con sus jugadores. Funciona en el navegador, en español y con planes económicos.</p>
+        <p class="lead">Sideline es la herramienta mexicana para que coaches etiqueten jugadas, dibujen sobre el video, diseñen su playbook y lo compartan con sus jugadores. Funciona en el navegador, en español y con planes económicos.</p>
         <div class="actions">
           <a class="btn btn-fill btn-lg" href="/contacto">Solicitar una demo</a>
           <a class="btn btn-line btn-lg" href="/app/">Ingresar a Sideline</a>
@@ -60,7 +61,7 @@
       </div>
 
       <div class="visual" aria-hidden="true">
-        <svg viewBox="0 0 560 430" font-family="Inter, system-ui, sans-serif">
+        <svg id="heroArt" viewBox="0 0 560 430" font-family="Inter, system-ui, sans-serif">
           <defs>
             <radialGradient id="turf" cx="45%" cy="40%" r="75%">
               <stop offset="0" stop-color="#2f8a45"/>
@@ -85,29 +86,43 @@
               <text x="180" y="292">30</text><text x="290" y="292">40</text><text x="400" y="292">50</text>
             </g>
             <line x1="252" y1="0" x2="252" y2="315" stroke="#fff" stroke-opacity=".55" stroke-width="2" stroke-dasharray="6 6"/>
+            <path id="hRoute" d="M190 172 C 250 178, 300 110, 420 82" fill="none" stroke="#f26b1d" stroke-width="5" stroke-linecap="round" marker-end="url(#ah)"/>
             <g fill="none" stroke="#fff" stroke-width="2.5">
-              <circle cx="238" cy="128" r="8"/><circle cx="238" cy="150" r="8"/><circle cx="238" cy="172" r="8"/>
-              <circle cx="238" cy="194" r="8"/><circle cx="238" cy="216" r="8"/><circle cx="214" cy="172" r="8"/>
-              <circle cx="190" cy="172" r="8"/><circle cx="236" cy="72" r="8"/><circle cx="236" cy="262" r="8"/>
+              <!-- línea ofensiva y QB: avanzan al snap -->
+              <g data-to="6,0" data-t0="1" data-t1="1.6"><circle cx="238" cy="128" r="8"/><circle cx="238" cy="150" r="8"/><circle cx="238" cy="172" r="8"/><circle cx="238" cy="194" r="8"/><circle cx="238" cy="216" r="8"/></g>
+              <g data-to="-10,0" data-t0="1" data-t1="1.8"><circle cx="214" cy="172" r="8"/></g>
+              <!-- receptores abiertos: rutas profundas -->
+              <g data-to="205,-30" data-t0="1" data-t1="4"><circle cx="236" cy="72" r="8"/></g>
+              <g data-to="140,-10" data-t0="1" data-t1="4"><circle cx="236" cy="262" r="8"/></g>
+              <!-- corredor: sigue la ruta naranja -->
+              <circle id="hRunner" cx="190" cy="172" r="8" fill="#f26b1d" fill-opacity=".9"/>
             </g>
             <g stroke="#fff" stroke-opacity=".8" stroke-width="2.5" stroke-linecap="round">
-              <path d="M262 122l10 10m0-10l-10 10"/><path d="M262 166l10 10m0-10l-10 10"/><path d="M262 210l10 10m0-10l-10 10"/>
-              <path d="M300 144l10 10m0-10l-10 10"/><path d="M300 188l10 10m0-10l-10 10"/><path d="M350 90l10 10m0-10l-10 10"/><path d="M350 240l10 10m0-10l-10 10"/>
+              <g data-to="-8,0" data-t0="1" data-t1="1.6"><path d="M262 122l10 10m0-10l-10 10"/><path d="M262 166l10 10m0-10l-10 10"/><path d="M262 210l10 10m0-10l-10 10"/></g>
+              <g data-to="16,-26" data-t0="1.1" data-t1="3.4"><path d="M300 144l10 10m0-10l-10 10"/></g>
+              <g data-to="22,-6" data-t0="1.1" data-t1="3.4"><path d="M300 188l10 10m0-10l-10 10"/></g>
+              <g data-to="40,-35" data-t0="1" data-t1="4"><path d="M350 90l10 10m0-10l-10 10"/></g>
+              <g data-to="70,6" data-t0="1" data-t1="4"><path d="M350 240l10 10m0-10l-10 10"/></g>
             </g>
-            <path d="M200 176 C 260 180, 300 110, 420 82" fill="none" stroke="#f26b1d" stroke-width="5" stroke-linecap="round" marker-end="url(#ah)"/>
-            <ellipse cx="352" cy="96" rx="26" ry="20" fill="none" stroke="#f26b1d" stroke-width="3"/>
+            <!-- pausa y telestración: el coach encierra al safety -->
+            <ellipse id="hCircle" cx="395" cy="60" rx="26" ry="20" fill="none" stroke="#ffd400" stroke-width="3"/>
             <rect x="16" y="16" width="118" height="30" rx="15" fill="#000" fill-opacity=".55"/>
-            <text x="75" y="36" text-anchor="middle" fill="#fff" font-size="13" font-family="Geist Mono, ui-monospace, monospace">0:41.0 · 0.5×</text>
+            <text id="hTime" x="75" y="36" text-anchor="middle" fill="#fff" font-size="13" font-family="Geist Mono, ui-monospace, monospace">0:43.0 · 0.5×</text>
+            <g id="hDraw" opacity="0">
+              <rect x="142" y="16" width="112" height="30" rx="15" fill="#ffd400"/>
+              <text x="198" y="36" text-anchor="middle" fill="#000" font-size="13" font-weight="500">✎ Pausa y dibuja</text>
+            </g>
             <circle cx="516" cy="271" r="22" fill="#fdfcfc"/>
-            <path d="M509 260 L527 271 L509 282 Z" fill="#000"/>
+            <path id="hPlay" d="M509 260 L527 271 L509 282 Z" fill="#000"/>
+            <g id="hPause" fill="#000" opacity="0"><rect x="507" y="261" width="6" height="20" rx="1.5"/><rect x="519" y="261" width="6" height="20" rx="1.5"/></g>
           </g>
           <g>
-            <rect x="0" y="331" width="560" height="44" rx="12" fill="#fdfcfc"/>
+            <rect id="hRow" x="0" y="331" width="560" height="44" rx="12" fill="#fdfcfc" stroke="#f26b1d" stroke-opacity="0" stroke-width="2"/>
             <rect x="12" y="343" width="58" height="20" rx="10" fill="#ebe8e4"/>
             <text x="41" y="357" text-anchor="middle" font-size="12" font-weight="500" fill="#000">2ª y 6</text>
             <text x="84" y="358" font-size="14" fill="#000">Play action · Pistol</text>
             <text x="476" y="358" text-anchor="end" font-size="12" fill="#777169">Primer down</text>
-            <text x="544" y="359" text-anchor="end" font-size="16" fill="#1f6b2e" font-weight="500">+18</text>
+            <text id="hGain" x="544" y="359" text-anchor="end" font-size="16" fill="#1f6b2e" font-weight="500">+18</text>
             <rect x="0" y="383" width="560" height="44" rx="12" fill="#fdfcfc" fill-opacity=".7"/>
             <rect x="12" y="395" width="58" height="20" rx="10" fill="#ebe8e4"/>
             <text x="41" y="409" text-anchor="middle" font-size="12" font-weight="500" fill="#44403b">3ª y 7</text>
@@ -136,14 +151,56 @@
     </div>
   </section>
 
+  <hr class="rule">
+
+  <section id="modulos">
+    <div class="wrap">
+      <p class="eyebrow">Módulos</p>
+      <h2 class="h1">Dos módulos. Contrata el que necesitas, o los dos.</h2>
+      <p class="lead" style="margin-top:20px">Sideline se arma a la medida de tu equipo: el módulo de Video para analizar los partidos y el de Playbook para diseñar tus jugadas. Entran con el mismo usuario y se cambia de uno a otro con un clic.</p>
+      <div class="mods">
+        <article class="modcard">
+          <div class="art" aria-hidden="true"><svg viewBox="0 0 420 260" font-family="Inter, system-ui, sans-serif"><defs><radialGradient id="turf3" cx="40%" cy="40%" r="80%"><stop offset="0" stop-color="#2f8a45"/><stop offset="1" stop-color="#174f23"/></radialGradient></defs><rect x="0" y="0" width="262" height="150" rx="10" fill="url(#turf3)"/><g stroke="#fff" stroke-opacity=".25" stroke-width="1.5"><line x1="52" y1="0" x2="52" y2="150"/><line x1="116" y1="0" x2="116" y2="150"/><line x1="180" y1="0" x2="180" y2="150"/><line x1="244" y1="0" x2="244" y2="150"/></g><line x1="112" y1="0" x2="112" y2="150" stroke="#fff" stroke-opacity=".5" stroke-width="1.5" stroke-dasharray="4 4"/><g fill="none" stroke="#fff" stroke-width="2"><circle cx="104" cy="58" r="5"/><circle cx="104" cy="72" r="5"/><circle cx="104" cy="86" r="5"/><circle cx="104" cy="100" r="5"/><circle cx="104" cy="114" r="5"/><circle cx="90" cy="86" r="5"/><circle cx="76" cy="86" r="5"/><circle cx="104" cy="26" r="5"/><circle cx="104" cy="134" r="5"/></g><g stroke="#fff" stroke-opacity=".8" stroke-width="2" stroke-linecap="round"><path d="M119 55l6 6m0-6l-6 6"/><path d="M119 83l6 6m0-6l-6 6"/><path d="M119 111l6 6m0-6l-6 6"/><path d="M143 69l6 6m0-6l-6 6"/><path d="M143 97l6 6m0-6l-6 6"/><path d="M183 37l6 6m0-6l-6 6"/><path d="M183 125l6 6m0-6l-6 6"/></g><path d="M80 88 C 120 90, 150 54, 214 40" fill="none" stroke="#f26b1d" stroke-width="3.5" stroke-linecap="round"/><path d="M216.0 40.0L209.1 45.8L207.4 37.3Z" fill="#f26b1d"/><ellipse cx="186" cy="40" rx="15" ry="11" fill="none" stroke="#ffd400" stroke-width="2.5"/><rect x="8" y="8" width="72" height="18" rx="9" fill="#000" fill-opacity=".55"/><text x="44" y="21" text-anchor="middle" fill="#fff" font-size="9" font-family="ui-monospace, monospace">0:41.0 · 0.5×</text><rect x="0" y="160" width="262" height="18" rx="9" fill="#f5f3f1"/><rect x="18" y="164" width="10" height="10" rx="2" fill="#e8742a" opacity=".85"/><rect x="46" y="164" width="8" height="10" rx="2" fill="#2f80d1" opacity=".85"/><rect x="70" y="164" width="12" height="10" rx="2" fill="#e8742a" opacity=".85"/><rect x="104" y="164" width="9" height="10" rx="2" fill="#e8742a" opacity=".85"/><rect x="130" y="164" width="7" height="10" rx="2" fill="#8a5cc2" opacity=".85"/><rect x="156" y="164" width="10" height="10" rx="2" fill="#2f80d1" opacity=".85"/><rect x="196" y="164" width="12" height="10" rx="2" fill="#e8742a" opacity=".85"/><rect x="226" y="164" width="8" height="10" rx="2" fill="#2f80d1" opacity=".85"/><rect x="70" y="161" width="12" height="16" rx="3" fill="none" stroke="#000" stroke-width="1.5"/><line x1="150" y1="158" x2="150" y2="180" stroke="#000" stroke-width="2"/><circle cx="131" cy="206" r="15" fill="#c9570f"/><path d="M126 199v14l11-7z" fill="#fff"/><g fill="#44403b"><path d="M96 200v12l-8-6z"/><rect x="85" y="200" width="2" height="12"/><path d="M166 200v12l8-6z"/><rect x="175" y="200" width="2" height="12"/></g><g font-size="9" fill="#777169"><rect x="194" y="197" width="66" height="18" rx="9" fill="#f5f3f1"/><text x="206" y="209">0.5×</text><text x="232" y="209" fill="#000" font-weight="600">1×</text><text x="246" y="209">2×</text></g><g font-size="9"><rect x="0" y="228" width="262" height="26" rx="8" fill="#f5f3f1"/><text x="10" y="245" fill="#44403b">✎ Pizarrón</text><circle cx="80" cy="241" r="6" fill="#ffd400"/><circle cx="96" cy="241" r="6" fill="#ff4040"/><circle cx="112" cy="241" r="6" fill="#ffffff"/><circle cx="128" cy="241" r="6" fill="#33d6ff"/><text x="252" y="245" text-anchor="end" fill="#777169">Guardar en la jugada</text></g><g font-size="10"><text x="276" y="12" font-weight="600" fill="#000">Jugadas</text><rect x="320" y="2" width="20" height="14" rx="7" fill="#fff1e6"/><text x="330" y="12" text-anchor="middle" fill="#c9570f" font-weight="700" font-size="9">12</text><rect x="272" y="24" width="148" height="40" rx="8" fill="#fff1e6"/><rect x="272" y="24" width="4" height="40" rx="2" fill="#e8742a"/><text x="284" y="40" fill="#000" font-weight="600">3ª y 4 · RPO</text><text x="284" y="54" fill="#777169" font-size="9">Shotgun · #7</text><text x="412" y="48" text-anchor="end" fill="#1f6b2e" font-weight="700" font-size="12">+9</text><rect x="272" y="70" width="148" height="40" rx="8" fill="#f5f3f1"/><rect x="272" y="70" width="4" height="40" rx="2" fill="#e8742a"/><text x="284" y="86" fill="#000" font-weight="600">1ª y 10 · Carrera</text><text x="284" y="100" fill="#777169" font-size="9">I Formation · #24</text><text x="412" y="94" text-anchor="end" fill="#1f6b2e" font-weight="700" font-size="12">+4</text><rect x="272" y="116" width="148" height="40" rx="8" fill="#f5f3f1"/><rect x="272" y="116" width="4" height="40" rx="2" fill="#e8742a"/><text x="284" y="132" fill="#000" font-weight="600">2ª y 6 · Play action</text><text x="284" y="146" fill="#777169" font-size="9">Pistol · #12</text><text x="412" y="140" text-anchor="end" fill="#1f6b2e" font-weight="700" font-size="12">+18</text><rect x="272" y="162" width="148" height="40" rx="8" fill="#f5f3f1"/><rect x="272" y="162" width="4" height="40" rx="2" fill="#2f80d1"/><text x="284" y="178" fill="#000" font-weight="600">3ª y 7 · Blitz</text><text x="284" y="192" fill="#777169" font-size="9">Nickel · #55</text><text x="412" y="186" text-anchor="end" fill="#d23f3f" font-weight="700" font-size="12">−6</text><rect x="272" y="208" width="148" height="40" rx="8" fill="#f5f3f1"/><rect x="272" y="208" width="4" height="40" rx="2" fill="#8a5cc2"/><text x="284" y="224" fill="#000" font-weight="600">4ª y 2 · Despeje</text><text x="284" y="238" fill="#777169" font-size="9">Punt · #3</text></g></svg></div>
+          <div class="txt">
+            <p class="tagline"><span class="dot" style="background:#f26b1d"></span>Módulo Video</p>
+            <h3 class="h3">Analiza el partido jugada por jugada.</h3>
+            <ul>
+              <li>Pega el enlace de YouTube de la transmisión y etiqueta cada jugada</li>
+              <li>Pausa, dibuja flechas y círculos, y guárdalo en la jugada</li>
+              <li>Filtra, encadena clips y ve las estadísticas al momento</li>
+            </ul>
+          </div>
+        </article>
+        <article class="modcard">
+          <div class="art" aria-hidden="true"><svg viewBox="0 0 420 260" font-family="Inter, system-ui, sans-serif" class="pbart"><rect x="1" y="1" width="418" height="258" rx="12" fill="#fbfdfb" stroke="#d8e2da"/><line x1="1" y1="30" x2="419" y2="30" stroke="#dbe5dd" stroke-width="1.2"/><line x1="1" y1="80" x2="419" y2="80" stroke="#dbe5dd" stroke-width="1.2"/><line x1="1" y1="130" x2="419" y2="130" stroke="#dbe5dd" stroke-width="1.2"/><line x1="1" y1="220" x2="419" y2="220" stroke="#dbe5dd" stroke-width="1.2"/><line x1="183" y1="36" x2="189" y2="36" stroke="#dbe5dd" stroke-width="1"/><line x1="231" y1="36" x2="237" y2="36" stroke="#dbe5dd" stroke-width="1"/><line x1="183" y1="46" x2="189" y2="46" stroke="#dbe5dd" stroke-width="1"/><line x1="231" y1="46" x2="237" y2="46" stroke="#dbe5dd" stroke-width="1"/><line x1="183" y1="56" x2="189" y2="56" stroke="#dbe5dd" stroke-width="1"/><line x1="231" y1="56" x2="237" y2="56" stroke="#dbe5dd" stroke-width="1"/><line x1="183" y1="66" x2="189" y2="66" stroke="#dbe5dd" stroke-width="1"/><line x1="231" y1="66" x2="237" y2="66" stroke="#dbe5dd" stroke-width="1"/><line x1="183" y1="76" x2="189" y2="76" stroke="#dbe5dd" stroke-width="1"/><line x1="231" y1="76" x2="237" y2="76" stroke="#dbe5dd" stroke-width="1"/><line x1="183" y1="86" x2="189" y2="86" stroke="#dbe5dd" stroke-width="1"/><line x1="231" y1="86" x2="237" y2="86" stroke="#dbe5dd" stroke-width="1"/><line x1="183" y1="96" x2="189" y2="96" stroke="#dbe5dd" stroke-width="1"/><line x1="231" y1="96" x2="237" y2="96" stroke="#dbe5dd" stroke-width="1"/><line x1="183" y1="106" x2="189" y2="106" stroke="#dbe5dd" stroke-width="1"/><line x1="231" y1="106" x2="237" y2="106" stroke="#dbe5dd" stroke-width="1"/><line x1="183" y1="116" x2="189" y2="116" stroke="#dbe5dd" stroke-width="1"/><line x1="231" y1="116" x2="237" y2="116" stroke="#dbe5dd" stroke-width="1"/><line x1="183" y1="126" x2="189" y2="126" stroke="#dbe5dd" stroke-width="1"/><line x1="231" y1="126" x2="237" y2="126" stroke="#dbe5dd" stroke-width="1"/><line x1="183" y1="136" x2="189" y2="136" stroke="#dbe5dd" stroke-width="1"/><line x1="231" y1="136" x2="237" y2="136" stroke="#dbe5dd" stroke-width="1"/><line x1="183" y1="146" x2="189" y2="146" stroke="#dbe5dd" stroke-width="1"/><line x1="231" y1="146" x2="237" y2="146" stroke="#dbe5dd" stroke-width="1"/><line x1="183" y1="156" x2="189" y2="156" stroke="#dbe5dd" stroke-width="1"/><line x1="231" y1="156" x2="237" y2="156" stroke="#dbe5dd" stroke-width="1"/><line x1="183" y1="166" x2="189" y2="166" stroke="#dbe5dd" stroke-width="1"/><line x1="231" y1="166" x2="237" y2="166" stroke="#dbe5dd" stroke-width="1"/><line x1="183" y1="176" x2="189" y2="176" stroke="#dbe5dd" stroke-width="1"/><line x1="231" y1="176" x2="237" y2="176" stroke="#dbe5dd" stroke-width="1"/><line x1="183" y1="186" x2="189" y2="186" stroke="#dbe5dd" stroke-width="1"/><line x1="231" y1="186" x2="237" y2="186" stroke="#dbe5dd" stroke-width="1"/><line x1="183" y1="196" x2="189" y2="196" stroke="#dbe5dd" stroke-width="1"/><line x1="231" y1="196" x2="237" y2="196" stroke="#dbe5dd" stroke-width="1"/><line x1="183" y1="206" x2="189" y2="206" stroke="#dbe5dd" stroke-width="1"/><line x1="231" y1="206" x2="237" y2="206" stroke="#dbe5dd" stroke-width="1"/><line x1="183" y1="216" x2="189" y2="216" stroke="#dbe5dd" stroke-width="1"/><line x1="231" y1="216" x2="237" y2="216" stroke="#dbe5dd" stroke-width="1"/><line x1="183" y1="226" x2="189" y2="226" stroke="#dbe5dd" stroke-width="1"/><line x1="231" y1="226" x2="237" y2="226" stroke="#dbe5dd" stroke-width="1"/><line x1="183" y1="236" x2="189" y2="236" stroke="#dbe5dd" stroke-width="1"/><line x1="231" y1="236" x2="237" y2="236" stroke="#dbe5dd" stroke-width="1"/><line x1="183" y1="246" x2="189" y2="246" stroke="#dbe5dd" stroke-width="1"/><line x1="231" y1="246" x2="237" y2="246" stroke="#dbe5dd" stroke-width="1"/><line x1="1" y1="172" x2="419" y2="172" stroke="#2f80d1" stroke-width="1.6" stroke-dasharray="6 4"/><path class="rt" style="animation-delay:0s" d="M60 178 L60 104 L104 56" fill="none" stroke="#d23f3f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" pathLength="100"/><path style="animation-delay:0s" class="rt-end" d="M104.0 56.0L102.1 63.8L96.4 58.6Z" fill="#d23f3f"/><path class="rt" style="animation-delay:0.5s" d="M112 182 L112 158 L166 124" fill="none" stroke="#e8742a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" pathLength="100"/><path style="animation-delay:0.5s" class="rt-end" d="M166.0 124.0L162.1 131.0L158.0 124.5Z" fill="#e8742a"/><path class="rt" style="animation-delay:1s" d="M302 182 L302 116 L344 80" fill="none" stroke="#1f6b2e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" pathLength="100"/><path style="animation-delay:1s" class="rt-end" d="M344.0 80.0L341.2 87.5L336.2 81.7Z" fill="#1f6b2e"/><path class="rt" style="animation-delay:1.5s" d="M362 180 L362 122 L404 122" fill="none" stroke="#2f80d1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" pathLength="100"/><path style="animation-delay:1.5s" class="rt-end" d="M404.0 122.0L397.0 125.8L397.0 118.2Z" fill="#2f80d1"/><path class="rt" style="animation-delay:2s" d="M240 214 C 262 214, 282 206, 300 202 S 328 196, 340 190" fill="none" stroke="#8a5cc2" stroke-width="3" stroke-linecap="round" pathLength="100"/><path style="animation-delay:2s" class="rt-end" d="M340.0 190.0L334.6 195.9L332.1 188.6Z" fill="#8a5cc2"/><path d="M162 180 L162 166" fill="none" stroke="#5d6d7d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" pathLength="100"/><line x1="168.0" y1="166.0" x2="156.0" y2="166.0" stroke="#5d6d7d" stroke-width="3" stroke-linecap="round"/><path d="M186 180 L186 166" fill="none" stroke="#5d6d7d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" pathLength="100"/><line x1="192.0" y1="166.0" x2="180.0" y2="166.0" stroke="#5d6d7d" stroke-width="3" stroke-linecap="round"/><path d="M210 180 L210 166" fill="none" stroke="#5d6d7d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" pathLength="100"/><line x1="216.0" y1="166.0" x2="204.0" y2="166.0" stroke="#5d6d7d" stroke-width="3" stroke-linecap="round"/><path d="M234 180 L234 166" fill="none" stroke="#5d6d7d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" pathLength="100"/><line x1="240.0" y1="166.0" x2="228.0" y2="166.0" stroke="#5d6d7d" stroke-width="3" stroke-linecap="round"/><path d="M258 180 L258 166" fill="none" stroke="#5d6d7d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" pathLength="100"/><line x1="264.0" y1="166.0" x2="252.0" y2="166.0" stroke="#5d6d7d" stroke-width="3" stroke-linecap="round"/><circle cx="162" cy="182" r="9" fill="#5d6d7d"/><text x="162" y="185" text-anchor="middle" font-size="8.5" font-weight="700" fill="#fff">T</text><circle cx="186" cy="182" r="9" fill="#5d6d7d"/><text x="186" y="185" text-anchor="middle" font-size="8.5" font-weight="700" fill="#fff">G</text><circle cx="234" cy="182" r="9" fill="#5d6d7d"/><text x="234" y="185" text-anchor="middle" font-size="8.5" font-weight="700" fill="#fff">G</text><circle cx="258" cy="182" r="9" fill="#5d6d7d"/><text x="258" y="185" text-anchor="middle" font-size="8.5" font-weight="700" fill="#fff">T</text><rect x="201" y="173" width="18" height="18" rx="2" fill="#5d6d7d"/><text x="210" y="185" text-anchor="middle" font-size="8.5" font-weight="700" fill="#fff">C</text><circle cx="210" cy="212" r="9" fill="#1f2b37"/><text x="210" y="215" text-anchor="middle" font-size="7" font-weight="700" fill="#fff">QB</text><circle cx="240" cy="214" r="9" fill="#8a5cc2"/><text x="240" y="217" text-anchor="middle" font-size="7" font-weight="700" fill="#fff">RB</text><circle cx="60" cy="182" r="9" fill="#d23f3f"/><text x="60" y="185" text-anchor="middle" font-size="8.5" font-weight="700" fill="#fff">X</text><circle cx="112" cy="190" r="9" fill="#e8742a"/><text x="112" y="193" text-anchor="middle" font-size="8.5" font-weight="700" fill="#fff">H</text><circle cx="302" cy="190" r="9" fill="#1f6b2e"/><text x="302" y="193" text-anchor="middle" font-size="8.5" font-weight="700" fill="#fff">Y</text><circle cx="362" cy="184" r="9" fill="#2f80d1"/><text x="362" y="187" text-anchor="middle" font-size="8.5" font-weight="700" fill="#fff">Z</text><text x="168" y="160" text-anchor="middle" font-size="12" font-weight="700" fill="#1f2b37">E</text><text x="198" y="160" text-anchor="middle" font-size="12" font-weight="700" fill="#1f2b37">T</text><text x="222" y="160" text-anchor="middle" font-size="12" font-weight="700" fill="#1f2b37">T</text><text x="252" y="160" text-anchor="middle" font-size="12" font-weight="700" fill="#1f2b37">E</text><text x="150" y="132" text-anchor="middle" font-size="12" font-weight="700" fill="#1f2b37">W</text><text x="210" y="132" text-anchor="middle" font-size="12" font-weight="700" fill="#1f2b37">M</text><text x="270" y="132" text-anchor="middle" font-size="12" font-weight="700" fill="#1f2b37">S</text><text x="86" y="140" text-anchor="middle" font-size="12" font-weight="700" fill="#1f2b37">C</text><text x="336" y="144" text-anchor="middle" font-size="12" font-weight="700" fill="#1f2b37">C</text><text x="150" y="70" text-anchor="middle" font-size="12" font-weight="700" fill="#1f2b37">S</text><text x="286" y="70" text-anchor="middle" font-size="12" font-weight="700" fill="#1f2b37">S</text><g font-size="10"><rect x="12" y="12" width="132" height="24" rx="12" fill="#1f2b37"/><text x="78" y="28" text-anchor="middle" fill="#fff" font-weight="600">Trips Der · Slant-Flat</text></g></svg></div>
+          <div class="txt">
+            <p class="tagline"><span class="dot" style="background:#1f6b2e"></span>Módulo Playbook</p>
+            <h3 class="h3">Diseña tus jugadas como en el pizarrón.</h3>
+            <ul>
+              <li>Formaciones listas para tacleo (11 y 8) y flag (8, 7 y 5)</li>
+              <li>Rutas, bloqueos y motion con un clic; pon la defensa rival encima</li>
+              <li>Imprime el playbook o la pulsera, o compártelo al celular</li>
+            </ul>
+          </div>
+        </article>
+      </div>
+      <div class="plans">
+        <div class="plan"><b>Video</b><span>Para analizar partidos y compartir clips.</span></div>
+        <div class="plan"><b>Playbook</b><span>Para diseñar e imprimir tus jugadas.</span></div>
+        <div class="plan full"><b>Completo</b><span>Video y Playbook juntos, con el mismo usuario.</span></div>
+        <a class="btn btn-fill btn-lg" href="/contacto">Pedir una propuesta</a>
+      </div>
+    </div>
+  </section>
+
   <section id="como-funciona" class="band">
     <div class="wrap">
       <p class="eyebrow">Cómo funciona</p>
       <h2 class="h1">Del partido a la junta de video en tres pasos.</h2>
       <ol class="steps">
-        <li><span class="n">01</span><h3 class="h3">Carga el partido</h3><p>Pega el enlace de YouTube de la transmisión, en vivo o ya terminada. No hay que descargar nada.</p></li>
-        <li><span class="n">02</span><h3 class="h3">Etiqueta cada jugada</h3><p>Marca inicio y fin, down, distancia, formación, tipo de jugada, resultado y yardas. El siguiente down se calcula solo.</p></li>
-        <li><span class="n">03</span><h3 class="h3">Repásalo con tu equipo</h3><p>Proyecta los clips en la junta o comparte el enlace. Cada jugador los ve en su celular con su usuario.</p></li>
+        <li><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor" stroke="none"/></svg><span class="n">01</span><h3 class="h3">Carga el partido</h3><p>Pega el enlace de YouTube de la transmisión, en vivo o ya terminada. No hay que descargar nada.</p></li>
+        <li><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.4"/></svg><span class="n">02</span><h3 class="h3">Etiqueta cada jugada</h3><p>Marca inicio y fin, down, distancia, formación, tipo de jugada, resultado y yardas. El siguiente down se calcula solo.</p></li>
+        <li><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.2c2.6.3 4.5 2.6 4.5 5.8"/></svg><span class="n">03</span><h3 class="h3">Repásalo con tu equipo</h3><p>Proyecta los clips en la junta o comparte el enlace. Cada jugador los ve en su celular con su usuario.</p></li>
       </ol>
     </div>
   </section>
@@ -157,6 +214,7 @@
         <button class="tab" role="tab" id="t-etiquetar" aria-controls="p-etiquetar" aria-selected="true"><span class="dot"></span>Etiquetar</button>
         <button class="tab" role="tab" id="t-dibujar" aria-controls="p-dibujar" aria-selected="false" tabindex="-1"><span class="dot"></span>Dibujar</button>
         <button class="tab" role="tab" id="t-compartir" aria-controls="p-compartir" aria-selected="false" tabindex="-1"><span class="dot"></span>Compartir</button>
+        <button class="tab" role="tab" id="t-playbook" aria-controls="p-playbook" aria-selected="false" tabindex="-1"><span class="dot"></span>Playbook</button>
       </div>
 
       <div class="panel" role="tabpanel" id="p-etiquetar" aria-labelledby="t-etiquetar">
@@ -236,6 +294,20 @@
           </svg>
         </div>
       </div>
+      <div class="panel" role="tabpanel" id="p-playbook" aria-labelledby="t-playbook" hidden>
+        <div>
+          <h3 class="h2">Tu playbook, impreso o en el celular.</h3>
+          <ul>
+            <li>Playbooks por equipo, de ofensiva o de defensiva</li>
+            <li>Arrastra jugadores y dibuja rutas rectas o curvas, con flecha o bloqueo</li>
+            <li>Espejo, duplicar, deshacer y rutas rápidas: slant, post, corner, go…</li>
+            <li>Imprime 1 o 4 jugadas por hoja, o la pulsera con jugadas numeradas</li>
+          </ul>
+        </div>
+        <div class="art" aria-hidden="true">
+          <svg viewBox="0 0 420 260" font-family="Inter, system-ui, sans-serif"><g transform="rotate(-3 120 130)"><rect x="18" y="14" width="210" height="236" rx="6" fill="#fff" stroke="#d8d3cc"/><text x="30" y="34" font-size="10" font-weight="700" fill="#000">Ofensiva 2026</text><text x="216" y="34" text-anchor="end" font-size="8" fill="#777169">Tacleo · 11</text><g transform="translate(30 44)"><rect width="90" height="94" rx="4" fill="#fff" stroke="#c9c4bd"/><text x="6" y="12" font-size="8.5" font-weight="600" fill="#000">1. Trips Slant</text><line x1="4" y1="64" x2="86" y2="64" stroke="#2f80d1" stroke-width="1" stroke-dasharray="3 2"/><circle cx="33.0" cy="67.92" r="2.6" fill="#5d6d7d"/><circle cx="39.0" cy="67.92" r="2.6" fill="#5d6d7d"/><circle cx="45.0" cy="67.92" r="2.6" fill="#5d6d7d"/><circle cx="51.0" cy="67.92" r="2.6" fill="#5d6d7d"/><circle cx="57.0" cy="67.92" r="2.6" fill="#5d6d7d"/><circle cx="45.0" cy="76.92" r="2.6" fill="#1f2b37"/><circle cx="14" cy="67.92" r="2.6" fill="#d23f3f"/><path d="M14 67.92 L14 30 L32 18" fill="none" stroke="#d23f3f" stroke-width="1.4"/><path d="M32.0 18.0L30.1 21.5L28.0 18.4Z" fill="#d23f3f"/><circle cx="76" cy="67.92" r="2.6" fill="#2f80d1"/><path d="M76 67.92 L76 34 L58 24" fill="none" stroke="#2f80d1" stroke-width="1.4"/><path d="M58.0 24.0L62.0 24.0L60.1 27.4Z" fill="#2f80d1"/><circle cx="63.0" cy="69.92" r="2.6" fill="#1f6b2e"/><path d="M63.0 69.92 L63.0 40 L81.0 30" fill="none" stroke="#1f6b2e" stroke-width="1.4"/><path d="M81.0 30.0L78.9 33.4L77.0 30.0Z" fill="#1f6b2e"/></g><g transform="translate(126 44)"><rect width="90" height="94" rx="4" fill="#fff" stroke="#c9c4bd"/><text x="6" y="12" font-size="8.5" font-weight="600" fill="#000">2. Doble Out</text><line x1="4" y1="64" x2="86" y2="64" stroke="#2f80d1" stroke-width="1" stroke-dasharray="3 2"/><circle cx="33.0" cy="67.92" r="2.6" fill="#5d6d7d"/><circle cx="39.0" cy="67.92" r="2.6" fill="#5d6d7d"/><circle cx="45.0" cy="67.92" r="2.6" fill="#5d6d7d"/><circle cx="51.0" cy="67.92" r="2.6" fill="#5d6d7d"/><circle cx="57.0" cy="67.92" r="2.6" fill="#5d6d7d"/><circle cx="45.0" cy="76.92" r="2.6" fill="#1f2b37"/><circle cx="14" cy="67.92" r="2.6" fill="#d23f3f"/><path d="M14 67.92 L14 28 L26 28" fill="none" stroke="#d23f3f" stroke-width="1.4"/><path d="M26.0 28.0L22.5 29.9L22.5 26.1Z" fill="#d23f3f"/><circle cx="76" cy="67.92" r="2.6" fill="#2f80d1"/><path d="M76 67.92 L76 26 L60 26" fill="none" stroke="#2f80d1" stroke-width="1.4"/><path d="M60.0 26.0L63.5 24.1L63.5 27.9Z" fill="#2f80d1"/><circle cx="21.0" cy="69.92" r="2.6" fill="#e8742a"/><path d="M21.0 69.92 L21.0 44 L39.0 34" fill="none" stroke="#e8742a" stroke-width="1.4"/><path d="M39.0 34.0L36.9 37.4L35.0 34.0Z" fill="#e8742a"/></g><g transform="translate(30 144)"><rect width="90" height="94" rx="4" fill="#fff" stroke="#c9c4bd"/><text x="6" y="12" font-size="8.5" font-weight="600" fill="#000">3. Pistol Flat</text><line x1="4" y1="64" x2="86" y2="64" stroke="#2f80d1" stroke-width="1" stroke-dasharray="3 2"/><circle cx="33.0" cy="67.92" r="2.6" fill="#5d6d7d"/><circle cx="39.0" cy="67.92" r="2.6" fill="#5d6d7d"/><circle cx="45.0" cy="67.92" r="2.6" fill="#5d6d7d"/><circle cx="51.0" cy="67.92" r="2.6" fill="#5d6d7d"/><circle cx="57.0" cy="67.92" r="2.6" fill="#5d6d7d"/><circle cx="45.0" cy="76.92" r="2.6" fill="#1f2b37"/><circle cx="14" cy="67.92" r="2.6" fill="#d23f3f"/><path d="M14 67.92 L14 22 L14 20" fill="none" stroke="#d23f3f" stroke-width="1.4"/><path d="M14.0 20.0L15.9 23.5L12.1 23.5Z" fill="#d23f3f"/><circle cx="76" cy="67.92" r="2.6" fill="#2f80d1"/><path d="M76 67.92 L76 40 L86 40" fill="none" stroke="#2f80d1" stroke-width="1.4"/><path d="M86.0 40.0L82.5 41.9L82.5 38.1Z" fill="#2f80d1"/><circle cx="53.0" cy="76.92" r="2.6" fill="#8a5cc2"/><path d="M53.0 76.92 L75.0 73.92 L85.0 44" fill="none" stroke="#8a5cc2" stroke-width="1.4"/><path d="M85.0 44.0L85.7 47.9L82.1 46.7Z" fill="#8a5cc2"/></g><g transform="translate(126 144)"><rect width="90" height="94" rx="4" fill="#fff" stroke="#c9c4bd"/><text x="6" y="12" font-size="8.5" font-weight="600" fill="#000">4. Bunch Go</text><line x1="4" y1="64" x2="86" y2="64" stroke="#2f80d1" stroke-width="1" stroke-dasharray="3 2"/><circle cx="33.0" cy="67.92" r="2.6" fill="#5d6d7d"/><circle cx="39.0" cy="67.92" r="2.6" fill="#5d6d7d"/><circle cx="45.0" cy="67.92" r="2.6" fill="#5d6d7d"/><circle cx="51.0" cy="67.92" r="2.6" fill="#5d6d7d"/><circle cx="57.0" cy="67.92" r="2.6" fill="#5d6d7d"/><circle cx="45.0" cy="76.92" r="2.6" fill="#1f2b37"/><circle cx="14" cy="67.92" r="2.6" fill="#d23f3f"/><path d="M14 67.92 L14 36 L14 22" fill="none" stroke="#d23f3f" stroke-width="1.4"/><path d="M14.0 22.0L15.9 25.5L12.1 25.5Z" fill="#d23f3f"/><circle cx="76" cy="67.92" r="2.6" fill="#2f80d1"/><path d="M76 67.92 L76 36 L76 22" fill="none" stroke="#2f80d1" stroke-width="1.4"/><path d="M76.0 22.0L77.9 25.5L74.1 25.5Z" fill="#2f80d1"/><circle cx="25.0" cy="69.92" r="2.6" fill="#1f6b2e"/><path d="M25.0 69.92 L25.0 34 L11.0 24" fill="none" stroke="#1f6b2e" stroke-width="1.4"/><path d="M11.0 24.0L15.0 24.5L12.7 27.6Z" fill="#1f6b2e"/></g></g><g transform="translate(244 70)"><rect x="0" y="0" width="170" height="128" rx="14" fill="#1f2b37"/><rect x="10" y="10" width="150" height="108" rx="6" fill="#fff"/><rect x="10.0" y="10" width="37.5" height="54" fill="none" stroke="#e1ddd7"/><text x="14.0" y="21" font-size="8" font-weight="700" fill="#c9570f">1</text><line x1="14.0" y1="50" x2="43.0" y2="50" stroke="#2f80d1" stroke-width=".8" stroke-dasharray="2 1.5"/><circle cx="22.0" cy="54" r="1.8" fill="#5d6d7d"/><circle cx="28.75" cy="54" r="1.8" fill="#5d6d7d"/><circle cx="35.5" cy="54" r="1.8" fill="#5d6d7d"/><circle cx="41.0" cy="54" r="1.8" fill="#d23f3f"/><path d="M41.0 54 L41.0 34 L34.0 26" fill="none" stroke="#d23f3f" stroke-width="1.2"/><path d="M34.0 26.0L37.3 27.2L34.8 29.4Z" fill="#d23f3f"/><rect x="47.5" y="10" width="37.5" height="54" fill="none" stroke="#e1ddd7"/><text x="51.5" y="21" font-size="8" font-weight="700" fill="#c9570f">2</text><line x1="51.5" y1="50" x2="80.5" y2="50" stroke="#2f80d1" stroke-width=".8" stroke-dasharray="2 1.5"/><circle cx="59.5" cy="54" r="1.8" fill="#5d6d7d"/><circle cx="66.25" cy="54" r="1.8" fill="#5d6d7d"/><circle cx="73.0" cy="54" r="1.8" fill="#5d6d7d"/><circle cx="53.5" cy="54" r="1.8" fill="#2f80d1"/><path d="M53.5 54 L53.5 34 L61.5 26" fill="none" stroke="#2f80d1" stroke-width="1.2"/><path d="M61.5 26.0L60.5 29.4L58.1 27.0Z" fill="#2f80d1"/><rect x="85.0" y="10" width="37.5" height="54" fill="none" stroke="#e1ddd7"/><text x="89.0" y="21" font-size="8" font-weight="700" fill="#c9570f">3</text><line x1="89.0" y1="50" x2="118.0" y2="50" stroke="#2f80d1" stroke-width=".8" stroke-dasharray="2 1.5"/><circle cx="97.0" cy="54" r="1.8" fill="#5d6d7d"/><circle cx="103.75" cy="54" r="1.8" fill="#5d6d7d"/><circle cx="110.5" cy="54" r="1.8" fill="#5d6d7d"/><circle cx="116.0" cy="54" r="1.8" fill="#1f6b2e"/><path d="M116.0 54 L116.0 34 L109.0 26" fill="none" stroke="#1f6b2e" stroke-width="1.2"/><path d="M109.0 26.0L112.3 27.2L109.8 29.4Z" fill="#1f6b2e"/><rect x="122.5" y="10" width="37.5" height="54" fill="none" stroke="#e1ddd7"/><text x="126.5" y="21" font-size="8" font-weight="700" fill="#c9570f">4</text><line x1="126.5" y1="50" x2="155.5" y2="50" stroke="#2f80d1" stroke-width=".8" stroke-dasharray="2 1.5"/><circle cx="134.5" cy="54" r="1.8" fill="#5d6d7d"/><circle cx="141.25" cy="54" r="1.8" fill="#5d6d7d"/><circle cx="148.0" cy="54" r="1.8" fill="#5d6d7d"/><circle cx="128.5" cy="54" r="1.8" fill="#e8742a"/><path d="M128.5 54 L128.5 34 L136.5 26" fill="none" stroke="#e8742a" stroke-width="1.2"/><path d="M136.5 26.0L135.5 29.4L133.1 27.0Z" fill="#e8742a"/><rect x="10.0" y="64" width="37.5" height="54" fill="none" stroke="#e1ddd7"/><text x="14.0" y="75" font-size="8" font-weight="700" fill="#c9570f">5</text><line x1="14.0" y1="104" x2="43.0" y2="104" stroke="#2f80d1" stroke-width=".8" stroke-dasharray="2 1.5"/><circle cx="22.0" cy="108" r="1.8" fill="#5d6d7d"/><circle cx="28.75" cy="108" r="1.8" fill="#5d6d7d"/><circle cx="35.5" cy="108" r="1.8" fill="#5d6d7d"/><circle cx="41.0" cy="108" r="1.8" fill="#8a5cc2"/><path d="M41.0 108 L41.0 88 L34.0 80" fill="none" stroke="#8a5cc2" stroke-width="1.2"/><path d="M34.0 80.0L37.3 81.2L34.8 83.4Z" fill="#8a5cc2"/><rect x="47.5" y="64" width="37.5" height="54" fill="none" stroke="#e1ddd7"/><text x="51.5" y="75" font-size="8" font-weight="700" fill="#c9570f">6</text><line x1="51.5" y1="104" x2="80.5" y2="104" stroke="#2f80d1" stroke-width=".8" stroke-dasharray="2 1.5"/><circle cx="59.5" cy="108" r="1.8" fill="#5d6d7d"/><circle cx="66.25" cy="108" r="1.8" fill="#5d6d7d"/><circle cx="73.0" cy="108" r="1.8" fill="#5d6d7d"/><circle cx="53.5" cy="108" r="1.8" fill="#d23f3f"/><path d="M53.5 108 L53.5 88 L61.5 80" fill="none" stroke="#d23f3f" stroke-width="1.2"/><path d="M61.5 80.0L60.5 83.4L58.1 81.0Z" fill="#d23f3f"/><rect x="85.0" y="64" width="37.5" height="54" fill="none" stroke="#e1ddd7"/><text x="89.0" y="75" font-size="8" font-weight="700" fill="#c9570f">7</text><line x1="89.0" y1="104" x2="118.0" y2="104" stroke="#2f80d1" stroke-width=".8" stroke-dasharray="2 1.5"/><circle cx="97.0" cy="108" r="1.8" fill="#5d6d7d"/><circle cx="103.75" cy="108" r="1.8" fill="#5d6d7d"/><circle cx="110.5" cy="108" r="1.8" fill="#5d6d7d"/><circle cx="116.0" cy="108" r="1.8" fill="#2f80d1"/><path d="M116.0 108 L116.0 88 L109.0 80" fill="none" stroke="#2f80d1" stroke-width="1.2"/><path d="M109.0 80.0L112.3 81.2L109.8 83.4Z" fill="#2f80d1"/><rect x="122.5" y="64" width="37.5" height="54" fill="none" stroke="#e1ddd7"/><text x="126.5" y="75" font-size="8" font-weight="700" fill="#c9570f">8</text><line x1="126.5" y1="104" x2="155.5" y2="104" stroke="#2f80d1" stroke-width=".8" stroke-dasharray="2 1.5"/><circle cx="134.5" cy="108" r="1.8" fill="#5d6d7d"/><circle cx="141.25" cy="108" r="1.8" fill="#5d6d7d"/><circle cx="148.0" cy="108" r="1.8" fill="#5d6d7d"/><circle cx="128.5" cy="108" r="1.8" fill="#1f6b2e"/><path d="M128.5 108 L128.5 88 L136.5 80" fill="none" stroke="#1f6b2e" stroke-width="1.2"/><path d="M136.5 80.0L135.5 83.4L133.1 81.0Z" fill="#1f6b2e"/><text x="85" y="146" text-anchor="middle" font-size="9" fill="#777169">Pulsera con jugadas numeradas</text></g></svg>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -262,10 +334,11 @@
       <h2 class="h1">Lo que preguntan los coaches.</h2>
       <div class="faq">
         <details><summary>¿Tengo que instalar algo?</summary><p>No. Sideline funciona en el navegador de la computadora, la tablet o el celular.</p></details>
-        <details><summary>¿Mis jugadores necesitan una cuenta?</summary><p>Sí, cada jugador tiene su usuario y contraseña, y solo ve las jugadas de su equipo. Tú los das de alta desde la sala de video y les mandas sus datos por WhatsApp.</p></details>
+        <details><summary>¿Mis jugadores necesitan una cuenta?</summary><p>Sí, cada jugador tiene su usuario y contraseña, y solo ve las jugadas de su equipo. Tú los das de alta desde la app, en «Equipo y jugadores», y les mandas sus datos por WhatsApp.</p></details>
         <details><summary>¿Puedo usar la transmisión de mi liga?</summary><p>Sí, si está en YouTube y el canal permite ver sus videos fuera de YouTube. Sideline usa el reproductor oficial y no descarga el video.</p></details>
         <details><summary>¿Puedo subir mis propios videos?</summary><p>Todavía no; es la siguiente función en camino. Si grabas tus partidos, cuéntanoslo en el cuestionario para avisarte primero.</p></details>
         <details><summary>¿Qué hacen con los datos de mis jugadores?</summary><p>Solo los usamos para que tu equipo funcione en Sideline: no los vendemos ni los compartimos con otros equipos. Si hay menores de edad, solo se registra su nombre y usuario, con permiso de sus papás. Los detalles están en el <a href="/privacidad">aviso de privacidad</a>.</p></details>
+        <details><summary>¿Puedo contratar solo el playbook?</summary><p>Sí. Sideline tiene dos módulos, Video y Playbook, y puedes contratar uno o los dos. Si después quieres agregar el otro, se activa en la misma cuenta de tu equipo, sin perder nada de lo que ya tienes.</p></details>
         <details><summary>¿Cuánto cuesta?</summary><p>Hay planes por temporada para todo tipo de equipo y para ligas completas. Llena el cuestionario y te mandamos una propuesta según tu equipo.</p></details>
       </div>
     </div>
@@ -310,6 +383,48 @@
   </div>
 </footer>
 
+<script>
+// Portada: anima la ilustración del video (snap, ruta, pausa y dibujo). Respeta «reducir movimiento».
+(() => {
+  const svg = document.getElementById('heroArt'); if (!svg || !svg.getBBox) return;
+  const $ = id => svg.getElementById ? svg.getElementById(id) : svg.querySelector('#' + id);
+  const route = $('hRoute'), runner = $('hRunner'), circle = $('hCircle'), time = $('hTime'), draw = $('hDraw');
+  const play = $('hPlay'), pause = $('hPause'), gain = $('hGain'), row = $('hRow');
+  const L = route.getTotalLength(), C = 2 * Math.PI * 23;
+  const movers = [...svg.querySelectorAll('[data-to]')].map(el => ({ el, to: el.dataset.to.split(',').map(Number), t0: +el.dataset.t0, t1: +el.dataset.t1 }));
+  const clamp = x => Math.max(0, Math.min(1, x));
+  const ease = x => (x = clamp(x), x < .5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2);
+  const LOOP = 9, SNAP = 1, END = 4;
+  route.style.strokeDasharray = L; circle.style.strokeDasharray = C;
+  function frame(t) {
+    const fade = t > 8.2 ? 1 - clamp((t - 8.2) / .6) : 1;
+    for (const m of movers) { const k = ease((m.t0 <= t ? t - m.t0 : 0) / (m.t1 - m.t0)) * fade; m.el.setAttribute('transform', `translate(${m.to[0] * k} ${m.to[1] * k})`); }
+    const p = ease((t - SNAP - .2) / (END - SNAP - .2));
+    route.style.strokeDashoffset = L * (1 - p);
+    route.setAttribute('marker-end', p > .98 ? 'url(#ah)' : 'none');
+    route.style.opacity = fade;
+    const pt = route.getPointAtLength(L * p * fade * .93);  // el corredor se queda antes de la punta de la flecha
+    runner.setAttribute('transform', `translate(${pt.x - 190} ${pt.y - 172})`);
+    const playing = t >= SNAP && t < END;
+    play.style.opacity = playing ? 0 : 1; pause.style.opacity = playing ? 1 : 0;
+    time.textContent = `0:${(41 + .5 * Math.min(Math.max(t, 0), END)).toFixed(1)} · 0.5×`;
+    const c = clamp((t - END - .3) / .6) * fade;
+    circle.style.strokeDashoffset = C * (1 - c); circle.style.opacity = c > 0 ? 1 : 0;
+    draw.setAttribute('opacity', clamp((t - END - .1) / .3) * fade);
+    gain.textContent = '+' + Math.round(18 * p * fade);
+    row.setAttribute('stroke-opacity', clamp((t - END) / .3) * fade);
+  }
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) { frame(6); return; }
+  let start = performance.now(), raf = 0, visible = true;
+  const tick = now => { frame(((now - start) / 1000) % LOOP); raf = requestAnimationFrame(tick); };
+  // solo se anima mientras se ve en pantalla
+  if ('IntersectionObserver' in window) new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting && !visible) { visible = true; start = performance.now(); raf = requestAnimationFrame(tick); }
+    else if (!e.isIntersecting && visible) { visible = false; cancelAnimationFrame(raf); }
+  })).observe(svg);
+  frame(0); raf = requestAnimationFrame(tick);
+})();
+</script>
 <script>
 (() => {
   const tabs = [...document.querySelectorAll('[role="tab"]')];

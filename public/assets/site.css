@@ -210,3 +210,32 @@ td { color: var(--graphite); }
 td.when { font-family: var(--font-mono); font-size: 13px; white-space: nowrap; color: var(--smoke); }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+
+/* ---------- módulos (Video / Playbook) ---------- */
+.mods { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 40px; }
+@media (max-width: 900px) { .mods { grid-template-columns: minmax(0,1fr); } }
+.modcard { background: var(--taupe); border-radius: var(--r-card-lg); padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+.modcard .art { background: var(--eggshell); border-radius: var(--r-card); padding: 16px; box-shadow: var(--shadow-whisper); }
+.modcard .art svg { display: block; width: 100%; height: auto; }
+.modcard .txt { padding: 0 8px 8px; }
+.modcard .tagline { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 13px; color: var(--graphite); margin: 0 0 10px; }
+.modcard .tagline .dot { width: 8px; height: 8px; border-radius: 50%; }
+.modcard ul { margin: 16px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.modcard li { display: grid; grid-template-columns: 16px minmax(0,1fr); gap: 10px; color: var(--graphite); font-size: 15px; }
+.modcard li::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--ink); margin-top: 9px; margin-left: 4px; }
+.plans { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 24px; }
+.plan { flex: 1 1 200px; display: flex; flex-direction: column; gap: 2px; padding: 14px 18px; border-radius: var(--r-card); box-shadow: var(--shadow-whisper); background: var(--eggshell); }
+.plan b { font-weight: 500; }
+.plan span { color: var(--smoke); font-size: 14px; }
+.plan.full { background: var(--ink); color: #fff; }
+.plan.full span { color: #c9c4bd; }
+
+/* íconos de «cómo funciona» */
+.steps .ic { display: block; width: 36px; height: 36px; color: var(--ink); margin-bottom: 18px; }
+
+/* pizarrón de la portada: las rutas se dibujan una y otra vez */
+@keyframes rt-draw { 0% { stroke-dashoffset: 100; opacity: 1; } 18% { stroke-dashoffset: 0; } 86% { stroke-dashoffset: 0; opacity: 1; } 96%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes rt-end { 0%, 17% { opacity: 0; } 20%, 86% { opacity: 1; } 96%, 100% { opacity: 0; } }
+.pbart .rt { stroke-dasharray: 100; animation: rt-draw 7s ease-out infinite both; }
+.pbart .rt-end { animation: rt-end 7s ease-out infinite both; }
+@media (prefers-reduced-motion: reduce) { .pbart .rt, .pbart .rt-end { animation: none; stroke-dashoffset: 0; opacity: 1; } }
