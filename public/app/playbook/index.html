@@ -297,7 +297,7 @@ body.ro .coach { display: none !important; }
         <div class="f"><label for="bName">Nombre</label><input id="bName" maxlength="80" required placeholder="Ej. Ofensiva 2026"></div>
         <div class="two" id="bNewOnly">
           <div class="f"><label for="bFormat">Modalidad</label>
-            <select id="bFormat"><option value="11">Tacleo · 11 jugadores</option><option value="7">Flag · 7 vs 7</option><option value="5">Flag · 5 vs 5</option></select></div>
+            <select id="bFormat"><option value="11">Tacleo · 11 vs 11</option><option value="8">Tacleo · 8 vs 8</option><option value="80">Flag · 8 vs 8</option><option value="7">Flag · 7 vs 7</option><option value="5">Flag · 5 vs 5</option></select></div>
           <div class="f"><label for="bSide">Lado</label>
             <select id="bSide"><option value="O">Ofensiva</option><option value="D">Defensiva</option></select></div>
         </div>
@@ -321,7 +321,10 @@ const NS = 'http://www.w3.org/2000/svg';
 
 // ---------- campo ----------
 // Coordenadas en yardas: x de 0 a W (ancho del campo), y = yardas desde la línea de golpeo (positivo = hacia el campo rival).
-const WIDTH = { 11: 53.3, 7: 40, 5: 30 };
+// modalidades: 11 y 8 = tacleo, 80 = flag 8 vs 8, 7 y 5 = flag
+const WIDTH = { 11: 53.3, 8: 40, 80: 40, 7: 40, 5: 30 };
+const FORMAT_NAME = { 11: 'Tacleo · 11 vs 11', 8: 'Tacleo · 8 vs 8', 80: 'Flag · 8 vs 8', 7: 'Flag · 7 vs 7', 5: 'Flag · 5 vs 5' };
+const formatName = f => FORMAT_NAME[f] || FORMAT_NAME[11];
 const VIEW = { top: 22, bottom: 12 };         // yardas visibles hacia adelante y hacia atrás de la línea
 const R = 1.15;                               // radio de un jugador
 const COLORS = ['#1f2b37', '#d23f3f', '#2f80d1', '#1f6b2e', '#e8742a', '#8a5cc2', '#c99a06', '#5d6d7d'];
@@ -337,6 +340,18 @@ const OFF = {
     'Singleback': [...OL, ['QB', 0, -3.4, 'circle', 0], ['RB', 0, -7, 'circle', 5], ['Y', 7.5, -1, 'circle', 3], ['X', -20, -1, 'circle', 1], ['H', -13, -2, 'circle', 4], ['Z', 17, -2, 'circle', 2]],
     'Pistol': [...OL, ['QB', 0, -4, 'circle', 0], ['RB', 0, -7, 'circle', 5], ['Y', 7.5, -1, 'circle', 3], ['X', -20, -1, 'circle', 1], ['H', -13, -2, 'circle', 4], ['Z', 17, -2, 'circle', 2]],
     'Empty': [...OL, ['QB', 0, -5, 'circle', 0], ['X', -20, -1, 'circle', 1], ['H', -14, -2, 'circle', 4], ['S', -8, -2, 'circle', 6], ['Y', 14, -2, 'circle', 3], ['Z', 20, -1, 'circle', 2]],
+  },
+  8: {
+    'I Formation': [['G', -2.5, -1, 'circle', 7], ['C', 0, -1, 'square', 7], ['G', 2.5, -1, 'circle', 7], ['E', -5, -1, 'circle', 1], ['E', 5, -1, 'circle', 3], ['QB', 0, -3.4, 'circle', 0], ['FB', 0, -6, 'circle', 6], ['TB', 0, -8.6, 'circle', 5]],
+    'Wing-T': [['G', -2.5, -1, 'circle', 7], ['C', 0, -1, 'square', 7], ['G', 2.5, -1, 'circle', 7], ['E', -5, -1, 'circle', 1], ['E', 5, -1, 'circle', 3], ['QB', 0, -3.4, 'circle', 0], ['FB', 0, -6, 'circle', 6], ['WB', 7.5, -2.5, 'circle', 5]],
+    'Shotgun 2 RB': [['G', -2.5, -1, 'circle', 7], ['C', 0, -1, 'square', 7], ['G', 2.5, -1, 'circle', 7], ['E', -5, -1, 'circle', 1], ['E', 5, -1, 'circle', 3], ['QB', 0, -5, 'circle', 0], ['RB', -2.5, -5, 'circle', 5], ['F', 2.5, -5, 'circle', 6]],
+    'Spread': [['G', -2.5, -1, 'circle', 7], ['C', 0, -1, 'square', 7], ['G', 2.5, -1, 'circle', 7], ['X', -15, -1, 'circle', 1], ['H', 8, -2, 'circle', 4], ['Z', 15, -1, 'circle', 2], ['QB', 0, -5, 'circle', 0], ['RB', -2.5, -5, 'circle', 5]],
+  },
+  80: {
+    'Trips (3x2) + RB': [['C', 0, -1, 'square', 7], ['QB', 0, -5, 'circle', 0], ['RB', 2.5, -5, 'circle', 5], ['X', -16, -1, 'circle', 1], ['H', -9, -2, 'circle', 4], ['Y', 8, -2, 'circle', 3], ['S', 12, -2, 'circle', 6], ['Z', 16, -1, 'circle', 2]],
+    'Doble + 2 RB': [['C', 0, -1, 'square', 7], ['QB', 0, -5, 'circle', 0], ['RB', -2.5, -5, 'circle', 5], ['F', 2.5, -5, 'circle', 6], ['X', -16, -1, 'circle', 1], ['H', -9, -2, 'circle', 4], ['Y', 9, -2, 'circle', 3], ['Z', 16, -1, 'circle', 2]],
+    'Bunch Der': [['C', 0, -1, 'square', 7], ['QB', 0, -5, 'circle', 0], ['RB', -2.5, -5, 'circle', 5], ['X', -16, -1, 'circle', 1], ['H', -8, -2, 'circle', 4], ['Y', 8, -1, 'circle', 3], ['S', 10, -3, 'circle', 6], ['Z', 12, -1, 'circle', 2]],
+    'Empty (3x3)': [['C', 0, -1, 'square', 7], ['QB', 0, -5, 'circle', 0], ['X', -16, -1, 'circle', 1], ['H', -11, -2, 'circle', 4], ['S', -6, -2, 'circle', 6], ['Y', 6, -2, 'circle', 3], ['A', 11, -2, 'circle', 5], ['Z', 16, -1, 'circle', 2]],
   },
   7: {
     'Doble (2x2)': [['C', 0, -1, 'square', 7], ['QB', 0, -5, 'circle', 0], ['RB', 2.5, -5, 'circle', 5], ['X', -15, -1, 'circle', 1], ['H', -8, -2, 'circle', 4], ['Y', 8, -2, 'circle', 3], ['Z', 15, -1, 'circle', 2]],
@@ -356,6 +371,15 @@ const DEF = {
     '4-3': [['E', -6, 1.3], ['T', -2, 1.3], ['T', 2, 1.3], ['E', 6, 1.3], ['W', -5, 5], ['M', 0, 5], ['S', 5, 5], ['C', -20, 6], ['C', 20, 6], ['FS', -6, 12], ['SS', 8, 10]],
     '3-4': [['E', -4, 1.3], ['N', 0, 1.3], ['E', 4, 1.3], ['B', -8, 3], ['M', -2.5, 5], ['W', 2.5, 5], ['B', 8, 3], ['C', -20, 6], ['C', 20, 6], ['S', -7, 12], ['S', 7, 12]],
     'Nickel 4-2-5': [['E', -6, 1.3], ['T', -2, 1.3], ['T', 2, 1.3], ['E', 6, 1.3], ['M', -2.5, 5], ['W', 2.5, 5], ['N', 13, 5], ['C', -20, 6], ['C', 20, 6], ['S', -8, 12], ['S', 8, 12]],
+  },
+  8: {
+    '3-3-2': [['E', -4, 1.3], ['N', 0, 1.3], ['E', 4, 1.3], ['B', -6, 5], ['M', 0, 5], ['B', 6, 5], ['C', -14, 6], ['C', 14, 6]],
+    '4-2-2': [['E', -6, 1.3], ['T', -2, 1.3], ['T', 2, 1.3], ['E', 6, 1.3], ['M', -3, 5], ['W', 3, 5], ['C', -14, 6], ['C', 14, 6]],
+    '3-2-3': [['E', -4, 1.3], ['N', 0, 1.3], ['E', 4, 1.3], ['M', -3, 5], ['W', 3, 5], ['C', -14, 6], ['C', 14, 6], ['S', 0, 12]],
+  },
+  80: {
+    'Zona 3': [['C', -15, 6], ['C', 15, 6], ['S', 0, 13], ['L', -9, 5], ['M', -3, 5], ['M', 3, 5], ['L', 9, 5], ['R', 0, 7.5]],
+    'Hombre (Cover 1)': [['C', -16, 2], ['C', 16, 2], ['N', -9, 3], ['N', 9, 3], ['M', -3, 5], ['M', 3, 5], ['S', 0, 12], ['R', 0, 7.5]],
   },
   7: {
     'Zona 3': [['C', -15, 6], ['C', 15, 6], ['S', 0, 13], ['L', -7, 5], ['M', 0, 5], ['L', 7, 5], ['R', 3, 7]],
@@ -557,7 +581,7 @@ async function loadBooks(selectId) {
   const r = await api('playbooks');
   S.books = r.playbooks || [];
   const sel = $('bookSel'); sel.textContent = '';
-  for (const b of S.books) sel.add(new Option(`${b.name} · ${b.format === 11 ? 'Tacleo' : 'Flag ' + b.format + 'v' + b.format} · ${b.side === 'D' ? 'Def' : 'Of'}`, b.id));
+  for (const b of S.books) sel.add(new Option(`${b.name} · ${formatName(b.format)} · ${b.side === 'D' ? 'Def' : 'Of'}`, b.id));
   let last = null; try { last = localStorage.getItem('sideline:pb'); } catch (e) {}
   const want = selectId || (S.book && S.book.id) || last;
   const b = S.books.find(x => x.id === want) || S.books[0] || null;
@@ -578,7 +602,7 @@ async function openBook(b) {
   }
   try { localStorage.setItem('sideline:pb', b.id); } catch (e) {}
   $('bookSel').value = b.id;
-  $('bookInfo').textContent = (b.format === 11 ? 'Tacleo · 11' : `Flag · ${b.format} vs ${b.format}`) + (b.side === 'D' ? ' · Defensiva' : ' · Ofensiva');
+  $('bookInfo').textContent = formatName(b.format) + (b.side === 'D' ? ' · Defensiva' : ' · Ofensiva');
   const tpl = $('tplSel'); tpl.textContent = '';
   const list = Object.keys((b.side === 'D' ? DEF : OFF)[b.format] || {});
   list.forEach(n => tpl.add(new Option(n, n))); tpl.add(new Option('Campo vacío', ''));
