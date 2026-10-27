@@ -648,7 +648,7 @@ function sessionEnded() {
 }
 function cloudError(e) {
   if (e && e.status === 401) { setStatus('No se guardó', 'bad'); return; }
-  if (e && e.status === 403) { setStatus('No se guardó', 'bad'); toast('Solo los coaches pueden editar.'); return; }
+  if (e && e.status === 403) { setStatus('No se guardó', 'bad'); toast(e.body && e.body.error === 'module_off' ? e.message : 'Solo los coaches pueden editar.'); return; }
   setStatus('No se guardó · reintenta', 'bad');
   toast(e && e.status === 413 ? 'El dibujo es demasiado grande para guardarse.' : 'No se pudo guardar en la nube. Revisa tu conexión.');
 }
@@ -1105,7 +1105,7 @@ function syncSeg() {
 function renderSelHead() { const p = selPlay(); $('selNum').textContent = p ? `${numOf(p)} · ${ddText(p)}${posText(p) ? ' · ' + posText(p) : ''}` : '—'; }
 function renderForm() {
   const p = selPlay();
-  const collapsed = !p || S.formHidden;
+  const collapsed = !p || !!S.formHidden;   // siempre booleano: con undefined, classList.toggle alternaría la clase
   $('formCard').classList.toggle('collapsed', collapsed);
   $('formToggle').setAttribute('aria-expanded', String(!collapsed));
   $('formToggle').disabled = !p;
@@ -1213,6 +1213,7 @@ document.addEventListener('keydown', e => {
   const tag = (e.target.tagName || '').toLowerCase();
   if (e.key === 'Escape') { $('help').hidden = true; if (['input', 'textarea', 'select'].includes(tag)) e.target.blur(); if (S.draw) setDraw(false); return; }
   if (['input', 'textarea', 'select'].includes(tag) || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (!hasVideo()) return;   // sin el módulo de video la sala está oculta: sin atajos
   const k = e.key;
   if (k === ' ') { e.preventDefault(); togglePlay(); }
   else if (k === 'ArrowLeft') { e.preventDefault(); if (e.shiftKey) { S.clip = false; P.seek(P.t - 5); } else step(-STEP); }
