@@ -21,7 +21,7 @@ async function init(db) {
     // datos por equipo
     db.prepare(`CREATE TABLE IF NOT EXISTS tplays (team_id TEXT NOT NULL, video TEXT NOT NULL, id TEXT NOT NULL, data TEXT NOT NULL, updated_at INTEGER NOT NULL, PRIMARY KEY (team_id, video, id))`),
     db.prepare(`CREATE TABLE IF NOT EXISTS tvideos (team_id TEXT NOT NULL, id TEXT NOT NULL, title TEXT, updated_at INTEGER NOT NULL, PRIMARY KEY (team_id, id))`),
-    // playbooks: format = jugadores por lado (5, 7 u 11); side = O (ofensiva) o D (defensiva)
+    // playbooks: format = modalidad (11 y 8 tacleo; 80 flag 8 vs 8; 7 y 5 flag); side = O (ofensiva) o D (defensiva)
     db.prepare(`CREATE TABLE IF NOT EXISTS pbooks (team_id TEXT NOT NULL, id TEXT NOT NULL, name TEXT NOT NULL, format INTEGER NOT NULL, side TEXT NOT NULL, updated_at INTEGER NOT NULL, PRIMARY KEY (team_id, id))`),
     db.prepare(`CREATE TABLE IF NOT EXISTS pbplays (team_id TEXT NOT NULL, book_id TEXT NOT NULL, id TEXT NOT NULL, pos INTEGER NOT NULL, data TEXT NOT NULL, updated_at INTEGER NOT NULL, PRIMARY KEY (team_id, book_id, id))`),
   ]);
@@ -385,7 +385,7 @@ async function handleApi(request, env, path) {
       if (method === 'POST') {
         const b = await body();
         const id = str(b.id, 40), name = str(b.name, 80);
-        const format = [5, 7, 11].includes(+b.format) ? +b.format : 11, side = b.side === 'D' ? 'D' : 'O';
+        const format = [5, 7, 8, 11, 80].includes(+b.format) ? +b.format : 11, side = b.side === 'D' ? 'D' : 'O';
         if (!PID.test(id)) return json({ error: 'bad_request' }, 400);
         if (!name) return json({ error: 'bad_request', message: 'Escribe el nombre del playbook.' }, 400);
         const n = await db.prepare('SELECT COUNT(*) AS n FROM pbooks WHERE team_id = ?1 AND id != ?2').bind(team, id).first();
