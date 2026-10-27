@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap">
 <link rel="stylesheet" href="/assets/app-shell.css">
+<script>try { var t = localStorage.getItem('sideline:theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
 <style>
 /* Layout: lista de jugadas a la izquierda, campo al centro, propiedades a la derecha; se apila en teléfonos. Mismo look claro que la sala de video. */
 :root {
@@ -44,16 +45,16 @@ button { cursor: pointer; }
 .btn { background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r); padding: 7px 12px; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; text-decoration: none; color: var(--fg); }
 .btn:hover { border-color: var(--muted); }
 .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
-.btn.on { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.btn.on { background: var(--fg); color: var(--on-fg); border-color: var(--fg); }
 .btn.sm { padding: 4px 9px; font-size: 13px; }
 .btn.danger { color: var(--bad); }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
 .group { display: inline-flex; flex-wrap: wrap; gap: 6px; }
 .status { font-size: 12px; padding: 4px 10px 4px 22px; border-radius: 999px; background: var(--panel-2); color: var(--muted); white-space: nowrap; position: relative; }
 .status::before { content: ""; position: absolute; left: 10px; top: 50%; width: 7px; height: 7px; margin-top: -3.5px; border-radius: 50%; background: #a9b4bf; }
-.status.ok { color: var(--good); background: #e9f5ec; } .status.ok::before { background: var(--good); }
-.status.bad { color: var(--bad); background: #fdeeee; } .status.bad::before { background: var(--bad); }
-.status.busy { color: var(--accent); background: #fff1e6; } .status.busy::before { background: var(--accent); }
+.status.ok { color: var(--good); background: var(--ok-soft); } .status.ok::before { background: var(--good); }
+.status.bad { color: var(--bad); background: var(--bad-soft); } .status.bad::before { background: var(--bad); }
+.status.busy { color: var(--accent); background: var(--accent-soft); } .status.busy::before { background: var(--accent); }
 .chip { font-size: 11px; font-weight: 600; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; color: var(--muted); }
 select, input, textarea { background: var(--bg); border: 1px solid var(--line); border-radius: var(--r); padding: 6px 8px; min-width: 0; }
 textarea { resize: vertical; min-height: 70px; }
@@ -70,10 +71,14 @@ main { display: grid; grid-template-columns: 250px minmax(0, 1fr) 270px; gap: 12
 
 .newplay { display: flex; gap: 6px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
 .newplay select { flex: 1; }
-.rows { display: flex; flex-direction: column; max-height: calc(100vh - 230px); overflow-y: auto; }
+.rows { display: flex; flex-direction: column; max-height: calc(100vh - 270px); overflow-y: auto; }
+.search { padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.search input { width: 100%; }
+.anim select { padding: 4px 6px; font-size: 13px; }
+#field.animating { cursor: default; }
 .row { display: grid; grid-template-columns: 22px 64px minmax(0, 1fr); gap: 8px; align-items: center; padding: 6px 10px; border: 0; border-bottom: 1px solid var(--line); background: none; text-align: left; }
 .row:hover { background: var(--panel-2); }
-.row.sel { background: #fff4e5; box-shadow: inset 3px 0 0 var(--accent); }
+.row.sel { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
 .row .n { font-size: 12px; color: var(--muted); text-align: right; }
 .row svg { width: 64px; height: 44px; border: 1px solid var(--line); border-radius: 3px; display: block; }
 .row .nm { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -95,7 +100,7 @@ body.ro #field .pl { cursor: default; }
 .props .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
 .props h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 6px 0 0; }
 .swatches { display: flex; flex-wrap: wrap; gap: 6px; }
-.sw { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--line); padding: 0; }
+.sw { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--panel); box-shadow: 0 0 0 1px var(--line); padding: 0; }
 .sw.on { box-shadow: 0 0 0 2px var(--fg); }
 .tree { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
 .tree .btn { justify-content: center; padding: 4px 4px; font-size: 12px; }
@@ -109,7 +114,7 @@ body.ro .coach { display: none !important; }
 .toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 8px 14px; border-radius: var(--r); z-index: 80; max-width: calc(100vw - 32px); }
 .gate, .modal { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; overflow-y: auto; }
 .gate { background: var(--bg); }
-.modal { background: rgba(20,40,60,.35); }
+.modal { background: var(--scrim); }
 .gate .card, .modal .card { width: 100%; max-width: 420px; }
 .gate .card { padding: 28px; display: flex; flex-direction: column; gap: 14px; }
 .gate h2 { font-weight: 300; font-size: 24px; margin: 0; }
@@ -175,6 +180,7 @@ body.ro .coach { display: none !important; }
       <a class="mod on" href="/app/playbook/" data-mod="playbook" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3.5" width="16" height="18" rx="2"/><path d="M9 3.5h6v2.5H9z"/><circle cx="9" cy="16" r="1.6"/><path d="M13.5 9.5l3 3m0-3l-3 3"/><path d="M10 14.5c1.5-2 3-3 5-3.5"/></svg>Playbook</a>
     </nav>
     <span class="spacer"></span>
+    <button class="themebtn" id="themeBtn" type="button" aria-label="Cambiar tema"></button>
     <span class="status" id="status">Conectando…</span>
     <div class="umenu" id="userMenu" hidden>
       <button class="ubtn" id="userBtn" aria-haspopup="true" aria-expanded="false" aria-label="Menú de usuario"><span class="av" id="userIni"></span><span class="nm"><b id="userName"></b><small id="userSub"></small></span><svg class="car" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
@@ -221,6 +227,7 @@ body.ro .coach { display: none !important; }
         <select id="tplSel" aria-label="Formación de la nueva jugada"></select>
         <button class="btn sm primary" id="newPlay">+ Nueva</button>
       </div>
+      <div class="search"><input id="pSearch" type="search" placeholder="Buscar jugada, formación o tipo" aria-label="Buscar jugadas"></div>
       <div class="rows" id="rows"></div>
     </aside>
 
@@ -228,6 +235,11 @@ body.ro .coach { display: none !important; }
       <div class="hd">
         <h2><span class="t" id="playTitle">—</span></h2>
         <span class="spacer"></span>
+        <span class="group anim" role="group" aria-label="Animación">
+          <button class="btn sm primary" id="animPlay" title="Animar la jugada (Espacio)">▶ Animar</button>
+          <button class="btn sm" id="animStop" title="Detener y volver al inicio" disabled>■ Stop</button>
+          <select id="animSpeed" aria-label="Velocidad de la animación"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select>
+        </span>
         <span class="group coach">
           <button class="btn sm" id="undoBtn" title="Deshacer (Ctrl+Z)">Deshacer</button>
           <button class="btn sm" id="redoBtn" title="Rehacer (Ctrl+Y)">Rehacer</button>
@@ -256,6 +268,7 @@ body.ro .coach { display: none !important; }
           <div class="group" style="margin-top:6px">
             <button class="btn sm" id="addO">+ Ofensivo</button>
             <button class="btn sm" id="addD">+ Defensivo</button>
+            <button class="btn sm" id="addN" title="Texto sobre el campo, por ejemplo «Leer al safety»">+ Texto</button>
           </div>
           <h3>Defensa rival</h3>
           <div class="group" style="margin-top:6px">
@@ -270,10 +283,14 @@ body.ro .coach { display: none !important; }
       <div class="props" id="playerProps" hidden>
         <div class="two">
           <div class="f"><label for="plLabel">Etiqueta</label><input id="plLabel" maxlength="3"></div>
-          <div class="f"><label for="plShape">Forma</label>
-            <select id="plShape"><option value="circle">Círculo</option><option value="square">Cuadro</option><option value="text">Letra (defensa)</option></select></div>
+          <div class="f" id="plShapeBox"><label for="plShape">Marca</label>
+            <select id="plShape"><option value="circle">● Círculo</option><option value="square">■ Cuadro</option><option value="triangle">▲ Triángulo</option><option value="diamond">◆ Rombo</option><option value="x">✕ Equis</option><option value="text">A Letra (defensa)</option></select></div>
         </div>
+        <label class="check" id="plOutlineBox"><input type="checkbox" id="plOutline"> Solo contorno (marca hueca)</label>
         <div class="f"><label>Color</label><div class="swatches" id="plColors"></div></div>
+        <div id="plRouteBox">
+        <div class="f"><label for="plRead">Lectura del QB</label>
+          <select id="plRead"><option value="">—</option><option value="1">1 · recibe el balón</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
         <h3>Ruta</h3>
         <div class="tree" id="tree"></div>
         <div class="group">
@@ -282,10 +299,12 @@ body.ro .coach { display: none !important; }
           <button class="btn sm" id="clearRoute">Borrar ruta</button>
         </div>
         <div class="two">
-          <div class="f"><label for="rEnd">Final</label><select id="rEnd"><option value="arrow">Flecha</option><option value="block">Bloqueo ⊥</option><option value="none">Sin final</option></select></div>
+          <div class="f"><label for="rEnd">Final</label><select id="rEnd"><option value="arrow">Flecha</option><option value="block">Bloqueo ⊥</option><option value="dot">Punto ●</option><option value="zone">Zona (cobertura)</option><option value="none">Sin final</option></select></div>
           <div class="f"><label for="rStyle">Línea</label><select id="rStyle"><option value="solid">Continua</option><option value="dashed">Punteada (opción)</option></select></div>
         </div>
         <label class="check"><input type="checkbox" id="rCurve"> Ruta curva</label>
+        <p class="note">El motion se dibuja en zigzag. En la animación corre antes del snap.</p>
+        </div>
         <div class="group">
           <button class="btn sm" id="plDone">Listo</button>
           <button class="btn sm danger" id="plDel">Eliminar jugador</button>
@@ -440,7 +459,18 @@ function newPlayFrom(tpl) {
   return { id: uid(), name: '', formation: tpl || '', type: '', notes: '', players };
 }
 
+const svg = $('field');
 // ---------- dibujo ----------
+// Paletas del campo. La clara también se usa al imprimir y al descargar la imagen.
+const PAL = {
+  light: { field: '#fbfdfb', line: '#d8e2da', los: '#2f80d1', border: '#b8c6bb', ring: '#ffffff', ink: null, dark: '#0e151c' },
+  dark: { field: '#122019', line: '#29402f', los: '#4a9be6', border: '#2f4a38', ring: '#122019', ink: '#dbe4ee', dark: '#0e151c' },
+};
+let pal = PAL.light;
+const isDark = () => !!(window.SidelineShell && window.SidelineShell.isDark());
+// el color «tinta» se aclara en el campo oscuro para que se siga viendo
+const shown = c => (pal.ink && color(c) === COLORS[0]) ? pal.ink : color(c);
+const FONT = 'Segoe UI, Arial, sans-serif';
 function el(tag, attrs, parent) {
   const e = document.createElementNS(NS, tag);
   for (const k in attrs) e.setAttribute(k, attrs[k]);
@@ -448,63 +478,120 @@ function el(tag, attrs, parent) {
   return e;
 }
 function routeStart(p) { const m = p.motion && p.motion.pts && p.motion.pts.length ? p.motion.pts[p.motion.pts.length - 1] : null; return m ? { x: m[0], y: m[1] } : p; }
+// puntos de control de la curva (Catmull-Rom), compartidos por el dibujo y la animación
+function ctrl(P, i) {
+  const p0 = P[i - 1] || P[i], p1 = P[i], p2 = P[i + 1], p3 = P[i + 2] || p2;
+  return [[p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6]];
+}
 function pathD(pts, curve) {
   if (pts.length < 2) return '';
   const P = pts.map(([x, y]) => [x, -y]);
   if (!curve || P.length < 3) return 'M' + P.map(p => p.join(' ')).join(' L');
   let d = 'M' + P[0].join(' ');
-  for (let i = 0; i < P.length - 1; i++) {
-    const p0 = P[i - 1] || P[i], p1 = P[i], p2 = P[i + 1], p3 = P[i + 2] || p2;
-    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
-    d += ` C${c1.join(' ')} ${c2.join(' ')} ${p2.join(' ')}`;
-  }
+  for (let i = 0; i < P.length - 1; i++) { const [c1, c2] = ctrl(P, i); d += ` C${c1.join(' ')} ${c2.join(' ')} ${P[i + 1].join(' ')}`; }
   return d;
+}
+// la misma curva como lista de puntos (para mover a los jugadores sobre ella)
+function curvePts(pts) {
+  if (pts.length < 3) return pts;
+  const out = [pts[0]];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [c1, c2] = ctrl(pts, i), a = pts[i], b = pts[i + 1];
+    for (let k = 1; k <= 12; k++) {
+      const t = k / 12, u = 1 - t;
+      out.push([u * u * u * a[0] + 3 * u * u * t * c1[0] + 3 * u * t * t * c2[0] + t * t * t * b[0], u * u * u * a[1] + 3 * u * u * t * c1[1] + 3 * u * t * t * c2[1] + t * t * t * b[1]]);
+    }
+  }
+  return out;
+}
+// motion en zigzag, como en los playbooks impresos
+function zigzag(pts) {
+  const out = [pts[0]];
+  for (let i = 1; i < pts.length; i++) {
+    const [ax, ay] = pts[i - 1], [bx, by] = pts[i], len = Math.hypot(bx - ax, by - ay);
+    const n = Math.max(2, Math.floor(len / 0.55)), px = -(by - ay) / (len || 1), py = (bx - ax) / (len || 1);
+    for (let k = 1; k < n; k++) { const t = k / n, s = k % 2 ? 0.35 : -0.35; out.push([ax + (bx - ax) * t + px * s, ay + (by - ay) * t + py * s]); }
+    out.push([bx, by]);
+  }
+  return out;
 }
 function drawLine(g, pts, opt) {
   if (pts.length < 2) return;
-  const c = color(opt.color);
-  el('path', { d: pathD(pts, opt.curve), fill: 'none', stroke: c, 'stroke-width': 0.32, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', ...(opt.dashed ? { 'stroke-dasharray': '0.8 0.55' } : {}) }, g);
-  // dirección final: con curva, la tangente final apunta del penúltimo al último punto igual que en la recta
+  const c = shown(opt.color), line = opt.zigzag ? zigzag(pts) : pts;
+  const lg = el('g', opt.faded ? { opacity: 0.3 } : {}, g);
+  // final de zona: burbuja de cobertura debajo de la línea
   const [x1, y1] = pts[pts.length - 1], [x0, y0] = pts[pts.length - 2];
   const a = Math.atan2(-(y1 - y0), x1 - x0), X = x1, Y = -y1;
+  if (opt.end === 'zone') el('ellipse', { cx: X, cy: Y, rx: 3.4, ry: 2.1, fill: c, 'fill-opacity': 0.14, stroke: c, 'stroke-width': 0.14, 'stroke-dasharray': '0.5 0.35' }, lg);
+  el('path', { d: pathD(line, opt.curve && !opt.zigzag), fill: 'none', stroke: c, 'stroke-width': 0.32, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', ...(opt.dashed ? { 'stroke-dasharray': '0.8 0.55' } : {}) }, lg);
   if (opt.end === 'arrow') {
     const L = 1.25, w = 0.5;
-    el('path', { d: `M${X} ${Y} L${X - L * Math.cos(a - w)} ${Y - L * Math.sin(a - w)} L${X - L * Math.cos(a + w)} ${Y - L * Math.sin(a + w)} Z`, fill: c }, g);
+    el('path', { d: `M${X} ${Y} L${X - L * Math.cos(a - w)} ${Y - L * Math.sin(a - w)} L${X - L * Math.cos(a + w)} ${Y - L * Math.sin(a + w)} Z`, fill: c }, lg);
   } else if (opt.end === 'block') {
     const h = 0.9, px = -Math.sin(a), py = Math.cos(a);
-    el('line', { x1: X + px * h, y1: Y + py * h, x2: X - px * h, y2: Y - py * h, stroke: c, 'stroke-width': 0.38, 'stroke-linecap': 'round' }, g);
-  }
+    el('line', { x1: X + px * h, y1: Y + py * h, x2: X - px * h, y2: Y - py * h, stroke: c, 'stroke-width': 0.38, 'stroke-linecap': 'round' }, lg);
+  } else if (opt.end === 'dot') el('circle', { cx: X, cy: Y, r: 0.5, fill: c }, lg);
 }
 function drawField(svg, W) {
-  el('rect', { x: 0, y: -VIEW.top, width: W, height: VIEW.top + VIEW.bottom, fill: '#fbfdfb' }, svg);
-  for (let y = -10; y <= VIEW.top; y += 5) if (y) el('line', { x1: 0, y1: -y, x2: W, y2: -y, stroke: '#d8e2da', 'stroke-width': 0.12 }, svg);
+  el('rect', { x: 0, y: -VIEW.top, width: W, height: VIEW.top + VIEW.bottom, fill: pal.field }, svg);
+  for (let y = -10; y <= VIEW.top; y += 5) if (y) el('line', { x1: 0, y1: -y, x2: W, y2: -y, stroke: pal.line, 'stroke-width': 0.12 }, svg);
   if (W > 50) for (let y = -VIEW.bottom + 1; y < VIEW.top; y++) {
     if (y % 5 === 0) continue;
-    for (const hx of [W / 2 - 3.1, W / 2 + 3.1]) el('line', { x1: hx - 0.4, y1: -y, x2: hx + 0.4, y2: -y, stroke: '#d8e2da', 'stroke-width': 0.12 }, svg);
+    for (const hx of [W / 2 - 3.1, W / 2 + 3.1]) el('line', { x1: hx - 0.4, y1: -y, x2: hx + 0.4, y2: -y, stroke: pal.line, 'stroke-width': 0.12 }, svg);
   }
-  el('line', { x1: 0, y1: 0, x2: W, y2: 0, stroke: '#2f80d1', 'stroke-width': 0.18, 'stroke-dasharray': '0.9 0.5' }, svg);
-  el('rect', { x: 0.05, y: -VIEW.top + 0.05, width: W - 0.1, height: VIEW.top + VIEW.bottom - 0.1, fill: 'none', stroke: '#b8c6bb', 'stroke-width': 0.15 }, svg);
+  el('line', { x1: 0, y1: 0, x2: W, y2: 0, stroke: pal.los, 'stroke-width': 0.18, 'stroke-dasharray': '0.9 0.5' }, svg);
+  el('rect', { x: 0.05, y: -VIEW.top + 0.05, width: W - 0.1, height: VIEW.top + VIEW.bottom - 0.1, fill: 'none', stroke: pal.border, 'stroke-width': 0.15 }, svg);
 }
-function drawPlayer(g, p, selected) {
-  const c = color(p.color), x = num(p.x), y = -num(p.y);
+const SHAPES = ['circle', 'square', 'triangle', 'diamond', 'x', 'text', 'note'];
+function drawPlayer(g, p, selected, at) {
+  const c = shown(p.color), x = at ? at[0] : num(p.x), y = -(at ? at[1] : num(p.y));
+  const shape = SHAPES.includes(p.shape) ? p.shape : 'circle';
   const pg = el('g', { class: 'pl', 'data-id': p.id }, g);
   if (selected) el('circle', { cx: x, cy: y, r: R + 0.55, fill: 'none', stroke: '#c9570f', 'stroke-width': 0.25, 'stroke-dasharray': '0.5 0.3' }, pg);
-  if (p.shape === 'text') {
-    el('circle', { cx: x, cy: y, r: R, fill: 'transparent' }, pg);
-    const t = el('text', { x, y, 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': 1.7, 'font-weight': 700, fill: c, 'font-family': 'Segoe UI, Arial, sans-serif' }, pg);
-    t.textContent = String(p.label || '').slice(0, 3);
+  const text = (s, size, fill, dy = 0) => { const t = el('text', { x, y: y + dy, 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': size, 'font-weight': 700, fill, 'font-family': FONT }, pg); t.textContent = s; return t; };
+  if (shape === 'note') {
+    const s = String(p.label || '').slice(0, 30), w = Math.max(2, s.length * 0.62 + 1);
+    el('rect', { x: x - w / 2, y: y - 0.85, width: w, height: 1.7, rx: 0.4, fill: pal.field, 'fill-opacity': 0.85, stroke: c, 'stroke-width': 0.1 }, pg);
+    text(s, 1.05, c);
     return;
   }
-  if (p.shape === 'square') el('rect', { x: x - R, y: y - R, width: R * 2, height: R * 2, rx: 0.2, fill: c, stroke: '#fff', 'stroke-width': 0.18 }, pg);
-  else el('circle', { cx: x, cy: y, r: R, fill: c, stroke: '#fff', 'stroke-width': 0.18 }, pg);
+  if (shape === 'text') { el('circle', { cx: x, cy: y, r: R, fill: 'transparent' }, pg); text(String(p.label || '').slice(0, 3), 1.7, c); return; }
   const label = String(p.label || '').slice(0, 3);
-  const t = el('text', { x, y, 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': label.length > 2 ? 0.8 : 1.05, 'font-weight': 700, fill: '#fff', 'font-family': 'Segoe UI, Arial, sans-serif' }, pg);
-  t.textContent = label;
+  if (shape === 'x') {
+    const h = R * 0.85;
+    el('circle', { cx: x, cy: y, r: R, fill: 'transparent' }, pg);
+    el('path', { d: `M${x - h} ${y - h}L${x + h} ${y + h}M${x + h} ${y - h}L${x - h} ${y + h}`, stroke: c, 'stroke-width': 0.42, 'stroke-linecap': 'round' }, pg);
+    if (label) text(label, 0.8, c, R + 0.75);
+    return;
+  }
+  const fill = p.outline ? pal.field : c, stroke = p.outline ? c : pal.ring, sw = p.outline ? 0.3 : 0.18;
+  if (shape === 'square') el('rect', { x: x - R, y: y - R, width: R * 2, height: R * 2, rx: 0.2, fill, stroke, 'stroke-width': sw }, pg);
+  else if (shape === 'triangle') el('path', { d: `M${x} ${y - R * 1.25}L${x + R * 1.2} ${y + R * 0.85}L${x - R * 1.2} ${y + R * 0.85}Z`, fill, stroke, 'stroke-width': sw, 'stroke-linejoin': 'round' }, pg);
+  else if (shape === 'diamond') el('path', { d: `M${x} ${y - R * 1.3}L${x + R * 1.3} ${y}L${x} ${y + R * 1.3}L${x - R * 1.3} ${y}Z`, fill, stroke, 'stroke-width': sw, 'stroke-linejoin': 'round' }, pg);
+  else el('circle', { cx: x, cy: y, r: R, fill, stroke, 'stroke-width': sw }, pg);
+  // texto legible: oscuro sobre la tinta aclarada, blanco sobre colores
+  const ink = p.outline ? c : (pal.ink && c === pal.ink ? pal.dark : '#fff');
+  text(label, label.length > 2 ? 0.8 : 1.05, ink, shape === 'triangle' ? 0.3 : 0);
+}
+// número de lectura del QB, junto al final de la ruta (o junto al jugador)
+function drawRead(g, p) {
+  const n = String(p.read || ''); if (!/^[1-5]$/.test(n)) return;
+  const rp = pts(p.route && p.route.pts), end = rp.length ? rp[rp.length - 1] : [num(p.x) + 1.4, num(p.y) + 1.4];
+  const x = end[0] + (rp.length ? 1.1 : 0), y = -(end[1] + (rp.length ? 0.9 : 0));
+  el('circle', { cx: x, cy: y, r: 0.78, fill: n === '1' ? '#c9570f' : (pal.ink || COLORS[0]), stroke: pal.ring, 'stroke-width': 0.12 }, g);
+  const t = el('text', { x, y, 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': 1, 'font-weight': 700, fill: n === '1' || !pal.ink ? '#fff' : pal.dark, 'font-family': FONT }, g);
+  t.textContent = n;
+}
+function drawBall(g, x, y) {
+  const bg = el('g', { transform: `translate(${x + 0.75} ${-y - 0.75}) rotate(-35)` }, g);
+  el('ellipse', { cx: 0, cy: 0, rx: 0.62, ry: 0.4, fill: '#8b4a1c', stroke: '#fff', 'stroke-width': 0.08 }, bg);
+  el('path', { d: 'M-0.25 0H0.25M-0.12 -0.1V0.1M0 -0.1V0.1M0.12 -0.1V0.1', stroke: '#fff', 'stroke-width': 0.06 }, bg);
 }
 function pts(list) { return (Array.isArray(list) ? list : []).filter(q => Array.isArray(q) && q.length >= 2).map(q => [num(q[0]), num(q[1])]); }
-// Dibuja una jugada completa en un <svg>. opts.edit agrega selección y puntos editables.
+// Dibuja una jugada completa en un <svg>. opts.edit agrega selección y puntos editables; opts.anim, posiciones de la animación; opts.light, paleta clara.
 function renderPlay(svg, play, opts = {}) {
-  const W = fieldW();
+  pal = opts.light || !isDark() ? PAL.light : PAL.dark;
+  const W = fieldW(), A = opts.anim;
   svg.textContent = '';
   svg.setAttribute('viewBox', `0 ${-VIEW.top} ${W} ${VIEW.top + VIEW.bottom}`);
   drawField(svg, W);
@@ -512,31 +599,111 @@ function renderPlay(svg, play, opts = {}) {
   const players = Array.isArray(play.players) ? play.players.filter(p => p && typeof p === 'object') : [];
   const gR = el('g', {}, svg), gP = el('g', {}, svg), gH = el('g', {}, svg);
   for (const p of players) {
+    if (p.shape === 'note') continue;
     const c = p.color, start = [num(p.x), num(p.y)];
     const mot = pts(p.motion && p.motion.pts);
-    if (mot.length) drawLine(gR, [start, ...mot], { color: c, dashed: true, end: 'none' });
+    if (mot.length) drawLine(gR, [start, ...mot], { color: c, zigzag: true, end: 'none', faded: !!A });
     const s = routeStart({ x: start[0], y: start[1], motion: { pts: mot } });
     const r = p.route || {};
     const rp = pts(r.pts);
-    if (rp.length) drawLine(gR, [[num(s.x), num(s.y)], ...rp], { color: c, dashed: r.style === 'dashed', end: r.end || 'arrow', curve: !!r.curve });
+    if (rp.length) drawLine(gR, [[num(s.x), num(s.y)], ...rp], { color: c, dashed: r.style === 'dashed', end: r.end || 'arrow', curve: !!r.curve, faded: !!A });
   }
-  if (opts.edit && S.mode !== 'select' && S.cursor) {
+  if (opts.edit && !A && S.mode !== 'select' && S.cursor) {
     const p = players.find(x => x.id === S.sel);
     if (p) {
       const list = S.mode === 'motion' ? pts(p.motion && p.motion.pts) : pts(p.route && p.route.pts);
       const from = list.length ? list[list.length - 1] : S.mode === 'motion' ? [p.x, p.y] : (s => [s.x, s.y])(routeStart(p));
-      el('line', { x1: from[0], y1: -from[1], x2: S.cursor[0], y2: -S.cursor[1], stroke: color(p.color), 'stroke-width': 0.22, 'stroke-dasharray': '0.4 0.3', opacity: 0.7 }, gR);
+      el('line', { x1: from[0], y1: -from[1], x2: S.cursor[0], y2: -S.cursor[1], stroke: shown(p.color), 'stroke-width': 0.22, 'stroke-dasharray': '0.4 0.3', opacity: 0.7 }, gR);
     }
   }
-  for (const p of players) drawPlayer(gP, p, opts.edit && p.id === S.sel);
+  if (!A) for (const p of players) if (p.shape !== 'note') drawRead(gR, p);
+  for (const p of players) drawPlayer(gP, p, opts.edit && !A && p.id === S.sel, A && A.pos.get(p.id));
+  if (A && A.ball) drawBall(gP, A.ball[0], A.ball[1]);
   // puntos editables de la ruta del jugador seleccionado
-  if (opts.edit && S.coach && S.mode === 'select') {
+  if (opts.edit && !A && S.coach && S.mode === 'select') {
     const p = players.find(x => x.id === S.sel);
     if (p) {
-      pts(p.motion && p.motion.pts).forEach((q, i) => el('circle', { cx: q[0], cy: -q[1], r: 0.55, fill: '#fff', stroke: color(p.color), 'stroke-width': 0.2, class: 'hd-pt', 'data-kind': 'motion', 'data-i': i, style: 'cursor:move' }, gH));
-      pts(p.route && p.route.pts).forEach((q, i) => el('circle', { cx: q[0], cy: -q[1], r: 0.55, fill: '#fff', stroke: color(p.color), 'stroke-width': 0.2, class: 'hd-pt', 'data-kind': 'route', 'data-i': i, style: 'cursor:move' }, gH));
+      pts(p.motion && p.motion.pts).forEach((q, i) => el('circle', { cx: q[0], cy: -q[1], r: 0.55, fill: pal.ring, stroke: shown(p.color), 'stroke-width': 0.2, class: 'hd-pt', 'data-kind': 'motion', 'data-i': i, style: 'cursor:move' }, gH));
+      pts(p.route && p.route.pts).forEach((q, i) => el('circle', { cx: q[0], cy: -q[1], r: 0.55, fill: pal.ring, stroke: shown(p.color), 'stroke-width': 0.2, class: 'hd-pt', 'data-kind': 'route', 'data-i': i, style: 'cursor:move' }, gH));
     }
   }
+}
+
+// ---------- animación ----------
+// Primero el motion, luego el snap (el balón va del centro al QB) y todas las rutas a la vez.
+// Si hay un jugador con lectura 1, el QB le lanza el balón.
+const SPD = { motion: 5, route: 7 };   // yardas por segundo a velocidad 1×
+const plen = l => l.reduce((s, q, i) => i ? s + Math.hypot(q[0] - l[i - 1][0], q[1] - l[i - 1][1]) : 0, 0);
+function along(l, d) {
+  for (let i = 1; i < l.length; i++) {
+    const sl = Math.hypot(l[i][0] - l[i - 1][0], l[i][1] - l[i - 1][1]);
+    if (d <= sl) { const k = sl ? d / sl : 0; return [l[i - 1][0] + (l[i][0] - l[i - 1][0]) * k, l[i - 1][1] + (l[i][1] - l[i - 1][1]) * k]; }
+    d -= sl;
+  }
+  return l[l.length - 1];
+}
+function animPlan(play) {
+  const items = (play.players || []).filter(p => p && typeof p.id === 'string' && p.shape !== 'note').map(p => {
+    const st = [num(p.x), num(p.y)], mot = pts(p.motion && p.motion.pts);
+    const mPath = mot.length ? [st, ...mot] : null, rs = mot.length ? mot[mot.length - 1] : st;
+    const rp = pts(p.route && p.route.pts), rPath = rp.length ? (p.route.curve ? curvePts([rs, ...rp]) : [rs, ...rp]) : null;
+    return { p, st, rs, mPath, rPath, mLen: mPath ? plen(mPath) : 0, rLen: rPath ? plen(rPath) : 0 };
+  });
+  const tM = Math.max(0, ...items.map(i => i.mLen / SPD.motion)), snapT = tM + 0.5;
+  const off = items.filter(i => i.p.team === 'O');
+  const C = off.find(i => /^C$/i.test(i.p.label || '')), QB = off.find(i => /^QB$/i.test(i.p.label || ''));
+  const target = off.find(i => String(i.p.read) === '1' && i !== QB);
+  const passT = target && QB ? snapT + 0.35 + clamp(target.rLen / SPD.route * 0.6, 0.8, 2.5) : null;
+  const moves = items.some(i => i.mLen || i.rLen);
+  return { items, snapT, end: snapT + Math.max(1.5, ...items.map(i => i.rLen / SPD.route), passT ? passT - snapT + 0.8 : 0) + 0.6, C, QB, target, passT, moves };
+}
+const posAt = (plan, i, t) => t < plan.snapT ? (i.mPath ? along(i.mPath, t * SPD.motion) : i.st) : (i.rPath ? along(i.rPath, (t - plan.snapT) * SPD.route) : i.rs);
+function frameAt(plan, t) {
+  const pos = new Map(plan.items.map(i => [i.p.id, posAt(plan, i, t)]));
+  const at = i => pos.get(i.p.id), lerp = (a, b, k) => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k];
+  const { C, QB, target, passT, snapT } = plan;
+  let ball = null;
+  if (C || QB) {
+    if (t < snapT || !QB) ball = at(C || QB);
+    else if (C && t < snapT + 0.35) ball = lerp(at(C), at(QB), (t - snapT) / 0.35);
+    else if (!passT || t < passT) ball = at(QB);
+    else if (t < passT + 0.6) ball = lerp(posAt(plan, QB, passT), at(target), (t - passT) / 0.6);   // el pase sale de donde estaba el QB
+    else ball = at(target);
+  }
+  return { pos, ball };
+}
+const ANIM = { plan: null, t: 0, playing: false, raf: 0, last: 0 };
+function animFrame() { if (ANIM.plan && S.cur) renderPlay(svg, S.cur, { edit: true, anim: frameAt(ANIM.plan, ANIM.t) }); }
+function animTick(now) {
+  ANIM.t = Math.min(ANIM.plan.end, ANIM.t + (now - ANIM.last) / 1000 * (+$('animSpeed').value || 1));
+  ANIM.last = now; animFrame();
+  if (ANIM.t >= ANIM.plan.end) { ANIM.playing = false; paintAnim(); return; }
+  ANIM.raf = requestAnimationFrame(animTick);
+}
+function animPlay() {
+  if (!S.cur) return;
+  if (!ANIM.plan || ANIM.t >= ANIM.plan.end) {
+    finishDraw();
+    const plan = animPlan(S.cur);
+    if (!plan.moves) { toast('Esta jugada aún no tiene rutas ni motion para animar.'); return; }
+    ANIM.plan = plan; ANIM.t = 0;
+  }
+  ANIM.playing = true; ANIM.last = performance.now();
+  cancelAnimationFrame(ANIM.raf); ANIM.raf = requestAnimationFrame(animTick);
+  paintAnim();
+}
+function animPause() { ANIM.playing = false; cancelAnimationFrame(ANIM.raf); paintAnim(); }
+function animStop() {
+  cancelAnimationFrame(ANIM.raf);
+  const was = !!ANIM.plan;
+  ANIM.plan = null; ANIM.t = 0; ANIM.playing = false; paintAnim();
+  if (was) renderField();
+}
+function paintAnim() {
+  $('animPlay').innerHTML = ANIM.playing ? '❚❚ Pausa' : (ANIM.plan && ANIM.t > 0 && ANIM.t < ANIM.plan.end ? '▶ Seguir' : '▶ Animar');
+  $('animStop').disabled = !ANIM.plan;
+  $('field').classList.toggle('animating', !!ANIM.plan);
+  updateHint();
 }
 
 // ---------- API ----------
@@ -578,12 +745,14 @@ window.addEventListener('beforeunload', e => { if (timers.size) { flushAll(); e.
 // ---------- deshacer ----------
 function snapshot() {
   if (!S.cur) return;
+  if (ANIM.plan) animStop();   // editar siempre parte del diagrama, no de la animación
   S.undo.push(JSON.stringify(S.cur.players)); if (S.undo.length > 60) S.undo.shift();
   S.redo = [];
 }
 function undo(dir) {
   const from = dir > 0 ? S.redo : S.undo, to = dir > 0 ? S.undo : S.redo;
   if (!S.cur || !from.length) return;
+  if (ANIM.plan) animStop();
   to.push(JSON.stringify(S.cur.players));
   S.cur.players = JSON.parse(from.pop());
   if (!S.cur.players.some(p => p.id === S.sel)) S.sel = null;
@@ -603,7 +772,7 @@ async function loadBooks(selectId) {
   await openBook(b);
 }
 async function openBook(b) {
-  flushAll();
+  animStop(); flushAll();
   S.book = b; S.plays = []; S.cur = null; S.sel = null; S.mode = 'select'; S.undo = []; S.redo = [];
   $('blank').hidden = !!b; $('main').hidden = !b;
   ['renBook', 'delBook', 'printSel', 'pngBtn'].forEach(id => $(id).disabled = !b);
@@ -670,7 +839,7 @@ $('delBook').onclick = async () => {
 };
 
 // ---------- jugadas ----------
-function selectPlay(p) { S.cur = p; S.sel = null; S.mode = 'select'; S.undo = []; S.redo = []; renderAll(); }
+function selectPlay(p) { animStop(); S.cur = p; S.sel = null; S.mode = 'select'; S.undo = []; S.redo = []; renderAll(); }
 function addPlay(p, at) {
   S.plays.splice(at == null ? S.plays.length : at, 0, p);
   selectPlay(p); saveOrder(); save(p);
@@ -739,9 +908,13 @@ function addPlayer(team) {
   if (!S.cur) return;
   snapshot();
   const W = fieldW();
-  const p = makePlayer([team === 'D' ? 'D' : 'J', 0, team === 'D' ? 4 : -3, 'circle', 4], team, W);
+  const p = team === 'N'
+    ? { id: uid(), team: 'N', label: 'Texto', shape: 'note', color: COLORS[0], x: W / 2, y: 10, route: null, motion: null }
+    : makePlayer([team === 'D' ? 'D' : 'J', 0, team === 'D' ? 4 : -3, 'circle', 4], team, W);
   S.cur.players.push(p); S.sel = p.id; changed();
+  if (team === 'N') { $('plLabel').focus(); $('plLabel').select(); }
 }
+$('addN').onclick = () => addPlayer('N');
 $('addO').onclick = () => addPlayer('O');
 $('addD').onclick = () => addPlayer('D');
 $('defPut').onclick = () => {
@@ -771,8 +944,16 @@ const selP = () => S.cur && S.cur.players.find(p => p.id === S.sel) || null;
 COLORS.forEach(c => { const b = document.createElement('button'); b.className = 'sw'; b.style.background = c; b.dataset.c = c; b.setAttribute('aria-label', 'Color ' + c); $('plColors').append(b); });
 $('plColors').onclick = e => { const b = e.target.closest('.sw'), p = selP(); if (!b || !p || !S.coach) return; snapshot(); p.color = b.dataset.c; changed(); };
 $('plLabel').addEventListener('focus', () => snapshot());
-$('plLabel').addEventListener('input', () => { const p = selP(); if (!p || !S.coach) return; p.label = $('plLabel').value.toUpperCase().slice(0, 3); save(S.cur); renderField(); renderList(); });
+$('plLabel').addEventListener('input', () => { const p = selP(); if (!p || !S.coach) return; p.label = p.shape === 'note' ? $('plLabel').value.slice(0, 30) : $('plLabel').value.toUpperCase().slice(0, 3); save(S.cur); renderField(); renderList(); });
 $('plShape').onchange = () => { const p = selP(); if (!p) return; snapshot(); p.shape = $('plShape').value; changed(); };
+$('plOutline').onchange = () => { const p = selP(); if (!p) return; snapshot(); p.outline = $('plOutline').checked; changed(); };
+$('plRead').onchange = () => {
+  const p = selP(); if (!p) return; snapshot();
+  const v = $('plRead').value;
+  // solo un jugador puede tener cada número de lectura
+  if (v) for (const o of S.cur.players) if (o !== p && String(o.read) === v) o.read = '';
+  p.read = v; changed();
+};
 function routeOf(p) { if (!p.route) p.route = { pts: [], end: 'arrow', style: 'solid', curve: false }; return p.route; }
 $('rEnd').onchange = () => { const p = selP(); if (!p) return; snapshot(); routeOf(p).end = $('rEnd').value; changed(); };
 $('rStyle').onchange = () => { const p = selP(); if (!p) return; snapshot(); routeOf(p).style = $('rStyle').value; changed(); };
@@ -816,7 +997,6 @@ $('drawRoute').onclick = () => S.mode === 'route' ? finishDraw() : startDraw('ro
 $('drawMotion').onclick = () => S.mode === 'motion' ? finishDraw() : startDraw('motion');
 
 // ---------- interacción con el campo ----------
-const svg = $('field');
 function toField(e) {
   const m = svg.getScreenCTM(); if (!m) return [0, 0];
   const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
@@ -825,7 +1005,7 @@ function toField(e) {
 }
 let drag = null;
 svg.addEventListener('pointerdown', e => {
-  if (!S.cur) return;
+  if (!S.cur || ANIM.plan) return;
   const at = toField(e);
   if (S.mode !== 'select') {
     if (!S.coach) return;
@@ -849,6 +1029,7 @@ svg.addEventListener('pointerdown', e => {
   if (drag) svg.setPointerCapture(e.pointerId);
 });
 svg.addEventListener('pointermove', e => {
+  if (ANIM.plan) return;
   if (S.mode !== 'select') { S.cursor = toField(e); renderField(); return; }
   if (!drag) return;
   const p = selP(); if (!p) return;
@@ -877,7 +1058,11 @@ svg.addEventListener('dblclick', () => { if (S.mode !== 'select') finishDraw(); 
 
 document.addEventListener('keydown', e => {
   const t = e.target;
-  if (t.matches('input, textarea, select') || !S.cur || !S.coach) return;
+  if (t.matches('input, textarea, select, button') && e.key === ' ') return;
+  if (t.matches('input, textarea, select') || !S.cur) return;
+  if (e.key === ' ') { e.preventDefault(); ANIM.playing ? animPause() : animPlay(); return; }
+  if (ANIM.plan) { if (e.key === 'Escape') animStop(); return; }
+  if (!S.coach) return;
   const k = e.key;
   if ((e.ctrlKey || e.metaKey) && (k === 'z' || k === 'Z')) { e.preventDefault(); undo(e.shiftKey ? 1 : -1); }
   else if ((e.ctrlKey || e.metaKey) && (k === 'y' || k === 'Y')) { e.preventDefault(); undo(1); }
@@ -889,26 +1074,37 @@ document.addEventListener('keydown', e => {
 $('undoBtn').onclick = () => undo(-1);
 $('redoBtn').onclick = () => undo(1);
 
+$('pSearch').addEventListener('input', () => renderList());
+$('animPlay').onclick = () => ANIM.playing ? animPause() : animPlay();
+$('animStop').onclick = () => animStop();
+// al cambiar de tema se vuelve a dibujar el campo y las miniaturas
+document.addEventListener('sideline:theme', () => { if (S.book) { renderField(); renderList(); } });
+
 // ---------- render ----------
 const playName = p => p ? (p.name || 'Sin nombre') : '—';
-function renderField() { renderPlay(svg, S.cur, { edit: true }); svg.classList.toggle('drawing', S.mode !== 'select'); updateHint(); $('undoBtn').disabled = !S.undo.length; $('redoBtn').disabled = !S.redo.length; }
+function renderField() { if (ANIM.plan) { animFrame(); return; } renderPlay(svg, S.cur, { edit: true }); svg.classList.toggle('drawing', S.mode !== 'select'); updateHint(); $('undoBtn').disabled = !S.undo.length; $('redoBtn').disabled = !S.redo.length; }
 function updateHint() {
   const h = $('hint');
   if (!S.cur) { h.textContent = S.plays.length ? '' : (S.coach ? 'Elige una formación y presiona «+ Nueva» para crear la primera jugada.' : 'Este playbook aún no tiene jugadas.'); return; }
+  if (ANIM.plan) { h.innerHTML = '<b>Animación:</b> Espacio pausa o sigue · Stop (o Esc) vuelve al diagrama para editar.'; return; }
   if (S.mode !== 'select') { h.innerHTML = `<b>${S.mode === 'motion' ? 'Motion' : 'Ruta'}:</b> haz clic en el campo para cada quiebre. Termina con doble clic, Enter o «Listo».`; return; }
-  h.textContent = S.coach ? (selP() ? 'Arrastra el jugador o los puntos blancos de su ruta. R = ruta, M = motion, Supr = eliminar.' : 'Clic en un jugador para editarlo. Arrástralo para moverlo.') : '';
+  h.textContent = S.coach ? (selP() ? 'Arrastra el jugador o los puntos de su ruta. R = ruta, M = motion, Supr = eliminar.' : 'Clic en un jugador para editarlo. Arrástralo para moverlo. Espacio = animar.') : 'Presiona «Animar» (o Espacio) para ver correr la jugada.';
 }
-function thumb(play) {
+function thumb(play, light) {
   const s = document.createElementNS(NS, 'svg');
   s.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-  renderPlay(s, play);
+  renderPlay(s, play, { light });
   return s;
 }
 function renderList() {
   const rows = $('rows'); rows.textContent = '';
   $('count').textContent = S.plays.length;
   if (!S.plays.length) { const d = document.createElement('div'); d.className = 'emptylist'; d.textContent = S.coach ? 'Sin jugadas todavía. Elige una formación arriba y presiona «+ Nueva».' : 'Sin jugadas todavía.'; rows.append(d); return; }
+  const q = $('pSearch').value.trim().toLowerCase();
+  const match = p => !q || [p.name, p.formation, p.type, p.notes].join(' ').toLowerCase().includes(q);
+  if (!S.plays.some(match)) { const d = document.createElement('div'); d.className = 'emptylist'; d.textContent = 'Ninguna jugada coincide con la búsqueda.'; rows.append(d); return; }
   S.plays.forEach((p, i) => {
+    if (!match(p)) return;
     const b = document.createElement('button'); b.className = 'row' + (p === S.cur ? ' sel' : '');
     const n = document.createElement('span'); n.className = 'n'; n.textContent = i + 1;
     const info = document.createElement('span');
@@ -930,10 +1126,16 @@ function paintPlay() {
 function paintPlayer() {
   const p = selP();
   $('playerProps').hidden = !p || !S.coach; $('playProps').hidden = !!(p && S.coach);
-  $('propTitle').textContent = p && S.coach ? `Jugador ${p.label || ''}` : 'Jugada';
+  const note = !!p && p.shape === 'note';
+  $('propTitle').textContent = p && S.coach ? (note ? 'Texto en el campo' : `Jugador ${p.label || ''}`) : 'Jugada';
   if (!p) return;
+  $('plLabel').maxLength = note ? 30 : 3;
+  ['plShapeBox', 'plOutlineBox', 'plRouteBox'].forEach(id => $(id).hidden = note);
+  $('plDel').textContent = note ? 'Eliminar texto' : 'Eliminar jugador';
   if (document.activeElement !== $('plLabel')) $('plLabel').value = p.label || '';
-  $('plShape').value = p.shape || 'circle';
+  $('plShape').value = SHAPES.includes(p.shape) && p.shape !== 'note' ? p.shape : 'circle';
+  $('plOutline').checked = !!p.outline; $('plOutline').disabled = ['text', 'x'].includes(p.shape);
+  $('plRead').value = /^[1-5]$/.test(String(p.read || '')) ? String(p.read) : '';
   [...$('plColors').children].forEach(b => b.classList.toggle('on', b.dataset.c === p.color));
   const r = p.route || {};
   $('rEnd').value = r.end || 'arrow'; $('rStyle').value = r.style || 'solid'; $('rCurve').checked = !!r.curve;
@@ -953,7 +1155,7 @@ $('printSel').onchange = () => {
   list.forEach(p => {
     const c = document.createElement('div'); c.className = 'pc';
     const h = document.createElement('h4'); h.textContent = `${S.plays.indexOf(p) + 1}. ${playName(p)}${v !== 'band' && p.formation ? ' · ' + p.formation : ''}`;
-    c.append(h, thumb(p));
+    c.append(h, thumb(p, true));
     if (v !== 'band' && p.notes) { const n = document.createElement('p'); n.textContent = p.notes; c.append(n); }
     out.append(c);
   });
@@ -961,7 +1163,7 @@ $('printSel').onchange = () => {
 };
 $('pngBtn').onclick = () => {
   if (!S.cur) return toast('Primero elige una jugada.');
-  const s = thumb(S.cur), W = fieldW(), H = VIEW.top + VIEW.bottom, scale = 24, title = 60;
+  const s = thumb(S.cur, true), W = fieldW(), H = VIEW.top + VIEW.bottom, scale = 24, title = 60;
   s.setAttribute('xmlns', NS); s.setAttribute('width', W * scale); s.setAttribute('height', H * scale);
   const img = new Image(), url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(s)], { type: 'image/svg+xml' }));
   img.onload = () => {

@@ -224,11 +224,19 @@ td.when { font-family: var(--font-mono); font-size: 13px; white-space: nowrap; c
 .modcard li { display: grid; grid-template-columns: 16px minmax(0,1fr); gap: 10px; color: var(--graphite); font-size: 15px; }
 .modcard li::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--ink); margin-top: 9px; margin-left: 4px; }
 .plans { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 24px; }
-.plan { flex: 1 1 200px; display: flex; flex-direction: column; gap: 2px; padding: 14px 18px; border-radius: var(--r-card); box-shadow: var(--shadow-whisper); background: var(--eggshell); }
+.plan { flex: 1 1 200px; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 14px 18px; border-radius: var(--r-card); box-shadow: var(--shadow-whisper); background: var(--eggshell); border: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; transition: background .15s, transform .15s; }
+.plan:hover { background: var(--taupe); }
 .plan b { font-weight: 500; }
 .plan span { color: var(--smoke); font-size: 14px; }
-.plan.full { background: var(--ink); color: #fff; }
-.plan.full span { color: #c9c4bd; }
+.plan[aria-pressed="true"] { background: var(--ink); color: #fff; }
+.plan[aria-pressed="true"] span { color: #c9c4bd; }
+/* plan elegido: el módulo que no incluye se atenúa (y en celular se oculta) */
+.modcard { position: relative; transition: opacity .25s, filter .25s, transform .25s; }
+.modcard .off-badge { display: none; position: absolute; z-index: 1; top: 30%; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; font-size: 13px; padding: 6px 14px; border-radius: var(--r-pill); white-space: nowrap; }
+.mods[data-plan="video"] .modcard[data-mod="playbook"], .mods[data-plan="playbook"] .modcard[data-mod="video"] { opacity: .45; filter: grayscale(1); transform: scale(.98); }
+.mods[data-plan="video"] .modcard[data-mod="playbook"] .off-badge, .mods[data-plan="playbook"] .modcard[data-mod="video"] .off-badge { display: block; }
+@media (max-width: 900px) { .mods[data-plan="video"] .modcard[data-mod="playbook"], .mods[data-plan="playbook"] .modcard[data-mod="video"] { display: none; } }
+@media (prefers-reduced-motion: reduce) { .modcard, .plan { transition: none; } }
 
 /* íconos de «cómo funciona» */
 .steps .ic { display: block; width: 36px; height: 36px; color: var(--ink); margin-bottom: 18px; }

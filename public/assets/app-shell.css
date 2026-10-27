@@ -17,7 +17,7 @@
 }
 .modnav .mod svg { width: 18px; height: 18px; flex: none; }
 .modnav .mod:hover { color: var(--fg); background: var(--panel); }
-.modnav .mod.on { background: var(--fg); color: #fff; }
+.modnav .mod.on { background: var(--fg); color: var(--on-fg); }
 .modnav .mod.off { opacity: .55; }
 .modnav .mod .lock { width: 13px; height: 13px; margin-left: -2px; }
 
@@ -39,7 +39,7 @@
 .pop {
   position: absolute; right: 0; top: calc(100% + 6px); z-index: 45; min-width: 220px;
   background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 6px;
-  box-shadow: 0 10px 30px rgba(20,40,60,.16); display: flex; flex-direction: column;
+  box-shadow: 0 10px 30px var(--shadow-c); display: flex; flex-direction: column;
 }
 .pop .pi {
   display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: 0; border-radius: 6px;
@@ -72,3 +72,28 @@
   .ubtn .nm { display: none; }
   .ubtn { padding: 3px; }
 }
+
+/* ---------- tema claro / oscuro ----------
+   Valores claros por omisión de los tonos «suaves»; cada página define el resto en su :root.
+   El oscuro aplica con data-theme="dark" o, en modo automático, si el sistema está en oscuro. */
+:root {
+  --accent-soft: #fff1e6; --accent-hover: #b34c0b; --ok-soft: #e9f5ec; --bad-soft: #fdeeee;
+  --hover-line: #b9c4cf; --on-fg: #ffffff; --scrim: rgba(20,40,60,.35); --shadow-c: rgba(20,40,60,.16);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0e151c; --panel: #161f29; --panel-2: #1d2833; --line: #2a3744; --fg: #e4ebf2; --muted: #93a3b3;
+    --accent: #e8742a; --accent-hover: #f08a45; --accent-soft: #3a2516; --good: #4bbf6b; --bad: #f07272;
+    --ok-soft: #16301f; --bad-soft: #3a1c1c; --hover-line: #4a5a6a; --on-fg: #0e151c; --scrim: rgba(0,0,0,.55); --shadow-c: rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0e151c; --panel: #161f29; --panel-2: #1d2833; --line: #2a3744; --fg: #e4ebf2; --muted: #93a3b3;
+  --accent: #e8742a; --accent-hover: #f08a45; --accent-soft: #3a2516; --good: #4bbf6b; --bad: #f07272;
+  --ok-soft: #16301f; --bad-soft: #3a1c1c; --hover-line: #4a5a6a; --on-fg: #0e151c; --scrim: rgba(0,0,0,.55); --shadow-c: rgba(0,0,0,.5);
+}
+.themebtn { width: 36px; height: 36px; display: inline-grid; place-items: center; border-radius: 50%; border: 1px solid var(--line); background: var(--panel-2); color: var(--fg); padding: 0; flex: none; }
+.themebtn:hover { border-color: var(--hover-line); }
+.themebtn svg { width: 18px; height: 18px; }

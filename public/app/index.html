@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap">
 <link rel="stylesheet" href="/assets/app-shell.css">
+<script>try { var t = localStorage.getItem('sideline:theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
 <style>
 /* Sala de video. Layout: barra de módulos arriba; video + controles a la izquierda; jugada + lista a la derecha; se apila en teléfonos. Look claro y amable a la vista. */
 :root {
@@ -51,12 +52,12 @@ button { cursor: pointer; }
 
 .btn { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; text-decoration: none; color: inherit; }
 .btn svg { width: 16px; height: 16px; flex: none; }
-.btn:hover { border-color: #b9c4cf; background: var(--panel-2); }
+.btn:hover { border-color: var(--hover-line); background: var(--panel-2); }
 .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
-.btn.primary:hover { background: #b34c0b; }
-.btn.on { background: var(--fg); color: #fff; border-color: var(--fg); }
+.btn.primary:hover { background: var(--accent-hover); }
+.btn.on { background: var(--fg); color: var(--on-fg); border-color: var(--fg); }
 .btn.ghost { background: transparent; border-color: transparent; color: var(--muted); }
-.btn.ghost:hover { color: var(--bad); background: #fdeeee; }
+.btn.ghost:hover { color: var(--bad); background: var(--bad-soft); }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
 .btn.sm { padding: 5px 10px; font-size: 13px; }
 kbd { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; background: var(--panel); }
@@ -85,16 +86,16 @@ kbd { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); bor
 .gamebar .more .pop { min-width: 250px; }
 .status { font-size: 12px; padding: 4px 10px 4px 22px; border-radius: 999px; background: var(--panel-2); color: var(--muted); white-space: nowrap; position: relative; }
 .status::before { content: ""; position: absolute; left: 10px; top: 50%; width: 7px; height: 7px; margin-top: -3.5px; border-radius: 50%; background: #a9b4bf; }
-.status.ok { color: var(--good); background: #e9f5ec; } .status.ok::before { background: var(--good); }
-.status.bad { color: var(--bad); background: #fdeeee; } .status.bad::before { background: var(--bad); }
+.status.ok { color: var(--good); background: var(--ok-soft); } .status.ok::before { background: var(--good); }
+.status.bad { color: var(--bad); background: var(--bad-soft); } .status.bad::before { background: var(--bad); }
 .status.busy { color: var(--accent); background: var(--accent-soft); } .status.busy::before { background: var(--accent); }
-.warn { background: #fff4e5; border: 1px solid var(--accent); color: var(--fg); border-radius: var(--r); padding: 10px 12px; }
+.warn { background: var(--accent-soft); border: 1px solid var(--accent); color: var(--fg); border-radius: var(--r); padding: 10px 12px; }
 
 main { display: grid; grid-template-columns: minmax(0, 1fr) 410px; gap: 14px; flex: 1; min-height: 0; }
 @media (max-width: 980px) { main { grid-template-columns: minmax(0, 1fr); } }
 
 .left { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-.stagebox { position: relative; background: #0d1620; border-radius: 12px; overflow: hidden; aspect-ratio: 16 / 9; max-width: 100%; box-shadow: 0 6px 24px rgba(20,40,60,.14); }
+.stagebox { position: relative; background: #0d1620; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; aspect-ratio: 16 / 9; max-width: 100%; box-shadow: 0 6px 24px rgba(20,40,60,.14); }
 .stagebox:fullscreen { aspect-ratio: auto; border-radius: 0; width: 100% !important; }
 @media (min-width: 981px) { .tipline { display: none; } .right.fit { overflow: hidden; display: flex; flex-direction: column; }
   .right.fit > .card:first-child { flex: none; max-height: 58%; overflow-y: auto; }
@@ -136,7 +137,7 @@ canvas#draw.active { cursor: crosshair; }
 .transport { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 6px 10px; }
 .tgroup { display: inline-flex; align-items: center; gap: 2px; }
 .play { display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 18px 0 14px; margin: 0 4px; border-radius: 999px; border: 0; background: var(--accent); color: #fff; font-weight: 600; }
-.play:hover { background: #b34c0b; }
+.play:hover { background: var(--accent-hover); }
 .play svg { width: 18px; height: 18px; }
 .play .i-pause { display: none; }
 .play.playing .i-play { display: none; } .play.playing .i-pause { display: block; }
@@ -149,7 +150,7 @@ canvas#draw.active { cursor: crosshair; }
 .drawbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 6px 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
 #drawToggle.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 .swatches { display: inline-flex; gap: 6px; align-items: center; }
-.sw { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--line); padding: 0; }
+.sw { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--panel); box-shadow: 0 0 0 1px var(--line); padding: 0; }
 .sw.on { box-shadow: 0 0 0 2px var(--fg); }
 
 /* panel derecho */
@@ -163,7 +164,7 @@ canvas#draw.active { cursor: crosshair; }
 .form .c2 { grid-column: span 2; } .form .c4 { grid-column: 1 / -1; }
 .form label, .form .fl { font-size: 12px; color: var(--muted); font-weight: 500; }
 .form input, .form select, .form textarea { background: var(--panel-2); border: 1px solid var(--line); border-radius: 7px; padding: 7px 8px; width: 100%; min-width: 0; }
-.form input:focus, .form select:focus, .form textarea:focus { outline: none; border-color: var(--accent); background: #fff; }
+.form input:focus, .form select:focus, .form textarea:focus { outline: none; border-color: var(--accent); background: var(--panel); }
 .form textarea { resize: vertical; min-height: 54px; }
 .form .sec { grid-column: 1 / -1; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-top: 4px; display: flex; align-items: center; gap: 8px; }
 .form .sec::after { content: ""; flex: 1; border-top: 1px solid var(--line); }
@@ -206,10 +207,10 @@ canvas#draw.active { cursor: crosshair; }
 .stats span { display: flex; flex-direction: column-reverse; gap: 1px; background: var(--panel-2); border-radius: 8px; padding: 6px 8px; }
 .stats b { color: var(--fg); font-size: 16px; font-weight: 700; }
 
-.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: #fff; padding: 9px 16px; border-radius: 999px; font-weight: 500; z-index: 50; max-width: calc(100% - 32px); box-shadow: 0 8px 24px rgba(20,40,60,.25); }
-.help { position: fixed; inset: 0; background: rgba(20,40,60,.35); display: grid; place-items: center; z-index: 40; padding: 16px; }
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--on-fg); padding: 9px 16px; border-radius: 999px; font-weight: 500; z-index: 50; max-width: calc(100% - 32px); box-shadow: 0 8px 24px rgba(20,40,60,.25); }
+.help { position: fixed; inset: 0; background: var(--scrim); display: grid; place-items: center; z-index: 40; padding: 16px; }
 .help .card { max-width: 520px; width: 100%; }
-.gate { position: fixed; inset: 0; z-index: 60; background: radial-gradient(90% 70% at 50% 0%, #fff 0%, var(--bg) 70%); display: grid; place-items: center; padding: 24px max(16px, env(safe-area-inset-left, 0px)); overflow-y: auto; }
+.gate { position: fixed; inset: 0; z-index: 60; background: radial-gradient(90% 70% at 50% 0%, var(--panel) 0%, var(--bg) 70%); display: grid; place-items: center; padding: 24px max(16px, env(safe-area-inset-left, 0px)); overflow-y: auto; }
 .gate .card { width: 100%; max-width: 400px; padding: 30px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 12px 40px rgba(20,40,60,.12); border-radius: 16px; }
 .gate .brandmark { height: 30px; width: auto; display: block; margin-bottom: 4px; }
 .gate h2 { font-weight: 300; font-size: 26px; margin: 0; letter-spacing: -0.01em; }
@@ -220,7 +221,7 @@ canvas#draw.active { cursor: crosshair; }
 .lf input, .lf select { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 11px; font-size: 15px; width: 100%; min-width: 0; }
 .lf input:focus, .lf select:focus { outline: none; border-color: var(--accent); }
 .lerr { color: var(--bad); font-size: 13px; margin: 0; }
-.modal { position: fixed; inset: 0; z-index: 55; background: rgba(20,40,60,.35); display: grid; place-items: center; padding: 16px; overflow-y: auto; }
+.modal { position: fixed; inset: 0; z-index: 55; background: var(--scrim); display: grid; place-items: center; padding: 16px; overflow-y: auto; }
 .modal .card { width: 100%; max-width: 640px; }
 .modal .body { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
 .users { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -282,6 +283,7 @@ canvas#draw { inset: 0; width: 100%; height: 100%; }
       <a class="mod" href="/app/playbook/" data-mod="playbook" id="pbBtn" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3.5" width="16" height="18" rx="2"/><path d="M9 3.5h6v2.5H9z"/><circle cx="9" cy="16" r="1.6"/><path d="M13.5 9.5l3 3m0-3l-3 3"/><path d="M10 14.5c1.5-2 3-3 5-3.5"/></svg>Playbook</a>
     </nav>
     <span class="spacer"></span>
+    <button class="themebtn" id="themeBtn" type="button" aria-label="Cambiar tema"></button>
     <span class="status" id="status">Solo en este navegador</span>
     <div class="umenu" id="userMenu" hidden>
       <button class="ubtn" id="userBtn" aria-haspopup="true" aria-expanded="false" aria-label="Menú de usuario"><span class="av" id="userIni"></span><span class="nm"><b id="userName"></b><small id="userSub"></small></span><svg class="car" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
@@ -648,7 +650,7 @@ function sessionEnded() {
 }
 function cloudError(e) {
   if (e && e.status === 401) { setStatus('No se guardó', 'bad'); return; }
-  if (e && e.status === 403) { setStatus('No se guardó', 'bad'); toast('Solo los coaches pueden editar.'); return; }
+  if (e && e.status === 403) { setStatus('No se guardó', 'bad'); toast(e.body && e.body.error === 'module_off' ? e.message : 'Solo los coaches pueden editar.'); return; }
   setStatus('No se guardó · reintenta', 'bad');
   toast(e && e.status === 413 ? 'El dibujo es demasiado grande para guardarse.' : 'No se pudo guardar en la nube. Revisa tu conexión.');
 }
@@ -1105,7 +1107,7 @@ function syncSeg() {
 function renderSelHead() { const p = selPlay(); $('selNum').textContent = p ? `${numOf(p)} · ${ddText(p)}${posText(p) ? ' · ' + posText(p) : ''}` : '—'; }
 function renderForm() {
   const p = selPlay();
-  const collapsed = !p || S.formHidden;
+  const collapsed = !p || !!S.formHidden;   // siempre booleano: con undefined, classList.toggle alternaría la clase
   $('formCard').classList.toggle('collapsed', collapsed);
   $('formToggle').setAttribute('aria-expanded', String(!collapsed));
   $('formToggle').disabled = !p;
@@ -1213,6 +1215,7 @@ document.addEventListener('keydown', e => {
   const tag = (e.target.tagName || '').toLowerCase();
   if (e.key === 'Escape') { $('help').hidden = true; if (['input', 'textarea', 'select'].includes(tag)) e.target.blur(); if (S.draw) setDraw(false); return; }
   if (['input', 'textarea', 'select'].includes(tag) || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (!hasVideo()) return;   // sin el módulo de video la sala está oculta: sin atajos
   const k = e.key;
   if (k === ' ') { e.preventDefault(); togglePlay(); }
   else if (k === 'ArrowLeft') { e.preventDefault(); if (e.shiftKey) { S.clip = false; P.seek(P.t - 5); } else step(-STEP); }
