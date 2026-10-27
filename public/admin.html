@@ -29,6 +29,10 @@
   .creds { background: var(--taupe); border-radius: 14px; padding: 16px 18px; margin-top: 16px; font-size: 14px; color: var(--graphite); }
   .box { background: var(--taupe); border-radius: var(--r-card); padding: 24px; margin-top: 24px; }
   .box h2 { margin: 0 0 16px; }
+  .mods { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-top: 12px; font-size: 14px; color: var(--graphite); }
+  .mods b { font-weight: 500; }
+  .mods label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+  .mods input { width: 16px; height: 16px; accent-color: #000; }
 </style>
 </head>
 <body>
@@ -60,7 +64,7 @@
     <div class="wrap">
       <p class="eyebrow">Administrador</p>
       <h1 class="h1">Equipos y usuarios</h1>
-      <p class="lead" style="margin-top:12px">Crea un equipo con su primer coach. Ese coach puede agregar al resto de coaches y jugadores desde la sala de video, en el botón «Equipo».</p>
+      <p class="lead" style="margin-top:12px">Crea un equipo con su primer coach. Ese coach puede agregar al resto de coaches y jugadores desde la app, en su menú de usuario → «Equipo y jugadores». Marca qué módulos incluye el plan de cada equipo: Video, Playbook o los dos.</p>
 
       <form id="keyForm" class="fields" style="max-width:520px;margin-top:24px" hidden>
         <div class="field full"><label for="key">Clave de administrador (COACH_KEY)</label><input id="key" type="password" autocomplete="current-password"></div>
@@ -76,6 +80,10 @@
             <div class="field"><label for="cName">Coach principal</label><input id="cName" placeholder="Ana López" maxlength="80" required></div>
             <div class="field"><label for="cUser">Usuario del coach</label><input id="cUser" placeholder="ana.lopez" maxlength="32" autocapitalize="none" spellcheck="false" required></div>
             <button class="btn btn-fill" type="submit">Crear equipo</button>
+          </div>
+          <div class="mods" id="newMods"><b>Módulos del plan:</b>
+            <label><input type="checkbox" value="video" checked> Video</label>
+            <label><input type="checkbox" value="playbook" checked> Playbook</label>
           </div>
           <div class="creds" id="newCreds" hidden></div>
         </form>
@@ -139,6 +147,10 @@
           <button class="btn btn-line" data-users="${esc(t.id)}">${open.has(t.id) ? 'Ocultar usuarios' : 'Usuarios'}</button>
           <button class="btn btn-ghost" data-toggle="${esc(t.id)}" data-active="${t.active ? 0 : 1}">${t.active ? 'Suspender' : 'Reactivar'}</button>
         </div>
+        <div class="mods" data-mods="${esc(t.id)}"><b>Módulos:</b>
+          <label><input type="checkbox" value="video" ${(t.modules || []).includes('video') ? 'checked' : ''}> Video</label>
+          <label><input type="checkbox" value="playbook" ${(t.modules || []).includes('playbook') ? 'checked' : ''}> Playbook</label>
+        </div>
         <div class="users" id="u-${esc(t.id)}" ${open.has(t.id) ? '' : 'hidden'}></div>
       </div>`).join('') : '<p class="muted" style="margin-top:24px">Todavía no hay equipos. Crea el primero arriba.</p>';
     for (const id of open) loadUsers(id);
@@ -185,10 +197,18 @@
       }
     } catch (x) { err(x.message); }
   });
+  const checkedMods = box => [...box.querySelectorAll('input:checked')].map(i => i.value);
+  // cambiar los módulos de un equipo existente
+  $('teams').addEventListener('change', async e => {
+    const box = e.target.closest('[data-mods]'); if (!box) return;
+    err('');
+    try { await api('admin/teams/modules', { method: 'POST', body: JSON.stringify({ id: box.dataset.mods, modules: checkedMods(box) }) }); }
+    catch (x) { await load(); err(x.message); }
+  });
   $('newTeam').onsubmit = async e => {
     e.preventDefault(); err('');
     try {
-      const r = await api('admin/teams', { method: 'POST', body: JSON.stringify({ name: $('tName').value, coach_name: $('cName').value, coach_username: $('cUser').value }) });
+      const r = await api('admin/teams', { method: 'POST', body: JSON.stringify({ name: $('tName').value, coach_name: $('cName').value, coach_username: $('cUser').value, modules: checkedMods($('newMods')) }) });
       $('newCreds').innerHTML = credsHtml(r.team.name, r.user.username, r.temp_password, `Equipo creado: ${r.team.name}. Coach principal: ${r.user.name}`);
       $('newCreds').hidden = false;
       $('tName').value = ''; $('cName').value = ''; $('cUser').value = ''; delete $('cUser').dataset.touched;

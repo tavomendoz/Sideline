@@ -14,7 +14,7 @@ async function init(db) {
     db.prepare(`CREATE TABLE IF NOT EXISTS videos (id TEXT PRIMARY KEY, title TEXT, updated_at INTEGER NOT NULL)`),
     db.prepare(`CREATE TABLE IF NOT EXISTS leads (id INTEGER PRIMARY KEY AUTOINCREMENT, created_at INTEGER NOT NULL, data TEXT NOT NULL)`),
     // equipos y cuentas
-    db.prepare(`CREATE TABLE IF NOT EXISTS teams (id TEXT PRIMARY KEY, name TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1, created_at INTEGER NOT NULL)`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS teams (id TEXT PRIMARY KEY, name TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1, created_at INTEGER NOT NULL, modules TEXT NOT NULL DEFAULT 'video,playbook')`),
     db.prepare(`CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, team_id TEXT NOT NULL, username TEXT NOT NULL UNIQUE, name TEXT NOT NULL, role TEXT NOT NULL, pass TEXT NOT NULL, must_change INTEGER NOT NULL DEFAULT 1, active INTEGER NOT NULL DEFAULT 1, created_at INTEGER NOT NULL)`),
     db.prepare(`CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY, user_id TEXT NOT NULL, expires_at INTEGER NOT NULL)`),
     db.prepare(`CREATE TABLE IF NOT EXISTS login_fail (username TEXT PRIMARY KEY, count INTEGER NOT NULL, until INTEGER NOT NULL)`),
@@ -25,6 +25,8 @@ async function init(db) {
     db.prepare(`CREATE TABLE IF NOT EXISTS pbooks (team_id TEXT NOT NULL, id TEXT NOT NULL, name TEXT NOT NULL, format INTEGER NOT NULL, side TEXT NOT NULL, updated_at INTEGER NOT NULL, PRIMARY KEY (team_id, id))`),
     db.prepare(`CREATE TABLE IF NOT EXISTS pbplays (team_id TEXT NOT NULL, book_id TEXT NOT NULL, id TEXT NOT NULL, pos INTEGER NOT NULL, data TEXT NOT NULL, updated_at INTEGER NOT NULL, PRIMARY KEY (team_id, book_id, id))`),
   ]);
+  // equipos creados antes de los módulos: se agrega la columna con ambos módulos activos (falla si ya existe)
+  try { await db.prepare(`ALTER TABLE teams ADD COLUMN modules TEXT NOT NULL DEFAULT 'video,playbook'`).run(); } catch (e) {}
   ready = true;
 }
 
@@ -36,6 +38,10 @@ const VID = /^[\w-]{11}$/;
 const PID = /^[\w-]{1,40}$/;
 const USERNAME = /^[a-z0-9._-]{3,32}$/;
 const SESSION_DAYS = 30;
+// módulos que se contratan por equipo
+const MODULES = ['video', 'playbook'];
+const parseModules = v => MODULES.filter(m => String(v ?? MODULES.join(',')).split(',').includes(m));
+const moduleList = v => MODULES.filter(m => (Array.isArray(v) ? v : []).includes(m));
 const enc = new TextEncoder();
 
 // ---------- helpers ----------
@@ -105,13 +111,13 @@ const publicUser = u => ({ id: u.id, username: u.username, name: u.name, role: u
 async function currentUser(request, db) {
   const t = cookieToken(request);
   if (!t) return null;
-  const row = await db.prepare(`SELECT u.*, t.name AS team_name, t.active AS team_active FROM sessions s
+  const row = await db.prepare(`SELECT u.*, t.name AS team_name, t.active AS team_active, t.modules AS team_modules FROM sessions s
       JOIN users u ON u.id = s.user_id JOIN teams t ON t.id = u.team_id
       WHERE s.token_hash = ?1 AND s.expires_at > ?2`).bind(await sha256(t), Date.now()).first();
   if (!row || !row.active || !row.team_active) return null;
   return row;
 }
-const me = u => ({ user: publicUser(u), team: { id: u.team_id, name: u.team_name } });
+const me = u => ({ user: publicUser(u), team: { id: u.team_id, name: u.team_name, modules: parseModules(u.team_modules) } });
 
 async function createUser(db, teamId, { name, username, role }) {
   name = str(name, 80); username = str(username, 32).toLowerCase(); role = role === 'coach' ? 'coach' : 'player';
@@ -166,7 +172,7 @@ async function handleApi(request, env, path) {
       if (await overLimit(db, 'ip:' + ip, 30, now)) return locked;
       const [perIp, perUser] = await Promise.all([hit(db, `u:${username}|${ip}`, now), hit(db, 'u:' + username, now)]);
       if (perIp > 5 || perUser > 50) return locked;
-      const u = await db.prepare(`SELECT u.*, t.name AS team_name, t.active AS team_active FROM users u JOIN teams t ON t.id = u.team_id WHERE u.username = ?1`).bind(username).first();
+      const u = await db.prepare(`SELECT u.*, t.name AS team_name, t.active AS team_active, t.modules AS team_modules FROM users u JOIN teams t ON t.id = u.team_id WHERE u.username = ?1`).bind(username).first();
       const ok = u && u.active && u.team_active && await checkPass(password, u.pass);
       if (!ok) {
         await hit(db, 'ip:' + ip, now);
@@ -193,20 +199,22 @@ async function handleApi(request, env, path) {
       if (denied) return denied;
       const sub = path.slice(6);
       if (sub === 'teams' && method === 'GET') {
-        const r = await db.prepare(`SELECT t.id, t.name, t.active, t.created_at,
+        const r = await db.prepare(`SELECT t.id, t.name, t.active, t.created_at, t.modules,
             (SELECT COUNT(*) FROM users u WHERE u.team_id = t.id AND u.role = 'coach') AS coaches,
             (SELECT COUNT(*) FROM users u WHERE u.team_id = t.id AND u.role = 'player') AS players,
             (SELECT COUNT(*) FROM tvideos v WHERE v.team_id = t.id) AS games
           FROM teams t ORDER BY t.created_at DESC`).all();
         const legacy = await db.prepare('SELECT COUNT(*) AS n FROM plays').first();
-        return json({ teams: r.results || [], legacy_plays: legacy ? legacy.n : 0 });
+        return json({ teams: (r.results || []).map(t => ({ ...t, modules: parseModules(t.modules) })), legacy_plays: legacy ? legacy.n : 0 });
       }
       if (sub === 'teams' && method === 'POST') {
         const b = await body();
         const name = str(b.name, 80);
         if (!name) return json({ error: 'bad_request', message: 'Escribe el nombre del equipo.' }, 400);
+        const modules = b.modules === undefined ? MODULES : moduleList(b.modules);
+        if (!modules.length) return json({ error: 'bad_request', message: 'Elige al menos un módulo.' }, 400);
         const id = randHex(6);
-        await db.prepare('INSERT INTO teams (id, name, active, created_at) VALUES (?1, ?2, 1, ?3)').bind(id, name, Date.now()).run();
+        await db.prepare('INSERT INTO teams (id, name, active, created_at, modules) VALUES (?1, ?2, 1, ?3, ?4)').bind(id, name, Date.now(), modules.join(',')).run();
         const c = await createUser(db, id, { name: b.coach_name, username: b.coach_username, role: 'coach' });
         if (c.error) { await db.prepare('DELETE FROM teams WHERE id = ?1').bind(id).run(); return json({ error: 'bad_request', message: c.error }, 400); }
         return json({ team: { id, name }, ...c });
@@ -215,6 +223,13 @@ async function handleApi(request, env, path) {
         const b = await body();
         await db.prepare('UPDATE teams SET active = ?1 WHERE id = ?2').bind(b.active ? 1 : 0, str(b.id, 20)).run();
         return json({ ok: true });
+      }
+      if (sub === 'teams/modules' && method === 'POST') {
+        const b = await body();
+        const modules = moduleList(b.modules);
+        if (!modules.length) return json({ error: 'bad_request', message: 'Elige al menos un módulo.' }, 400);
+        const r = await db.prepare('UPDATE teams SET modules = ?1 WHERE id = ?2').bind(modules.join(','), str(b.id, 20)).run();
+        return r.meta && r.meta.changes ? json({ ok: true, modules }) : json({ error: 'not_found' }, 404);
       }
       if (sub === 'users' && method === 'GET') {
         const r = await db.prepare('SELECT * FROM users WHERE team_id = ?1 ORDER BY role, name').bind(str(url.searchParams.get('team'), 20)).all();
@@ -325,6 +340,12 @@ async function handleApi(request, env, path) {
         return json({ ok: true });
       }
     }
+
+    // cada módulo solo responde si el plan del equipo lo incluye
+    const modules = parseModules(u.team_modules);
+    const off = m => json({ error: 'module_off', module: m, message: m === 'video' ? 'Tu plan no incluye el módulo de video.' : 'Tu plan no incluye el módulo de playbook.' }, 403);
+    if ((path === 'videos' || path === 'plays') && !modules.includes('video')) return off('video');
+    if (path.startsWith('playbooks') && !modules.includes('playbook')) return off('playbook');
 
     if (path === 'videos') {
       if (method === 'GET') {

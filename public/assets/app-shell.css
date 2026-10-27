@@ -1,0 +1,74 @@
+/* Sideline — barra superior compartida por los módulos de la app (Video y Playbook).
+   Se carga después de los estilos de cada página y usa sus mismas variables (--panel, --line, --fg, --accent…). */
+.topbar {
+  display: flex; align-items: center; gap: 12px 18px; flex-wrap: wrap;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+  padding: 8px 10px 8px 14px; box-shadow: 0 1px 2px rgba(20,40,60,.05);
+}
+.topbar .homelink { display: block; color: inherit; flex: none; }
+.topbar .brandmark { display: block; height: 28px; width: auto; }
+.topbar .spacer { flex: 1; }
+
+/* pestañas de módulo */
+.modnav { display: inline-flex; gap: 4px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
+.modnav .mod {
+  display: inline-flex; align-items: center; gap: 7px; padding: 6px 14px 6px 11px; border-radius: 999px;
+  color: var(--muted); text-decoration: none; font-weight: 600; font-size: 14px; white-space: nowrap;
+}
+.modnav .mod svg { width: 18px; height: 18px; flex: none; }
+.modnav .mod:hover { color: var(--fg); background: var(--panel); }
+.modnav .mod.on { background: var(--fg); color: #fff; }
+.modnav .mod.off { opacity: .55; }
+.modnav .mod .lock { width: 13px; height: 13px; margin-left: -2px; }
+
+/* menú de usuario */
+.umenu { position: relative; }
+.ubtn {
+  display: inline-flex; align-items: center; gap: 8px; background: none; border: 1px solid transparent; border-radius: 999px;
+  padding: 3px 10px 3px 3px; max-width: 260px;
+}
+.ubtn:hover, .ubtn[aria-expanded="true"] { background: var(--panel-2); border-color: var(--line); }
+.ubtn .av {
+  width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: #fff; flex: none;
+  display: grid; place-items: center; font-weight: 700; font-size: 13px; letter-spacing: .02em;
+}
+.ubtn .nm { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; min-width: 0; text-align: left; }
+.ubtn .nm b { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 170px; }
+.ubtn .nm small { font-size: 11px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 170px; }
+.ubtn .car { width: 12px; height: 12px; color: var(--muted); flex: none; }
+.pop {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 45; min-width: 220px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 6px;
+  box-shadow: 0 10px 30px rgba(20,40,60,.16); display: flex; flex-direction: column;
+}
+.pop .pi {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: 0; border-radius: 6px;
+  padding: 9px 10px; color: var(--fg); text-decoration: none; font-size: 14px; cursor: pointer;
+}
+.pop .pi:hover { background: var(--panel-2); }
+.pop .pi svg { width: 16px; height: 16px; color: var(--muted); flex: none; }
+.pop .pi.danger { color: var(--bad); }
+.pop .pi.danger svg { color: var(--bad); }
+.pop hr { border: 0; border-top: 1px solid var(--line); margin: 5px 4px; }
+.pop .phd { padding: 8px 10px 6px; font-size: 12px; color: var(--muted); line-height: 1.4; }
+.pop .phd b { display: block; color: var(--fg); font-size: 14px; }
+
+/* módulo no incluido en el plan */
+.locked {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 44px 24px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.locked svg.big { width: 56px; height: 56px; color: var(--accent); }
+.locked h2 { margin: 0; font-size: 22px; font-weight: 600; text-transform: none; letter-spacing: 0; }
+.locked p { margin: 0; color: var(--muted); max-width: 52ch; line-height: 1.55; }
+.locked .acts { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 6px; }
+
+@media (max-width: 640px) {
+  .topbar { padding: 8px 10px; gap: 10px 8px; }
+  .topbar .status { max-width: 128px; overflow: hidden; text-overflow: ellipsis; font-size: 11px; }
+  .topbar .brandmark { height: 22px; }
+  .modnav { order: 3; width: 100%; justify-content: stretch; }
+  .modnav .mod { flex: 1; justify-content: center; }
+  .ubtn .nm { display: none; }
+  .ubtn { padding: 3px; }
+}
