@@ -8,17 +8,19 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap">
+<link rel="stylesheet" href="/assets/app-shell.css">
 <style>
-/* Layout: video stage + transport on the left, play card + play list on the right; stacks on phones. Single light look by choice. */
+/* Sala de video. Layout: barra de módulos arriba; video + controles a la izquierda; jugada + lista a la derecha; se apila en teléfonos. Look claro y amable a la vista. */
 :root {
   color-scheme: light;
-  --bg: #eef3f8;
+  --bg: #f1f4f8;
   --panel: #ffffff;
-  --panel-2: #f4f7fa;
-  --line: #d5dee7;
+  --panel-2: #f5f7fa;
+  --line: #dfe5ec;
   --fg: #1f2b37;
-  --muted: #5d6d7d;
+  --muted: #607080;
   --accent: #c9570f;      /* naranja Sideline (más oscuro que el del logo para leer texto blanco) */
+  --accent-soft: #fff1e6;
   --accent-ink: #ffffff;
   --off: #e8742a;
   --def: #2f80d1;
@@ -27,15 +29,15 @@
   --bad: #d23f3f;
   --font-display: "Segoe UI", "Open Sans", "Helvetica Neue", Arial, sans-serif;
   --font-body: "Segoe UI", "Open Sans", "Helvetica Neue", Arial, sans-serif;
-  --font-mono: "Segoe UI", "Open Sans", "Helvetica Neue", Arial, sans-serif;
-  --r: 6px;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r: 10px;
 }
 html, body { height: 100%; }
 body {
   background: var(--bg); color: var(--fg);
   font-family: var(--font-body); font-size: 14px;
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-left: max(14px, env(safe-area-inset-left, 0px));
+  padding-right: max(14px, env(safe-area-inset-right, 0px));
   padding-block: 12px;
   box-sizing: border-box;
 }
@@ -45,133 +47,178 @@ button { cursor: pointer; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .app { display: flex; flex-direction: column; gap: 12px; min-height: 100%; }
-header { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
-.brand { display: flex; align-items: baseline; gap: 10px; margin-right: auto; }
-.brand h1 { font-family: var(--font-display); font-weight: 300; font-size: 30px; letter-spacing: 0; margin: 0; line-height: 1.1; }
-.brand h1 .brandmark { display: block; height: 34px; width: auto; }
-.brand h1 .homelink { display: block; color: inherit; }
-.brand .file { color: var(--muted); font-size: 13px; max-width: 32ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.spacer { flex: 1; }
 
-.btn { background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r); padding: 7px 12px; font-weight: 400; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; text-decoration: none; color: inherit; }
-.btn:hover { border-color: var(--muted); }
+.btn { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; text-decoration: none; color: inherit; }
+.btn svg { width: 16px; height: 16px; flex: none; }
+.btn:hover { border-color: #b9c4cf; background: var(--panel-2); }
 .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
-.btn.on { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.btn.primary:hover { background: #b34c0b; }
+.btn.on { background: var(--fg); color: #fff; border-color: var(--fg); }
+.btn.ghost { background: transparent; border-color: transparent; color: var(--muted); }
+.btn.ghost:hover { color: var(--bad); background: #fdeeee; }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
-.btn.sm { padding: 5px 9px; font-size: 13px; }
-kbd { font-family: var(--font-mono); font-size: 11px; color: var(--muted); border: 1px solid var(--line); border-radius: 3px; padding: 0 4px; }
-.btn.primary kbd, .btn.on kbd { color: inherit; border-color: currentColor; opacity: .7; }
+.btn.sm { padding: 5px 10px; font-size: 13px; }
+kbd { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; background: var(--panel); }
+.btn.primary kbd, .btn.on kbd { color: inherit; background: transparent; border-color: currentColor; opacity: .75; }
+.ib { width: 38px; height: 38px; display: inline-grid; place-items: center; border-radius: 50%; border: 1px solid transparent; background: transparent; color: var(--fg); padding: 0; }
+.ib svg { width: 21px; height: 21px; }
+.ib:hover { background: var(--panel-2); border-color: var(--line); }
+.ib:disabled { opacity: .4; cursor: not-allowed; }
 
-main { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 12px; flex: 1; min-height: 0; }
+/* segmentados (velocidad, herramientas y campos del formulario) */
+.seg { display: inline-flex; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 2px; gap: 2px; }
+.seg .btn, .seg button { border: 0; background: transparent; border-radius: 6px; padding: 5px 9px; font-size: 13px; font-weight: 500; color: var(--muted); min-width: 0; }
+.seg .btn:hover, .seg button:hover { color: var(--fg); background: var(--panel); }
+.seg .on, .seg .btn.on { background: var(--panel); color: var(--fg); box-shadow: 0 1px 2px rgba(20,40,60,.18); border: 0; }
+.seg.fill { display: flex; width: 100%; }
+.seg.fill button { flex: 1; }
+.form .seg button.on { color: var(--accent); font-weight: 700; }
+.sr { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* barra del partido */
+.gamebar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.gamebar .game { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 0 1 380px; }
+.gamebar .game .lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.gamebar select { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; min-width: 0; flex: 1; font-weight: 600; }
+.gamebar .file { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.gamebar .more .pop { min-width: 250px; }
+.status { font-size: 12px; padding: 4px 10px 4px 22px; border-radius: 999px; background: var(--panel-2); color: var(--muted); white-space: nowrap; position: relative; }
+.status::before { content: ""; position: absolute; left: 10px; top: 50%; width: 7px; height: 7px; margin-top: -3.5px; border-radius: 50%; background: #a9b4bf; }
+.status.ok { color: var(--good); background: #e9f5ec; } .status.ok::before { background: var(--good); }
+.status.bad { color: var(--bad); background: #fdeeee; } .status.bad::before { background: var(--bad); }
+.status.busy { color: var(--accent); background: var(--accent-soft); } .status.busy::before { background: var(--accent); }
+.warn { background: #fff4e5; border: 1px solid var(--accent); color: var(--fg); border-radius: var(--r); padding: 10px 12px; }
+
+main { display: grid; grid-template-columns: minmax(0, 1fr) 410px; gap: 14px; flex: 1; min-height: 0; }
 @media (max-width: 980px) { main { grid-template-columns: minmax(0, 1fr); } }
 
-.left { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-.stagebox { position: relative; background: #000; border-radius: var(--r); overflow: hidden; aspect-ratio: 16 / 9; max-width: 100%; border: 1px solid var(--line); box-shadow: 0 1px 3px rgba(20,40,60,.08); }
-.stagebox:fullscreen { aspect-ratio: auto; border: 0; border-radius: 0; width: 100% !important; }
+.left { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.stagebox { position: relative; background: #0d1620; border-radius: 12px; overflow: hidden; aspect-ratio: 16 / 9; max-width: 100%; box-shadow: 0 6px 24px rgba(20,40,60,.14); }
+.stagebox:fullscreen { aspect-ratio: auto; border-radius: 0; width: 100% !important; }
 @media (min-width: 981px) { .tipline { display: none; } .right.fit { overflow: hidden; display: flex; flex-direction: column; }
-  .right.fit > .card:first-child { flex: none; max-height: 54%; overflow-y: auto; }
+  .right.fit > .card:first-child { flex: none; max-height: 58%; overflow-y: auto; }
   .right.fit > .card:first-child > .hd { position: sticky; top: 0; z-index: 2; background: var(--panel); }
   #formCard > .hd { flex-wrap: nowrap; }
   #formCard > .hd h2 { min-width: 0; white-space: nowrap; overflow: hidden; }
-  #formCard > .hd .chip { overflow: hidden; text-overflow: ellipsis; max-width: 110px; display: inline-block; vertical-align: middle; }
+  #formCard > .hd .chip { overflow: hidden; text-overflow: ellipsis; max-width: 120px; display: inline-block; vertical-align: middle; }
   .right.fit .filters { flex-wrap: nowrap; gap: 6px; padding: 8px 12px; }
-  .right.fit .filters select, .right.fit .filters input { font-size: 12px; padding: 5px 4px; flex: 1 1 0; min-width: 0; }
-  .right.fit .filters input { flex: 1.4 1 0; }
+  .right.fit .filters select, .right.fit .filters input { font-size: 12px; padding: 6px 6px; flex: 1 1 0; min-width: 0; }
+  .right.fit .filters .search { flex: 1.4 1 0; }
+  .right.fit .filters .search input { padding-left: 27px; }
   .right.fit .list { flex: 1 1 auto; min-height: 0; }
-  .right.fit .rows { flex: 1 1 auto; min-height: 0; max-height: none; }
-  .form { padding: 10px 12px 12px; gap: 6px 8px; }
-  .form input, .form select { padding: 4px 6px; height: 30px; }
-  .form textarea { min-height: 40px; height: 40px; }
-  .form label { font-size: 11px; } }
+  .right.fit .rows { flex: 1 1 auto; min-height: 0; max-height: none; } }
 video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; }
 canvas#draw { position: absolute; touch-action: none; }
 canvas#draw.active { cursor: crosshair; }
-.drop { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px; color: var(--muted);
-  background: repeating-linear-gradient(90deg, transparent 0 9.9%, rgba(31,107,46,.07) 9.9% 10%), var(--panel-2); }
-.drop strong { display: block; font-family: var(--font-display); font-size: 28px; font-weight: 300; color: var(--fg); }
-.drop p { margin: 6px 0 14px; max-width: 46ch; }
+.drop { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px; color: rgba(255,255,255,.75);
+  background: radial-gradient(120% 90% at 45% 35%, #2f8a45 0%, #1f6b2e 55%, #123f1c 100%); }
+.drop::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 9.8%, rgba(255,255,255,.12) 9.8% 10%); pointer-events: none; }
+.drop > div { position: relative; background: rgba(8,20,12,.45); border-radius: 14px; padding: 22px 22px 20px; max-width: 520px; backdrop-filter: blur(2px); }
+.drop .big { width: 44px; height: 44px; color: #fff; margin-bottom: 6px; }
+.drop strong { display: block; font-size: 24px; font-weight: 600; color: #fff; }
+.drop p { margin: 6px auto 14px; max-width: 46ch; line-height: 1.5; }
+.drop .urlbar input { background: #fff; border-color: transparent; }
 .drop.over { outline: 3px dashed var(--accent); outline-offset: -10px; }
 .hud { position: absolute; left: 10px; top: 10px; display: flex; gap: 6px; pointer-events: none; }
-.hud span { background: rgba(0,0,0,.65); border-radius: 4px; padding: 3px 8px; font-family: var(--font-display); font-size: 16px; font-weight: 600; }
-.hud .spd { color: var(--accent); }
+.hud span { background: rgba(0,0,0,.65); border-radius: 6px; padding: 3px 8px; font-size: 16px; font-weight: 600; }
+.hud .spd { color: #ffb37a; }
 
-/* timeline */
-.timeline { position: relative; height: 34px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); cursor: pointer; touch-action: none; overflow: hidden; }
+/* línea de tiempo */
+.timeline { position: relative; height: 38px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; cursor: pointer; touch-action: none; overflow: hidden; }
 .timeline .prog { position: absolute; inset: 0 auto 0 0; background: rgba(201,87,15,.10); pointer-events: none; }
-.timeline .mk { position: absolute; top: 7px; bottom: 7px; min-width: 3px; border-radius: 2px; opacity: .75; pointer-events: none; }
-.timeline .mk.sel { top: 3px; bottom: 3px; opacity: 1; box-shadow: 0 0 0 2px var(--fg); }
+.timeline .mk { position: absolute; top: 9px; bottom: 9px; min-width: 4px; border-radius: 3px; opacity: .8; pointer-events: none; }
+.timeline .mk.sel { top: 4px; bottom: 4px; opacity: 1; box-shadow: 0 0 0 2px var(--fg); }
 .timeline .head { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--fg); pointer-events: none; }
+.timeline .head::before { content: ""; position: absolute; top: -1px; left: -5px; border: 6px solid transparent; border-top-color: var(--fg); }
 
-.transport { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.tc { font-family: var(--font-mono); font-size: 14px; min-width: 15ch; font-variant-numeric: tabular-nums; }
-.tc b { color: var(--fg); font-weight: 500; } .tc { color: var(--muted); }
-.group { display: inline-flex; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
-.group .btn { border: 0; border-radius: 0; border-right: 1px solid var(--line); }
-.group .btn:last-child { border-right: 0; }
-.spacer { flex: 1; }
+/* controles del video */
+.transport { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 6px 10px; }
+.tgroup { display: inline-flex; align-items: center; gap: 2px; }
+.play { display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 18px 0 14px; margin: 0 4px; border-radius: 999px; border: 0; background: var(--accent); color: #fff; font-weight: 600; }
+.play:hover { background: #b34c0b; }
+.play svg { width: 18px; height: 18px; }
+.play .i-pause { display: none; }
+.play.playing .i-play { display: none; } .play.playing .i-pause { display: block; }
+.tc { font-family: var(--font-mono); font-size: 14px; font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
+.tc b { color: var(--fg); font-weight: 600; }
+.speedwrap { display: inline-flex; align-items: center; gap: 8px; }
+.lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
 
-.drawbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); }
-.drawbar .lbl { font-family: var(--font-display); text-transform: uppercase; font-weight: 700; letter-spacing: .02em; font-size: 12px; color: var(--muted); margin-right: 4px; }
-.sw { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--line); padding: 0; }
-.sw.on { border-color: var(--fg); box-shadow: 0 0 0 2px var(--bg) inset; }
+/* pizarrón */
+.drawbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 6px 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+#drawToggle.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.swatches { display: inline-flex; gap: 6px; align-items: center; }
+.sw { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--line); padding: 0; }
+.sw.on { box-shadow: 0 0 0 2px var(--fg); }
 
-/* right */
-.right { display: flex; flex-direction: column; gap: 12px; min-width: 0; min-height: 0; }
-.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); box-shadow: 0 1px 3px rgba(20,40,60,.06); }
-.card h2 { font-family: var(--font-display); font-weight: 700; text-transform: uppercase; letter-spacing: .02em; font-size: 12px; margin: 0; display: flex; align-items: center; gap: 8px; }
-.card .hd { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+/* panel derecho */
+.right { display: flex; flex-direction: column; gap: 14px; min-width: 0; min-height: 0; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 1px 2px rgba(20,40,60,.05); }
+.card h2 { font-weight: 700; font-size: 15px; margin: 0; display: flex; align-items: center; gap: 8px; letter-spacing: 0; }
+.card .hd { display: flex; align-items: center; gap: 8px; padding: 10px 12px 10px 14px; border-bottom: 1px solid var(--line); }
 .card .hd .spacer { flex: 1; }
-.form { padding: 12px; display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; }
-.form .f { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.form { padding: 12px 14px 14px; display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px 10px; }
+.form .f { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .form .c2 { grid-column: span 2; } .form .c4 { grid-column: 1 / -1; }
-.form label { font-size: 12px; color: var(--muted); }
-.form input, .form select, .form textarea { background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 6px 7px; width: 100%; min-width: 0; }
+.form label, .form .fl { font-size: 12px; color: var(--muted); font-weight: 500; }
+.form input, .form select, .form textarea { background: var(--panel-2); border: 1px solid var(--line); border-radius: 7px; padding: 7px 8px; width: 100%; min-width: 0; }
+.form input:focus, .form select:focus, .form textarea:focus { outline: none; border-color: var(--accent); background: #fff; }
 .form textarea { resize: vertical; min-height: 54px; }
-.form .times { display: flex; gap: 6px; align-items: center; grid-column: 1 / -1; flex-wrap: wrap; }
-.form .times .tc { min-width: 0; }
+.form .sec { grid-column: 1 / -1; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-top: 4px; display: flex; align-items: center; gap: 8px; }
+.form .sec::after { content: ""; flex: 1; border-top: 1px solid var(--line); }
+.form .times { display: flex; gap: 8px; align-items: center; grid-column: 1 / -1; flex-wrap: wrap; background: var(--panel-2); border-radius: 10px; padding: 8px; }
+.form .times .tc { min-width: 0; font-size: 13px; }
+.form .times .btn { background: var(--panel); }
 .form[aria-disabled="true"] { opacity: .45; pointer-events: none; }
-.chip { font-family: var(--font-display); font-weight: 600; font-size: 13px; letter-spacing: 0; padding: 1px 8px; border-radius: 3px; background: var(--panel-2); border: 1px solid var(--line); white-space: nowrap; }
+.chip { font-weight: 600; font-size: 13px; letter-spacing: 0; padding: 2px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
 
 .list { display: flex; flex-direction: column; flex: 1; min-height: 260px; }
+.list .hd .seg .btn { padding: 4px 9px; }
+.list .hd .seg svg { width: 14px; height: 14px; }
 .filters { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
-.filters select, .filters input { background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 5px 6px; font-size: 13px; min-width: 0; }
-.filters input { flex: 1; min-width: 90px; }
+.filters select, .filters input { background: var(--panel-2); border: 1px solid var(--line); border-radius: 7px; padding: 6px 7px; font-size: 13px; min-width: 0; }
+.filters .search { flex: 1; min-width: 100px; position: relative; display: flex; }
+.filters .search svg { position: absolute; left: 8px; top: 50%; width: 14px; height: 14px; margin-top: -7px; color: var(--muted); pointer-events: none; }
+.filters .search input { width: 100%; padding-left: 27px; }
 .rows { overflow-y: auto; flex: 1; max-height: 52vh; }
 #formCard.collapsed .form { display: none; }
 #formCard.collapsed .hd { border-bottom: 0; }
-.iconbtn { width: 30px; justify-content: center; padding: 5px 0; }
+.iconbtn { width: 32px; justify-content: center; padding: 5px 0; }
 #formCard.collapsed .iconbtn { transform: rotate(-90deg); }
 @media (max-width: 980px) { .rows { max-height: none; } }
-.row { display: grid; grid-template-columns: 26px 4px minmax(0,1fr) auto; gap: 10px; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--line); cursor: pointer; width: 100%; text-align: left; background: none; border-left: 0; border-right: 0; border-top: 0; }
+.row { display: grid; grid-template-columns: 24px 5px minmax(0,1fr) auto; gap: 10px; align-items: center; padding: 11px 14px; border-bottom: 1px solid var(--line); cursor: pointer; width: 100%; text-align: left; background: none; border-left: 0; border-right: 0; border-top: 0; }
 .row:hover { background: var(--panel-2); }
-.row.sel { background: var(--panel-2); box-shadow: inset 3px 0 0 var(--accent); }
-.row .n { font-family: var(--font-display); font-weight: 400; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.row .bar { width: 6px; align-self: stretch; border-radius: 2px; }
+.row.sel { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
+.row .n { font-weight: 500; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; text-align: right; }
+.row .bar { width: 5px; align-self: stretch; border-radius: 3px; }
 .row .main { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
-.row .top { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.row .top { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-weight: 500; }
+.row .top .chip { background: var(--panel-2); color: var(--fg); }
 .row .sub { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.row .gain { font-family: var(--font-display); font-weight: 400; font-size: 18px; font-variant-numeric: tabular-nums; text-align: right; }
+.row .gain { font-weight: 600; font-size: 17px; font-variant-numeric: tabular-nums; text-align: right; }
 .gain.pos { color: var(--good); } .gain.neg { color: var(--bad); }
-.tag { font-size: 11px; padding: 1px 6px; border-radius: 3px; border: 1px solid var(--line); color: var(--muted); }
-.tag.ex { border-color: var(--accent); color: var(--accent); }
+.tag { font-size: 11px; padding: 1px 7px; border-radius: 999px; background: var(--panel-2); color: var(--muted); font-weight: 500; }
+.tag.ex { background: var(--accent-soft); color: var(--accent); }
 .tag.draw { color: var(--fg); }
-.empty { padding: 24px 16px; color: var(--muted); text-align: center; }
-.stats { display: flex; gap: 14px; padding: 8px 12px; color: var(--muted); font-size: 12px; flex-wrap: wrap; border-top: 1px solid var(--line); }
-.stats b { color: var(--fg); font-family: var(--font-display); font-size: 15px; font-weight: 600; }
+.empty { padding: 28px 18px; color: var(--muted); text-align: center; line-height: 1.5; }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 6px; padding: 10px 12px; color: var(--muted); font-size: 11px; border-top: 1px solid var(--line); }
+.stats span { display: flex; flex-direction: column-reverse; gap: 1px; background: var(--panel-2); border-radius: 8px; padding: 6px 8px; }
+.stats b { color: var(--fg); font-size: 16px; font-weight: 700; }
 
-.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 8px 14px; border-radius: var(--r); font-weight: 500; z-index: 50; max-width: calc(100% - 32px); }
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: #fff; padding: 9px 16px; border-radius: 999px; font-weight: 500; z-index: 50; max-width: calc(100% - 32px); box-shadow: 0 8px 24px rgba(20,40,60,.25); }
 .help { position: fixed; inset: 0; background: rgba(20,40,60,.35); display: grid; place-items: center; z-index: 40; padding: 16px; }
 .help .card { max-width: 520px; width: 100%; }
-.gate { position: fixed; inset: 0; z-index: 60; background: var(--bg); display: grid; place-items: center; padding: 24px max(16px, env(safe-area-inset-left, 0px)); overflow-y: auto; }
-.gate .card { width: 100%; max-width: 400px; padding: 28px; display: flex; flex-direction: column; gap: 14px; }
+.gate { position: fixed; inset: 0; z-index: 60; background: radial-gradient(90% 70% at 50% 0%, #fff 0%, var(--bg) 70%); display: grid; place-items: center; padding: 24px max(16px, env(safe-area-inset-left, 0px)); overflow-y: auto; }
+.gate .card { width: 100%; max-width: 400px; padding: 30px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 12px 40px rgba(20,40,60,.12); border-radius: 16px; }
 .gate .brandmark { height: 30px; width: auto; display: block; margin-bottom: 4px; }
-.gate h2 { font-family: var(--font-display); font-weight: 300; font-size: 26px; margin: 0; letter-spacing: -0.01em; }
+.gate h2 { font-weight: 300; font-size: 26px; margin: 0; letter-spacing: -0.01em; }
 .gate p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
 .gate a { color: var(--fg); }
 .lf { display: flex; flex-direction: column; gap: 5px; }
-.lf label { font-size: 12px; color: var(--muted); }
-.lf input, .lf select { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 11px; font-size: 15px; width: 100%; min-width: 0; }
-.lf input:focus, .lf select:focus { outline: none; border-color: var(--fg); }
+.lf label { font-size: 12px; color: var(--muted); font-weight: 500; }
+.lf input, .lf select { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 11px; font-size: 15px; width: 100%; min-width: 0; }
+.lf input:focus, .lf select:focus { outline: none; border-color: var(--accent); }
 .lerr { color: var(--bad); font-size: 13px; margin: 0; }
 .modal { position: fixed; inset: 0; z-index: 55; background: rgba(20,40,60,.35); display: grid; place-items: center; padding: 16px; overflow-y: auto; }
 .modal .card { width: 100%; max-width: 640px; }
@@ -186,6 +233,13 @@ canvas#draw.active { cursor: crosshair; }
 .creds code { font-family: var(--font-mono); font-size: 15px; background: var(--panel); padding: 1px 6px; border-radius: 4px; border: 1px solid var(--line); }
 .help dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; padding: 14px; margin: 0; }
 .help dt { text-align: right; } .help dd { margin: 0; color: var(--muted); }
+.note { font-size: 12px; color: var(--muted); }
+@media (max-width: 640px) {
+  .transport { justify-content: center; }
+  .transport .tc { order: -1; width: 100%; text-align: center; }
+  .speedwrap .lbl { display: none; }
+  .gamebar .game { flex-basis: 100%; }
+}
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 
@@ -196,26 +250,16 @@ body { margin: 0; }
 canvas#draw { inset: 0; width: 100%; height: 100%; }
 .card .hd { flex-wrap: wrap; }
 .urlbar { display: flex; gap: 8px; flex: 1 1 340px; min-width: 0; max-width: 560px; }
-.urlbar input { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--line); border-radius: var(--r); padding: 7px 10px; }
+.urlbar input { flex: 1; min-width: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; }
 .drop .urlbar { margin: 0 auto; }
 .note { font-size: 12px; color: var(--muted); }
-.cloudbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: 100%; }
-.cloudbar select { background: var(--bg); border: 1px solid var(--line); border-radius: var(--r); padding: 6px 8px; max-width: 100%; min-width: 0; flex: 0 1 380px; }
-.status { font-size: 12px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
-.status.ok { color: var(--good); border-color: var(--good); }
-.status.bad { color: var(--bad); border-color: var(--bad); }
-.status.busy { color: var(--accent); border-color: var(--accent); }
-.keyform { display: flex; gap: 6px; }
-.keyform input { background: var(--bg); border: 1px solid var(--line); border-radius: var(--r); padding: 5px 8px; width: 150px; min-width: 0; }
-.who { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 28ch; }
-.warn { background: #fff4e5; border: 1px solid var(--accent); color: var(--fg); border-radius: var(--r); padding: 10px 12px; }
+
 </style>
 </head>
 <body>
 <div class="app">
-  <header>
-    <div class="brand">
-      <h1><a class="homelink" href="/" aria-label="Sideline, inicio"><svg class='brandmark' viewBox='0 0 593 104' height='34' role='img' aria-label='Sideline'><circle cx='52' cy='52' r='50' fill='var(--fg)'/>
+  <header class="topbar">
+    <a class="homelink" href="/" aria-label="Sideline, inicio"><svg class='brandmark' viewBox='0 0 593 104' height='34' role='img' aria-label='Sideline'><circle cx='52' cy='52' r='50' fill='var(--fg)'/>
 <rect x='48.25' y='8.25' width='7.50' height='7.50' rx='1.35' fill='var(--bg)' transform='rotate(0.0 52.00 12.00)'/>
 <rect x='65.61' y='12.21' width='7.50' height='7.50' rx='1.35' fill='var(--bg)' transform='rotate(25.7 69.36 15.96)'/>
 <rect x='79.52' y='23.31' width='7.50' height='7.50' rx='1.35' fill='var(--bg)' transform='rotate(51.4 83.27 27.06)'/>
@@ -232,35 +276,59 @@ canvas#draw { inset: 0; width: 100%; height: 100%; }
 <rect x='30.89' y='12.21' width='7.50' height='7.50' rx='1.35' fill='var(--bg)' transform='rotate(334.3 34.64 15.96)'/>
 <circle cx='52' cy='52' r='31.00' fill='var(--bg)'/>
 <circle cx='52' cy='52' r='25.00' fill='none' stroke='var(--fg)' stroke-width='3.75'/>
-<path d='M42.25 39.00 L65.65 52.00 L42.25 65.00 Z' fill='#F26B1D' stroke='#F26B1D' stroke-width='2.50' stroke-linejoin='round'/><g transform='translate(128 85)'><path d='M3.588 -13.34Q28.796 -11.959999999999999 37.72 -11.959999999999999Q39.836 -11.959999999999999 41.078 -13.201999999999998Q42.32 -14.443999999999999 42.32 -16.56V-24.84H21.16Q11.5 -24.84 7.13 -29.21Q2.76 -33.58 2.76 -43.24V-46.0Q2.76 -55.66 7.13 -60.03Q11.5 -64.4 21.16 -64.4H53.452V-51.519999999999996H24.84Q19.32 -51.519999999999996 19.32 -46.0V-44.16Q19.32 -38.64 24.84 -38.64H41.4Q50.416 -38.64 54.647999999999996 -34.408Q58.879999999999995 -30.176 58.879999999999995 -21.16V-16.56Q58.879999999999995 -7.544 54.647999999999996 -3.312Q50.416 0.9199999999999999 41.4 0.9199999999999999Q36.708 0.9199999999999999 31.464 0.736L23.0 0.368Q13.616 -0.092 3.588 -0.9199999999999999ZM99.36000000000001 0.0H66.24000000000001V-12.879999999999999H74.52000000000001V-51.519999999999996H66.24000000000001V-64.4H99.36000000000001V-51.519999999999996H91.08V-12.879999999999999H99.36000000000001ZM145.36 -64.4Q155.756 -64.4 161.138 -59.018Q166.52 -53.635999999999996 166.52 -43.24V-21.16Q166.52 -10.764 161.138 -5.382Q155.756 0.0 145.36 0.0H109.48V-64.4ZM149.96 -43.24Q149.96 -51.519999999999996 141.68 -51.519999999999996H126.04V-12.879999999999999H141.68Q149.96 -12.879999999999999 149.96 -21.16ZM228.62 0.0H177.56000000000003V-64.4H228.62V-51.519999999999996H194.12V-39.1H221.26000000000002V-26.22H194.12V-12.879999999999999H228.62ZM254.38 -12.879999999999999H287.96000000000004V0.0H237.82000000000002V-64.4H254.38ZM326.6 0.0H293.48V-12.879999999999999H301.76000000000005V-51.519999999999996H293.48V-64.4H326.6V-51.519999999999996H318.32000000000005V-12.879999999999999H326.6ZM392.84000000000003 0.0H375.36L353.28000000000003 -38.64V0.0H336.72V-64.4H354.20000000000005L376.28000000000003 -25.759999999999998V-64.4H392.84000000000003ZM456.78000000000003 0.0H405.72V-64.4H456.78000000000003V-51.519999999999996H422.28000000000003V-39.1H449.4200000000001V-26.22H422.28000000000003V-12.879999999999999H456.78000000000003Z' fill='var(--fg)'/></g></svg></a></h1>
+<path d='M42.25 39.00 L65.65 52.00 L42.25 65.00 Z' fill='#F26B1D' stroke='#F26B1D' stroke-width='2.50' stroke-linejoin='round'/><g transform='translate(128 85)'><path d='M3.588 -13.34Q28.796 -11.959999999999999 37.72 -11.959999999999999Q39.836 -11.959999999999999 41.078 -13.201999999999998Q42.32 -14.443999999999999 42.32 -16.56V-24.84H21.16Q11.5 -24.84 7.13 -29.21Q2.76 -33.58 2.76 -43.24V-46.0Q2.76 -55.66 7.13 -60.03Q11.5 -64.4 21.16 -64.4H53.452V-51.519999999999996H24.84Q19.32 -51.519999999999996 19.32 -46.0V-44.16Q19.32 -38.64 24.84 -38.64H41.4Q50.416 -38.64 54.647999999999996 -34.408Q58.879999999999995 -30.176 58.879999999999995 -21.16V-16.56Q58.879999999999995 -7.544 54.647999999999996 -3.312Q50.416 0.9199999999999999 41.4 0.9199999999999999Q36.708 0.9199999999999999 31.464 0.736L23.0 0.368Q13.616 -0.092 3.588 -0.9199999999999999ZM99.36000000000001 0.0H66.24000000000001V-12.879999999999999H74.52000000000001V-51.519999999999996H66.24000000000001V-64.4H99.36000000000001V-51.519999999999996H91.08V-12.879999999999999H99.36000000000001ZM145.36 -64.4Q155.756 -64.4 161.138 -59.018Q166.52 -53.635999999999996 166.52 -43.24V-21.16Q166.52 -10.764 161.138 -5.382Q155.756 0.0 145.36 0.0H109.48V-64.4ZM149.96 -43.24Q149.96 -51.519999999999996 141.68 -51.519999999999996H126.04V-12.879999999999999H141.68Q149.96 -12.879999999999999 149.96 -21.16ZM228.62 0.0H177.56000000000003V-64.4H228.62V-51.519999999999996H194.12V-39.1H221.26000000000002V-26.22H194.12V-12.879999999999999H228.62ZM254.38 -12.879999999999999H287.96000000000004V0.0H237.82000000000002V-64.4H254.38ZM326.6 0.0H293.48V-12.879999999999999H301.76000000000005V-51.519999999999996H293.48V-64.4H326.6V-51.519999999999996H318.32000000000005V-12.879999999999999H326.6ZM392.84000000000003 0.0H375.36L353.28000000000003 -38.64V0.0H336.72V-64.4H354.20000000000005L376.28000000000003 -25.759999999999998V-64.4H392.84000000000003ZM456.78000000000003 0.0H405.72V-64.4H456.78000000000003V-51.519999999999996H422.28000000000003V-39.1H449.4200000000001V-26.22H422.28000000000003V-12.879999999999999H456.78000000000003Z' fill='var(--fg)'/></g></svg></a>
+    <nav class="modnav" aria-label="Módulos">
+      <a class="mod on" href="/app/" data-mod="video" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor" stroke="none"/></svg>Video</a>
+      <a class="mod" href="/app/playbook/" data-mod="playbook" id="pbBtn" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3.5" width="16" height="18" rx="2"/><path d="M9 3.5h6v2.5H9z"/><circle cx="9" cy="16" r="1.6"/><path d="M13.5 9.5l3 3m0-3l-3 3"/><path d="M10 14.5c1.5-2 3-3 5-3.5"/></svg>Playbook</a>
+    </nav>
+    <span class="spacer"></span>
+    <span class="status" id="status">Solo en este navegador</span>
+    <div class="umenu" id="userMenu" hidden>
+      <button class="ubtn" id="userBtn" aria-haspopup="true" aria-expanded="false" aria-label="Menú de usuario"><span class="av" id="userIni"></span><span class="nm"><b id="userName"></b><small id="userSub"></small></span><svg class="car" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="pop" id="userPop" hidden>
+        <div class="phd" id="who"></div>
+        <button class="pi" id="teamBtn" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.2c2.6.3 4.5 2.6 4.5 5.8"/></svg>Equipo y jugadores</button>
+        <button class="pi" id="pwBtn" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 7l2 2M14 9l2 2"/></svg>Cambiar contraseña</button>
+        <hr>
+        <button class="pi danger" id="logoutBtn" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 16l-4-4 4-4M6 12h10"/></svg>Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="gamebar" id="gamebar">
+    <div class="game">
+      <span class="lbl">Partido</span>
+      <select id="gamesSel" aria-label="Partidos guardados" hidden><option value="">Partidos guardados…</option></select>
       <div class="file" id="fileName">Sin video cargado</div>
     </div>
     <form class="urlbar" id="urlForm">
       <input id="urlInput" type="url" placeholder="Pega el enlace de YouTube del partido" aria-label="Enlace de YouTube">
       <button class="btn primary" type="submit">Cargar</button>
     </form>
-    <div class="actions">
-      <label class="btn" for="importInput">Importar etiquetas</label>
+    <span class="spacer"></span>
+    <div class="umenu more">
+      <button class="btn" id="moreBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="19" cy="12" r="1.3" fill="currentColor"/></svg>Más</button>
+      <div class="pop" id="morePop" hidden>
+        <label class="pi" for="importInput"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M8 8l4-4 4 4"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>Importar etiquetas (.json)</label>
+        <button class="pi" id="exportJson"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M8 11l4 4 4-4"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>Exportar etiquetas (.json)</button>
+        <button class="pi" id="exportCsv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M3.5 14.5h17M9.5 4.5v15"/></svg>Exportar a Excel (.csv)</button>
+        <button class="pi" id="shareBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>Copiar enlace del partido</button>
+        <hr>
+        <button class="pi" id="helpBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg>Atajos de teclado</button>
+      </div>
       <input type="file" id="importInput" accept=".json,application/json" hidden>
-      <button class="btn" id="exportJson">Exportar .json</button>
-      <button class="btn" id="exportCsv">Exportar .csv</button>
-      <button class="btn" id="shareBtn">Copiar enlace</button>
-      <button class="btn" id="helpBtn" aria-label="Atajos de teclado">Atajos <kbd>?</kbd></button>
     </div>
-    <div class="cloudbar">
-      <select id="gamesSel" aria-label="Partidos guardados" hidden><option value="">Partidos guardados…</option></select>
-      <span class="status" id="status">Solo en este navegador</span>
-      <span class="spacer" style="flex:1"></span>
-      <span class="who" id="who"></span>
-      <a class="btn sm" id="pbBtn" href="/app/playbook/" hidden>Playbooks</a>
-      <button class="btn sm" id="teamBtn" hidden>Equipo</button>
-      <button class="btn sm" id="pwBtn" hidden>Contraseña</button>
-      <button class="btn sm" id="logoutBtn" hidden>Salir</button>
-    </div>
-  </header>
+  </div>
   <div class="warn" id="fileWarn" hidden>Esta página está abierta como archivo local y YouTube no permite reproducir videos así (error 153). Súbela a GitHub Pages u otro sitio web y ábrela desde ahí.</div>
 
-  <main>
+  <section class="locked" id="videoLocked" hidden>
+    <svg class="big" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></svg>
+    <h2>El módulo de Video no está en el plan de tu equipo</h2>
+    <p>Con Video etiquetas los partidos de YouTube, dibujas sobre la pausa y compartes los clips con tus jugadores. Pide que lo agreguen a tu plan.</p>
+    <div class="acts"><a class="btn primary" href="/app/playbook/" id="lockedPb">Ir a Playbook</a><a class="btn" href="/contacto">Solicitar el módulo de Video</a></div>
+  </section>
+
+  <main id="videoMain">
     <section class="left">
       <div class="stagebox" id="stage">
         <div id="yt"></div>
@@ -268,8 +336,9 @@ canvas#draw { inset: 0; width: 100%; height: 100%; }
         <div class="hud" id="hud" hidden><span class="spd" id="hudSpd"></span></div>
         <div class="drop" id="drop">
           <div>
+            <svg class="big" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></svg>
             <strong>Carga el partido desde YouTube</strong>
-            <p>Pega el enlace de la transmisión de la liga (en vivo o ya terminada). El video se ve con el reproductor oficial de YouTube y aquí solo se guardan tus etiquetas.</p>
+            <p>Pega el enlace de la transmisión de la liga, en vivo o ya terminada. El video se ve con el reproductor oficial de YouTube y aquí solo se guardan tus etiquetas.</p>
             <form class="urlbar" id="urlForm2">
               <input id="urlInput2" type="url" placeholder="https://www.youtube.com/watch?v=…" aria-label="Enlace de YouTube">
               <button class="btn primary" type="submit">Cargar</button>
@@ -285,30 +354,29 @@ canvas#draw { inset: 0; width: 100%; height: 100%; }
       </div>
 
       <div class="transport">
-        <button class="btn" id="playBtn"><span id="playLbl">Reproducir</span> <kbd>Espacio</kbd></button>
-        <div class="group">
-          <button class="btn sm" id="back5" title="Atrás 5 s (Shift+←)">−5s</button>
-          <button class="btn sm" id="backF" title="Atrás 0.1 s (←)">◂ 0.1s</button>
-          <button class="btn sm" id="fwdF" title="Adelante 0.1 s (→)">0.1s ▸</button>
-          <button class="btn sm" id="fwd5" title="Adelante 5 s (Shift+→)">+5s</button>
+        <div class="tgroup">
+          <button class="ib" id="back5" title="Atrás 5 s (Shift+←)" aria-label="Atrás 5 segundos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/><text x="12" y="15.5" font-size="8" font-weight="700" text-anchor="middle" fill="currentColor" stroke="none" font-family="Arial, sans-serif">5</text></svg></button>
+          <button class="ib" id="backF" title="Atrás 0.1 s (←)" aria-label="Atrás 0.1 segundos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 6l-8 6 8 6z" fill="currentColor"/><path d="M7 6v12"/></svg></button>
+          <button class="play" id="playBtn" title="Reproducir o pausar (Espacio)"><svg class="i-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg><svg class="i-pause" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5.5v13M16 5.5v13" stroke-width="3.2"/></svg><span id="playLbl">Reproducir</span></button>
+          <button class="ib" id="fwdF" title="Adelante 0.1 s (→)" aria-label="Adelante 0.1 segundos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 6l8 6-8 6z" fill="currentColor"/><path d="M17 6v12"/></svg></button>
+          <button class="ib" id="fwd5" title="Adelante 5 s (Shift+→)" aria-label="Adelante 5 segundos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v4h-4"/><text x="12" y="15.5" font-size="8" font-weight="700" text-anchor="middle" fill="currentColor" stroke="none" font-family="Arial, sans-serif">5</text></svg></button>
         </div>
-        <div class="group" id="speeds"></div>
         <span class="tc" id="tc"><b>0:00.0</b> / 0:00.0</span>
         <span class="spacer"></span>
-        <button class="btn sm" id="fsBtn">Pantalla completa</button>
+        <div class="speedwrap"><span class="lbl">Velocidad</span><div class="seg" id="speeds"></div></div>
+        <button class="ib" id="fsBtn" title="Pantalla completa (F)" aria-label="Pantalla completa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
       </div>
 
       <div class="drawbar">
-        <span class="lbl">Pizarrón</span>
-        <button class="btn sm" id="drawToggle">Dibujar <kbd>D</kbd></button>
-        <div class="group" id="tools"></div>
-        <div style="display:flex;gap:6px" id="colors"></div>
-        <button class="btn sm" id="undoBtn">Deshacer <kbd>Z</kbd></button>
-        <button class="btn sm" id="clearBtn">Borrar</button>
+        <button class="btn" id="drawToggle" title="Activar o desactivar el pizarrón (D)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/></svg>Pizarrón</button>
+        <div class="seg" id="tools"></div>
+        <div class="swatches" id="colors"></div>
+        <button class="ib" id="undoBtn" title="Deshacer el último trazo (Z)" aria-label="Deshacer el último trazo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14l-5-5 5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
+        <button class="ib" id="clearBtn" title="Borrar el dibujo" aria-label="Borrar el dibujo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 20h12"/><path d="M5.5 15.5l9-9a2 2 0 0 1 2.8 0l1.2 1.2a2 2 0 0 1 0 2.8L12 17l-2.5 3H8z"/></svg></button>
         <span class="spacer"></span>
-        <button class="btn sm" id="saveDrawBtn" disabled>Guardar dibujo en jugada</button>
+        <button class="btn" id="saveDrawBtn" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/></svg>Guardar en la jugada</button>
       </div>
-      <div class="note tipline">Tip: si haces clic dentro del video, YouTube toma el teclado. Haz clic fuera del video para volver a usar los atajos.</div>
+      <div class="note tipline">Tip: si tocas dentro del video, YouTube toma el teclado. Toca fuera del video para volver a usar los atajos.</div>
     </section>
 
     <aside class="right">
@@ -316,31 +384,33 @@ canvas#draw { inset: 0; width: 100%; height: 100%; }
         <div class="hd">
           <h2>Jugada <span class="chip" id="selNum">—</span></h2>
           <span class="spacer"></span>
-          <button class="btn sm primary" id="newBtn">+ Nueva <kbd>N</kbd></button>
-          <button class="btn sm" id="delBtn" disabled>Eliminar</button>
+          <button class="btn sm primary" id="newBtn" title="Nueva jugada en el momento actual (N)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Nueva</button>
+          <button class="btn sm ghost" id="delBtn" disabled>Eliminar</button>
           <button class="btn sm iconbtn" id="formToggle" aria-expanded="true" title="Mostrar u ocultar el formulario">▾</button>
         </div>
         <div class="form" id="form" aria-disabled="true">
           <div class="times">
-            <button class="btn sm" id="setIn">Inicio <kbd>I</kbd></button>
+            <button class="btn sm" id="setIn" title="Marcar inicio (I)">Inicio</button>
             <span class="tc" id="inTc">—</span>
-            <button class="btn sm" id="setOut">Fin <kbd>O</kbd></button>
+            <button class="btn sm" id="setOut" title="Marcar fin (O)">Fin</button>
             <span class="tc" id="outTc">—</span>
             <span class="spacer"></span>
-            <button class="btn sm" id="clipBtn">Ver clip <kbd>C</kbd></button>
+            <button class="btn sm" id="clipBtn" title="Ver el clip (C)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>Ver clip</button>
           </div>
-          <div class="f"><label for="fQ">Cuarto</label><select id="fQ"><option>1</option><option>2</option><option>3</option><option>4</option><option value="TE">TE</option></select></div>
-          <div class="f" style="grid-column: span 3"><label for="fUnit">Unidad</label><select id="fUnit"><option value="O">Ofensiva</option><option value="D">Defensiva</option><option value="ST">Equipos especiales</option></select></div>
-          <div class="f"><label for="fDown">Down</label><select id="fDown"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+          <div class="sec">Situación</div>
+          <div class="f c4"><span class="fl">Unidad</span><select id="fUnit" data-seg aria-label="Unidad"><option value="O">Ofensiva</option><option value="D">Defensiva</option><option value="ST">Especiales</option></select></div>
+          <div class="f c2"><span class="fl">Cuarto</span><select id="fQ" data-seg aria-label="Cuarto"><option>1</option><option>2</option><option>3</option><option>4</option><option value="TE">TE</option></select></div>
+          <div class="f c2"><span class="fl">Down</span><select id="fDown" data-seg aria-label="Down"><option value="">—</option><option value="1">1ª</option><option value="2">2ª</option><option value="3">3ª</option><option value="4">4ª</option></select></div>
           <div class="f"><label for="fDist">Distancia</label><input id="fDist" type="number" min="0" max="99" inputmode="numeric"></div>
-          <div class="f"><label for="fSide">Campo</label><select id="fSide"><option value="P">Propio</option><option value="R">Rival</option></select></div>
+          <div class="f c2"><span class="fl">Campo</span><select id="fSide" data-seg aria-label="Campo"><option value="P">Propio</option><option value="R">Rival</option></select></div>
           <div class="f"><label for="fYard">Yarda</label><input id="fYard" type="number" min="1" max="50" inputmode="numeric"></div>
-          <div class="f"><label for="fHash">Hash</label><select id="fHash"><option value="">—</option><option value="I">Izq</option><option value="M">Medio</option><option value="D">Der</option></select></div>
-          <div class="f" style="grid-column: span 3"><label for="fForm">Formación</label><input id="fForm" list="formList" placeholder="Shotgun Trips Der"></div>
+          <div class="f c4"><span class="fl">Hash</span><select id="fHash" data-seg aria-label="Hash"><option value="">—</option><option value="I">Izquierda</option><option value="M">Medio</option><option value="D">Derecha</option></select></div>
+          <div class="sec">Jugada</div>
+          <div class="f c2"><label for="fForm">Formación</label><input id="fForm" list="formList" placeholder="Shotgun Trips Der"></div>
           <div class="f c2"><label for="fType">Tipo de jugada</label><select id="fType"></select></div>
           <div class="f c2"><label for="fRes">Resultado</label><select id="fRes"></select></div>
-          <div class="f"><label for="fGain">Yardas</label><input id="fGain" type="number" min="-99" max="109" inputmode="numeric"></div>
-          <div class="f" style="grid-column: span 3"><label for="fPlayer">Jugador(es)</label><input id="fPlayer" placeholder="#12, #24"></div>
+          <div class="f c2"><label for="fGain">Yardas ganadas</label><input id="fGain" type="number" min="-99" max="109" inputmode="numeric" placeholder="+/−"></div>
+          <div class="f c4"><label for="fPlayer">Jugador(es)</label><input id="fPlayer" placeholder="#12, #24"></div>
           <div class="f c4"><label for="fNotes">Notas para el equipo</label><textarea id="fNotes" placeholder="Qué corregir, qué repetir…"></textarea></div>
         </div>
       </div>
@@ -349,14 +419,16 @@ canvas#draw { inset: 0; width: 100%; height: 100%; }
         <div class="hd">
           <h2>Jugadas <span class="chip" id="count">0</span></h2>
           <span class="spacer"></span>
-          <button class="btn sm" id="loopBtn" title="Repetir el clip seleccionado">Repetir</button>
-          <button class="btn sm" id="chainBtn" title="Al terminar un clip, pasa a la siguiente jugada de la lista">Encadenar</button>
+          <div class="seg">
+            <button class="btn sm" id="loopBtn" title="Repetir el clip seleccionado"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3l3 3-3 3"/><path d="M4 11V9a3 3 0 0 1 3-3h13M7 21l-3-3 3-3"/><path d="M20 13v2a3 3 0 0 1-3 3H4"/></svg>Repetir</button>
+            <button class="btn sm" id="chainBtn" title="Al terminar un clip, pasa a la siguiente jugada de la lista"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6h10M5 12h10M5 18h6"/><path d="M17 15l3 3-3 3"/></svg>Encadenar</button>
+          </div>
         </div>
         <div class="filters">
-          <select id="qUnit" aria-label="Filtrar unidad"><option value="">Unidad</option><option value="O">Ofensiva</option><option value="D">Defensiva</option><option value="ST">Eq. especiales</option></select>
-          <select id="qDown" aria-label="Filtrar down"><option value="">Down</option><option>1</option><option>2</option><option>3</option><option>4</option></select>
+          <select id="qUnit" aria-label="Filtrar unidad"><option value="">Unidad</option><option value="O">Ofensiva</option><option value="D">Defensiva</option><option value="ST">Especiales</option></select>
+          <select id="qDown" aria-label="Filtrar down"><option value="">Down</option><option value="1">1ª</option><option value="2">2ª</option><option value="3">3ª</option><option value="4">4ª</option></select>
           <select id="qType" aria-label="Filtrar tipo"><option value="">Tipo</option></select>
-          <input id="qText" placeholder="Buscar" aria-label="Buscar">
+          <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg><input id="qText" placeholder="Buscar" aria-label="Buscar"></div>
         </div>
         <div class="rows" id="rows"></div>
         <div class="stats" id="stats"></div>
@@ -429,6 +501,7 @@ canvas#draw { inset: 0; width: 100%; height: 100%; }
   </div>
 </div>
 
+<script src="/assets/app-shell.js"></script>
 <script src="https://www.youtube.com/iframe_api"></script>
 <script>
 (() => {
@@ -652,6 +725,15 @@ function paintAuth() {
   $('logoutBtn').hidden = !on; $('pwBtn').hidden = !on; $('pbBtn').hidden = !on;
   $('teamBtn').hidden = !(on && cloud.ok);
   $('who').textContent = on ? `${cloud.user.name} · ${cloud.ok ? 'Coach' : 'Jugador'} · ${cloud.team.name}` : '';
+  window.SidelineShell && window.SidelineShell.setUser(on ? cloud.user : null, cloud.team);
+  window.SidelineShell && window.SidelineShell.setModules(on ? cloud.mods : null);
+}
+const hasVideo = () => !cloud.on || !cloud.mods || cloud.mods.includes('video');
+// sin el módulo de video se muestra el aviso en lugar de la sala
+function paintModule() {
+  const off = !hasVideo();
+  $('videoLocked').hidden = !off; $('videoMain').hidden = off; $('gamebar').hidden = off;
+  $('lockedPb').hidden = !(cloud.mods && cloud.mods.includes('playbook'));
 }
 function gateLogo() { const h = document.querySelector('.brand h1 .brandmark'); if (h && !$('gateLogo').firstChild) $('gateLogo').appendChild(h.cloneNode(true)); }
 function showGate(msg) {
@@ -662,10 +744,15 @@ function showGate(msg) {
 }
 async function signedIn(d, fresh) {
   cloud.user = d.user; cloud.team = d.team; cloud.ok = d.user.role === 'coach';
+  cloud.mods = Array.isArray(d.team.modules) ? d.team.modules : ['video', 'playbook'];
   $('gate').hidden = true;
-  paintAuth();
+  paintAuth(); paintModule();
   // con contraseña temporal el servidor no entrega datos hasta que la cambie
   if (d.user.must_change) { openPw(true); return; }
+  // accesos directos desde el módulo de playbook
+  if (location.hash === '#equipo' && cloud.ok) { history.replaceState(null, '', location.pathname + location.search); $('teamBtn').click(); }
+  else if (location.hash === '#contrasena') { history.replaceState(null, '', location.pathname + location.search); openPw(false); }
+  if (!hasVideo()) { clearInterval(cloud.poll); setStatus('Conectado', 'ok'); return; }
   // cambios pendientes de una sesión anterior: solo se suben si es el mismo equipo
   if (cloud.prevTeam !== d.team.id || !cloud.ok) dirty.clear();
   cloud.prevTeam = null;
@@ -884,7 +971,7 @@ $('back5').onclick = () => { S.clip = false; P.seek(P.t - 5); };
 $('fwd5').onclick = () => { S.clip = false; P.seek(P.t + 5); };
 $('backF').onclick = () => step(-STEP);
 $('fwdF').onclick = () => step(STEP);
-function updPlay() { $('playLbl').textContent = P.paused ? 'Reproducir' : 'Pausa'; }
+function updPlay() { $('playLbl').textContent = P.paused ? 'Reproducir' : 'Pausa'; $('playBtn').classList.toggle('playing', !P.paused); }
 updPlay();
 function fsToggle() {
   if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
@@ -1000,6 +1087,21 @@ Object.entries(FIELDS).forEach(([id, k]) => {
     save(p); renderList(); renderTimeline(); renderSelHead();
   });
 });
+document.querySelectorAll('select[data-seg]').forEach(sel => {
+  const box = document.createElement('div'); box.className = 'seg fill'; box.setAttribute('role', 'group'); box.setAttribute('aria-label', sel.getAttribute('aria-label') || '');
+  [...sel.options].forEach(o => {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = o.textContent; b.dataset.v = o.value;
+    b.onclick = () => { if (sel.value === o.value) return; sel.value = o.value; sel.dispatchEvent(new Event('input')); syncSeg(); };
+    box.append(b);
+  });
+  sel.classList.add('sr'); sel.tabIndex = -1; sel.after(box);
+});
+function syncSeg() {
+  document.querySelectorAll('select[data-seg]').forEach(sel => {
+    const box = sel.nextElementSibling; if (!box || !box.classList.contains('seg')) return;
+    [...box.children].forEach(b => b.classList.toggle('on', b.dataset.v === sel.value));
+  });
+}
 function renderSelHead() { const p = selPlay(); $('selNum').textContent = p ? `${numOf(p)} · ${ddText(p)}${posText(p) ? ' · ' + posText(p) : ''}` : '—'; }
 function renderForm() {
   const p = selPlay();
@@ -1012,6 +1114,7 @@ function renderForm() {
   $('delBtn').disabled = !p || !ed;
   $('newBtn').disabled = !ed;
   Object.entries(FIELDS).forEach(([id, k]) => { const el = $(id); if (document.activeElement !== el) el.value = p ? (p[k] ?? '') : ''; });
+  syncSeg();
   $('inTc').textContent = p ? fmt(p.start) : '—';
   $('outTc').textContent = p ? fmt(p.end) : '—';
   renderSelHead();

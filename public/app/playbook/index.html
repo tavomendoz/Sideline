@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap">
+<link rel="stylesheet" href="/assets/app-shell.css">
 <style>
 /* Layout: lista de jugadas a la izquierda, campo al centro, propiedades a la derecha; se apila en teléfonos. Mismo look claro que la sala de video. */
 :root {
@@ -39,9 +40,6 @@ button { cursor: pointer; }
 [hidden] { display: none !important; }
 
 .app { display: flex; flex-direction: column; gap: 12px; min-height: 100%; }
-header { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
-header .homelink { display: block; color: inherit; margin-right: 6px; }
-header .brandmark { display: block; height: 34px; width: auto; }
 .spacer { flex: 1; }
 .btn { background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r); padding: 7px 12px; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; text-decoration: none; color: var(--fg); }
 .btn:hover { border-color: var(--muted); }
@@ -51,11 +49,11 @@ header .brandmark { display: block; height: 34px; width: auto; }
 .btn.danger { color: var(--bad); }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
 .group { display: inline-flex; flex-wrap: wrap; gap: 6px; }
-.status { font-size: 12px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
-.status.ok { color: var(--good); border-color: var(--good); }
-.status.bad { color: var(--bad); border-color: var(--bad); }
-.status.busy { color: var(--accent); border-color: var(--accent); }
-.who { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 30ch; }
+.status { font-size: 12px; padding: 4px 10px 4px 22px; border-radius: 999px; background: var(--panel-2); color: var(--muted); white-space: nowrap; position: relative; }
+.status::before { content: ""; position: absolute; left: 10px; top: 50%; width: 7px; height: 7px; margin-top: -3.5px; border-radius: 50%; background: #a9b4bf; }
+.status.ok { color: var(--good); background: #e9f5ec; } .status.ok::before { background: var(--good); }
+.status.bad { color: var(--bad); background: #fdeeee; } .status.bad::before { background: var(--bad); }
+.status.busy { color: var(--accent); background: #fff1e6; } .status.busy::before { background: var(--accent); }
 .chip { font-size: 11px; font-weight: 600; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; color: var(--muted); }
 select, input, textarea { background: var(--bg); border: 1px solid var(--line); border-radius: var(--r); padding: 6px 8px; min-width: 0; }
 textarea { resize: vertical; min-height: 70px; }
@@ -153,7 +151,7 @@ body.ro .coach { display: none !important; }
 </head>
 <body>
 <div class="app" id="app">
-  <header>
+  <header class="topbar">
     <a class="homelink" href="/" aria-label="Sideline, inicio"><svg class='brandmark' viewBox='0 0 593 104' height='34' role='img' aria-label='Sideline'><circle cx='52' cy='52' r='50' fill='var(--fg)'/>
 <rect x='48.25' y='8.25' width='7.50' height='7.50' rx='1.35' fill='var(--bg)' transform='rotate(0.0 52.00 12.00)'/>
 <rect x='65.61' y='12.21' width='7.50' height='7.50' rx='1.35' fill='var(--bg)' transform='rotate(25.7 69.36 15.96)'/>
@@ -172,13 +170,22 @@ body.ro .coach { display: none !important; }
 <circle cx='52' cy='52' r='31.00' fill='var(--bg)'/>
 <circle cx='52' cy='52' r='25.00' fill='none' stroke='var(--fg)' stroke-width='3.75'/>
 <path d='M42.25 39.00 L65.65 52.00 L42.25 65.00 Z' fill='#F26B1D' stroke='#F26B1D' stroke-width='2.50' stroke-linejoin='round'/><g transform='translate(128 85)'><path d='M3.588 -13.34Q28.796 -11.959999999999999 37.72 -11.959999999999999Q39.836 -11.959999999999999 41.078 -13.201999999999998Q42.32 -14.443999999999999 42.32 -16.56V-24.84H21.16Q11.5 -24.84 7.13 -29.21Q2.76 -33.58 2.76 -43.24V-46.0Q2.76 -55.66 7.13 -60.03Q11.5 -64.4 21.16 -64.4H53.452V-51.519999999999996H24.84Q19.32 -51.519999999999996 19.32 -46.0V-44.16Q19.32 -38.64 24.84 -38.64H41.4Q50.416 -38.64 54.647999999999996 -34.408Q58.879999999999995 -30.176 58.879999999999995 -21.16V-16.56Q58.879999999999995 -7.544 54.647999999999996 -3.312Q50.416 0.9199999999999999 41.4 0.9199999999999999Q36.708 0.9199999999999999 31.464 0.736L23.0 0.368Q13.616 -0.092 3.588 -0.9199999999999999ZM99.36000000000001 0.0H66.24000000000001V-12.879999999999999H74.52000000000001V-51.519999999999996H66.24000000000001V-64.4H99.36000000000001V-51.519999999999996H91.08V-12.879999999999999H99.36000000000001ZM145.36 -64.4Q155.756 -64.4 161.138 -59.018Q166.52 -53.635999999999996 166.52 -43.24V-21.16Q166.52 -10.764 161.138 -5.382Q155.756 0.0 145.36 0.0H109.48V-64.4ZM149.96 -43.24Q149.96 -51.519999999999996 141.68 -51.519999999999996H126.04V-12.879999999999999H141.68Q149.96 -12.879999999999999 149.96 -21.16ZM228.62 0.0H177.56000000000003V-64.4H228.62V-51.519999999999996H194.12V-39.1H221.26000000000002V-26.22H194.12V-12.879999999999999H228.62ZM254.38 -12.879999999999999H287.96000000000004V0.0H237.82000000000002V-64.4H254.38ZM326.6 0.0H293.48V-12.879999999999999H301.76000000000005V-51.519999999999996H293.48V-64.4H326.6V-51.519999999999996H318.32000000000005V-12.879999999999999H326.6ZM392.84000000000003 0.0H375.36L353.28000000000003 -38.64V0.0H336.72V-64.4H354.20000000000005L376.28000000000003 -25.759999999999998V-64.4H392.84000000000003ZM456.78000000000003 0.0H405.72V-64.4H456.78000000000003V-51.519999999999996H422.28000000000003V-39.1H449.4200000000001V-26.22H422.28000000000003V-12.879999999999999H456.78000000000003Z' fill='var(--fg)'/></g></svg></a>
-    <div class="group">
-      <a class="btn" href="/app/">Sala de video</a>
-      <span class="btn on" aria-current="page">Playbooks</span>
-    </div>
+    <nav class="modnav" aria-label="Módulos">
+      <a class="mod" href="/app/" data-mod="video"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor" stroke="none"/></svg>Video</a>
+      <a class="mod on" href="/app/playbook/" data-mod="playbook" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3.5" width="16" height="18" rx="2"/><path d="M9 3.5h6v2.5H9z"/><circle cx="9" cy="16" r="1.6"/><path d="M13.5 9.5l3 3m0-3l-3 3"/><path d="M10 14.5c1.5-2 3-3 5-3.5"/></svg>Playbook</a>
+    </nav>
     <span class="spacer"></span>
     <span class="status" id="status">Conectando…</span>
-    <span class="who" id="who"></span>
+    <div class="umenu" id="userMenu" hidden>
+      <button class="ubtn" id="userBtn" aria-haspopup="true" aria-expanded="false" aria-label="Menú de usuario"><span class="av" id="userIni"></span><span class="nm"><b id="userName"></b><small id="userSub"></small></span><svg class="car" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="pop" id="userPop" hidden>
+        <div class="phd" id="who"></div>
+        <a class="pi" href="/app/#equipo" data-coach-only hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.2c2.6.3 4.5 2.6 4.5 5.8"/></svg>Equipo y jugadores</a>
+        <a class="pi" href="/app/#contrasena"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 7l2 2M14 9l2 2"/></svg>Cambiar contraseña</a>
+        <hr>
+        <button class="pi danger" id="logoutBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 16l-4-4 4-4M6 12h10"/></svg>Salir</button>
+      </div>
+    </div>
   </header>
 
   <div class="bookbar">
@@ -197,6 +204,13 @@ body.ro .coach { display: none !important; }
     </select>
     <button class="btn sm" id="pngBtn">Descargar imagen</button>
   </div>
+
+  <section class="locked" id="pbLocked" hidden>
+    <svg class="big" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3.5" width="16" height="18" rx="2"/><path d="M9 3.5h6v2.5H9z"/><circle cx="9" cy="16" r="1.6"/><path d="M13.5 9.5l3 3m0-3l-3 3"/><path d="M10 14.5c1.5-2 3-3 5-3.5"/></svg>
+    <h2>El módulo de Playbook no está en el plan de tu equipo</h2>
+    <p>Con Playbook diagramas las jugadas de tu equipo con formaciones, rutas y bloqueos, y las compartes impresas o en el celular. Pide que lo agreguen a tu plan.</p>
+    <div class="acts"><a class="btn primary" href="/app/" id="lockedVideo">Ir a Video</a><a class="btn" href="/contacto">Solicitar el módulo de Playbook</a></div>
+  </section>
 
   <div class="card blank" id="blank" hidden></div>
 
@@ -312,6 +326,7 @@ body.ro .coach { display: none !important; }
 </div>
 
 <div id="print"></div>
+<script src="/assets/app-shell.js"></script>
 <div class="toast" id="toast" hidden></div>
 
 <script>
@@ -959,6 +974,8 @@ $('pngBtn').onclick = () => {
   img.src = url;
 };
 
+$('logoutBtn').onclick = async () => { flushAll(); try { await api('logout', { method: 'POST' }); } catch (e) {} location.href = '/app/'; };
+
 // ---------- inicio ----------
 (async () => {
   try {
@@ -967,6 +984,13 @@ $('pngBtn').onclick = () => {
     S.me = d.user; S.team = d.team; S.coach = d.user.role === 'coach';
     document.body.classList.toggle('ro', !S.coach);
     $('who').textContent = `${d.user.name} · ${S.coach ? 'Coach' : 'Jugador'} · ${d.team.name}`;
+    const mods = Array.isArray(d.team.modules) ? d.team.modules : ['video', 'playbook'];
+    if (window.SidelineShell) { window.SidelineShell.setUser(d.user, d.team); window.SidelineShell.setModules(mods); }
+    if (!mods.includes('playbook')) {
+      $('pbLocked').hidden = false; $('lockedVideo').hidden = !mods.includes('video');
+      document.querySelector('.bookbar').hidden = true; $('main').hidden = true; $('blank').hidden = true;
+      setStatus('Conectado', 'ok'); return;
+    }
     await loadBooks();
     if (S.book) setStatus(S.coach ? 'Al día' : 'Solo lectura', 'ok');
   } catch (e) {
