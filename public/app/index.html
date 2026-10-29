@@ -116,9 +116,9 @@ main { display: grid; grid-template-columns: minmax(0, 1fr) 410px; gap: 14px; fl
   .right.fit .rows { flex: 1 1 auto; min-height: 0; max-height: none; } }
 video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; }
 canvas#draw { position: absolute; touch-action: none; }
-/* capa para la rueda del mouse: el reproductor de YouTube es un iframe y se quedaría con el evento.
+/* capa para la rueda del mouse (zoom): el reproductor de YouTube es un iframe y se quedaría con el evento.
    Deja libre la franja inferior para los controles de YouTube; solo con mouse (en pantallas táctiles no estorba) */
-.scrub { position: absolute; left: 0; right: 0; top: 0; bottom: 56px; cursor: ns-resize; }
+.scrub { position: absolute; left: 0; right: 0; top: 0; bottom: 56px; cursor: zoom-in; }
 .scrub.zoomed { cursor: grab; } .scrub.panning { cursor: grabbing; }
 /* el video y el pizarrón se acercan juntos, así los dibujos quedan sobre la misma parte de la imagen */
 .zoomwrap { position: absolute; inset: 0; transform-origin: 0 0; }
@@ -357,7 +357,7 @@ canvas#draw { inset: 0; width: 100%; height: 100%; }
           <div id="yt"></div>
           <canvas id="draw"></canvas>
         </div>
-        <div class="scrub" id="scrub" hidden title="Rueda: cuadro por cuadro (Shift: 1 s) · Ctrl + rueda: zoom · Clic: reproducir o pausar"></div>
+        <div class="scrub" id="scrub" hidden title="Rueda: zoom · Flechas ← →: cuadro por cuadro · Clic: reproducir o pausar"></div>
         <div class="hud" id="hud" hidden><span class="spd" id="hudSpd"></span><span class="zm" id="hudZoom" hidden></span></div>
         <div class="drop" id="drop">
           <div>
@@ -478,8 +478,7 @@ canvas#draw { inset: 0; width: 100%; height: 100%; }
       <dt><kbd>C</kbd></dt><dd>Ver el clip de la jugada</dd>
       <dt><kbd>D</kbd></dt><dd>Activar pizarrón · <kbd>Z</kbd> deshace el último trazo</dd>
       <dt><kbd>F</kbd></dt><dd>Pantalla completa (para proyectar)</dd>
-      <dt>Rueda del mouse</dt><dd>Sobre el video o la línea de tiempo: 0.1 segundos por giro · con <kbd>Shift</kbd>, 1 segundo</dd>
-      <dt><kbd>Ctrl</kbd> + rueda</dt><dd>Zoom al video (hasta 4×); arrastra para moverte · doble clic o <kbd>Esc</kbd> lo quita</dd>
+      <dt>Rueda del mouse</dt><dd>Zoom al video (hasta 4×); arrastra para moverte · doble clic o <kbd>Esc</kbd> lo quita</dd>
     </dl>
   </div>
 </div>
@@ -1020,7 +1019,7 @@ $('saveDrawBtn').onclick = () => {
 // ---------- transport ----------
 function togglePlay() { if (!P.ok) return; P.paused ? P.play() : P.pause(); }
 function step(dt) { P.pause(); P.seek(P.t + dt); }
-// ---------- zoom del video (Ctrl + rueda o pellizco en el touchpad) ----------
+// ---------- zoom del video (rueda del mouse o pellizco en el touchpad) ----------
 function applyZoom() {
   const W = stage.clientWidth, H = stage.clientHeight;
   if (Z.k <= 1.001) { Z.k = 1; Z.x = 0; Z.y = 0; }
@@ -1031,9 +1030,10 @@ function applyZoom() {
   if (Z.k > 1) $('hud').hidden = false;
 }
 function resetZoom() { Z.k = 1; applyZoom(); }
-// acerca o aleja hacia el punto del mouse (rango 1× a 4×)
+// rueda del mouse (o pellizco en el touchpad): acerca o aleja hacia el punto del mouse (rango 1× a 4×).
+// Para avanzar cuadro por cuadro están las flechas ← →.
 function onZoomWheel(e) {
-  if (!(e.ctrlKey || e.metaKey) || !P.ok) return false;
+  if (!P.ok) return false;
   e.preventDefault();
   let d = e.deltaY; if (e.deltaMode === 1) d *= 33; else if (e.deltaMode === 2) d *= 400;
   const r = stage.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
@@ -1059,24 +1059,7 @@ $('scrub').addEventListener('pointermove', e => {
 const endPan = () => { pan = null; $('scrub').classList.remove('panning'); };
 $('scrub').addEventListener('pointerup', endPan); $('scrub').addEventListener('pointercancel', endPan);
 
-// rueda del mouse: cada giro pausa y mueve 0.1 s (Shift: 1 s); hacia abajo avanza, hacia arriba retrocede.
-// Los touchpads mandan muchos movimientos pequeños: se acumulan y cuentan como un paso cada ~80 px.
-let wheelAcc = 0;
-function onWheel(e) {
-  if (e.currentTarget !== $('timeline') && onZoomWheel(e)) return;
-  if (!P.ok || S.draw) return;
-  e.preventDefault();
-  let d = e.deltaY || e.deltaX;              // con Shift algunos navegadores lo mandan como horizontal
-  if (e.deltaMode === 1) d *= 33; else if (e.deltaMode === 2) d *= 400;
-  if (Math.sign(d) !== Math.sign(wheelAcc)) wheelAcc = 0;
-  wheelAcc += d;
-  const n = Math.max(-5, Math.min(5, Math.trunc(wheelAcc / 80)));
-  if (!n) return;
-  wheelAcc -= n * 80;
-  S.clip = false; step(n * (e.shiftKey ? 1 : STEP));
-}
-$('scrub').addEventListener('wheel', onWheel, { passive: false });
-$('timeline').addEventListener('wheel', onWheel, { passive: false });
+$('scrub').addEventListener('wheel', onZoomWheel, { passive: false });
 // clic: reproducir o pausar; con zoom se espera un poco por si es doble clic (que quita el zoom)
 $('scrub').addEventListener('click', () => {
   if (panned) { panned = false; return; }
@@ -1085,7 +1068,7 @@ $('scrub').addEventListener('click', () => {
 });
 $('scrub').addEventListener('dblclick', () => { clearTimeout(clickT); resetZoom(); });
 // con el pizarrón activo también se puede hacer zoom (el lienzo queda encima de la capa)
-cv.addEventListener('wheel', e => { onZoomWheel(e); }, { passive: false });
+cv.addEventListener('wheel', onZoomWheel, { passive: false });
 $('playBtn').onclick = togglePlay;
 $('back5').onclick = () => { S.clip = false; P.seek(P.t - 5); };
 $('fwd5').onclick = () => { S.clip = false; P.seek(P.t + 5); };
