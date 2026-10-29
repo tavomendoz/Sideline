@@ -906,7 +906,7 @@ function patchChunk(url, blob, offset, onProgress) {
     x.setRequestHeader('Tus-Resumable', '1.0.0'); x.setRequestHeader('Upload-Offset', String(offset));
     x.setRequestHeader('Content-Type', 'application/offset+octet-stream');
     x.upload.onprogress = e => onProgress(offset + e.loaded);
-    x.onload = () => (x.status === 204 ? res(+x.getResponseHeader('Upload-Offset') || offset + blob.size) : rej(new Error('http ' + x.status)));
+    x.onload = () => (x.status >= 200 && x.status < 300 ? res(+x.getResponseHeader('Upload-Offset') || offset + blob.size) : rej(new Error('http ' + x.status)));
     x.onerror = () => rej(new Error('red'));
     x.onabort = () => rej(Object.assign(new Error('cancelado'), { name: 'AbortError' }));
     x.send(blob);
@@ -931,6 +931,7 @@ $('upForm').onsubmit = async e => {
   if (!file || !name || UP.uploading) return;
   const left = UP.quota - UP.used;
   const dur = await fileDuration(file);
+  if (dur && dur > 6 * 3600) return upErr(`Este video dura ${mins(dur)}; Cloudflare acepta hasta 6 horas por video. Divídelo en partes.`);
   if (dur && dur > left) return upErr(`Este video dura ${mins(dur)} y a tu equipo le quedan ${mins(left)}. Recórtalo, borra partidos viejos o pide horas extra.`);
   let up;
   try { up = await api('stream/upload', { method: 'POST', body: JSON.stringify({ name, size: file.size }) }); }
@@ -947,7 +948,7 @@ $('upForm').onsubmit = async e => {
     toast('Video subido. Cloudflare lo está procesando; te aviso cuando esté listo.');
     $('upName').value = ''; $('upFile').value = '';
   } catch (x) {
-    upErr(x.name === 'AbortError' ? 'Subida cancelada.' : 'No se pudo terminar de subir. Revisa tu conexión e intenta de nuevo.');
+    upErr(x.name === 'AbortError' ? 'Subida cancelada.' : `No se pudo terminar de subir (${x.message}). Revisa tu conexión e intenta de nuevo.`);
   } finally {
     UP.uploading = false; UP.abort = null; $('upGo').disabled = false; $('upForm').hidden = false; $('upProg').hidden = true;
     loadUploads();

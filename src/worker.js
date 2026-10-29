@@ -555,19 +555,24 @@ async function streamRoutes(request, env, db, path, method, url, team, coach, bo
       return json({ error: 'busy', message: 'Espera a que termine de subirse y procesarse el video anterior.' }, 409);
     const left = Math.floor(quota - usedSeconds(rows));
     if (left < 60) return json({ error: 'quota', message: `Ya usaste las ${Math.round(quota / 3600)} horas de video de tu plan. Borra partidos viejos o pide horas extra.` }, 403);
+    // Cloudflare acepta como máximo 6 horas por video
+    const maxSecs = Math.min(left, 21600);
     // subida directa (tus): el navegador manda el archivo a Cloudflare por pedazos, sin pasar por este worker
     const r = await streamApi(env, '?direct_user=true', { method: 'POST', headers: {
       'Tus-Resumable': '1.0.0', 'Upload-Length': String(size),
-      'Upload-Metadata': `name ${b64(name)},requiresignedurls,maxdurationseconds ${b64(String(left))}`,
+      'Upload-Metadata': `name ${b64(name)},requiresignedurls,maxdurationseconds ${b64(String(maxSecs))}`,
     } });
     const uploadUrl = r.headers.get('location') || '', uid = r.headers.get('stream-media-id') || '';
     if (r.status !== 201 || !/^[0-9a-f]{32}$/.test(uid) || !/^https:\/\//.test(uploadUrl)) {
-      console.error('stream upload', r.status, await r.text().catch(() => ''));
-      return json({ error: 'stream_error', message: 'Cloudflare no aceptó la subida. Intenta de nuevo en unos minutos.' }, 502);
+      const txt = await r.text().catch(() => '');
+      console.error('stream upload', r.status, txt);
+      // el código de Cloudflare ayuda a saber qué pasó (permiso del token, cuenta, límite…)
+      let why = ''; try { const e = (JSON.parse(txt).errors || [])[0]; if (e) why = ` ${e.code || ''} ${String(e.message || '').slice(0, 120)}`; } catch (e) { why = ' ' + txt.slice(0, 120); }
+      return json({ error: 'stream_error', message: `Cloudflare no aceptó la subida (código ${r.status}${why.trimEnd()}). Intenta de nuevo en unos minutos.` }, 502);
     }
     await db.prepare('INSERT INTO uploads (team_id, uid, name, status, seconds, max_seconds, size, created_at) VALUES (?1, ?2, ?3, ?4, 0, ?5, ?6, ?7)')
-      .bind(team, uid, name, 'uploading', left, size, Date.now()).run();
-    return json({ uid, id: 's' + uid, url: uploadUrl, max_seconds: left });
+      .bind(team, uid, name, 'uploading', maxSecs, size, Date.now()).run();
+    return json({ uid, id: 's' + uid, url: uploadUrl, max_seconds: maxSecs });
   }
   if (path === 'stream/token' && method === 'POST') {
     if (!streamOn(env)) return json({ error: 'stream_off', message: 'La reproducción de videos subidos no está activada.' }, 503);
