@@ -112,6 +112,10 @@ main { display: grid; grid-template-columns: minmax(0, 1fr) 410px; gap: 14px; fl
   .right.fit .rows { flex: 1 1 auto; min-height: 0; max-height: none; } }
 video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; }
 canvas#draw { position: absolute; touch-action: none; }
+/* capa para la rueda del mouse: el reproductor de YouTube es un iframe y se quedaría con el evento.
+   Deja libre la franja inferior para los controles de YouTube; solo con mouse (en pantallas táctiles no estorba) */
+.scrub { position: absolute; left: 0; right: 0; top: 0; bottom: 56px; cursor: ns-resize; }
+@media (hover: none), (pointer: coarse) { .scrub { display: none; } }
 canvas#draw.active { cursor: crosshair; }
 .drop { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px; color: rgba(255,255,255,.75);
   background: radial-gradient(120% 90% at 45% 35%, #2f8a45 0%, #1f6b2e 55%, #123f1c 100%); }
@@ -340,6 +344,7 @@ canvas#draw { inset: 0; width: 100%; height: 100%; }
     <section class="left">
       <div class="stagebox" id="stage">
         <div id="yt"></div>
+        <div class="scrub" id="scrub" hidden title="Rueda del mouse: cuadro por cuadro (Shift: 1 s) · Clic: reproducir o pausar"></div>
         <canvas id="draw"></canvas>
         <div class="hud" id="hud" hidden><span class="spd" id="hudSpd"></span></div>
         <div class="drop" id="drop">
@@ -460,6 +465,7 @@ canvas#draw { inset: 0; width: 100%; height: 100%; }
       <dt><kbd>C</kbd></dt><dd>Ver el clip de la jugada</dd>
       <dt><kbd>D</kbd></dt><dd>Activar pizarrón · <kbd>Z</kbd> deshace el último trazo</dd>
       <dt><kbd>F</kbd></dt><dd>Pantalla completa (para proyectar)</dd>
+      <dt>Rueda del mouse</dt><dd>Sobre el video o la línea de tiempo: 0.1 segundos por giro · con <kbd>Shift</kbd>, 1 segundo</dd>
     </dl>
   </div>
 </div>
@@ -558,7 +564,7 @@ function createPlayer(id) {
   yt = new YT.Player('yt', {
     videoId: id, playerVars: vars,
     events: {
-      onReady: () => { ready = true; P.rate(S.rate); grabTitle(); renderAll(); },
+      onReady: () => { ready = true; $('scrub').hidden = false; P.rate(S.rate); grabTitle(); renderAll(); },
       onStateChange: e => {
         updPlay();
         if (e.data === 1 && Date.now() > S.keepDrawUntil) { if (S.strokes.length) { S.strokes = []; redraw(); } if (S.draw) setDraw(false); }
@@ -974,6 +980,24 @@ $('saveDrawBtn').onclick = () => {
 // ---------- transport ----------
 function togglePlay() { if (!P.ok) return; P.paused ? P.play() : P.pause(); }
 function step(dt) { P.pause(); P.seek(P.t + dt); }
+// rueda del mouse: cada giro pausa y mueve 0.1 s (Shift: 1 s); hacia abajo avanza, hacia arriba retrocede.
+// Los touchpads mandan muchos movimientos pequeños: se acumulan y cuentan como un paso cada ~80 px.
+let wheelAcc = 0;
+function onWheel(e) {
+  if (!P.ok || S.draw) return;
+  e.preventDefault();
+  let d = e.deltaY || e.deltaX;              // con Shift algunos navegadores lo mandan como horizontal
+  if (e.deltaMode === 1) d *= 33; else if (e.deltaMode === 2) d *= 400;
+  if (Math.sign(d) !== Math.sign(wheelAcc)) wheelAcc = 0;
+  wheelAcc += d;
+  const n = Math.max(-5, Math.min(5, Math.trunc(wheelAcc / 80)));
+  if (!n) return;
+  wheelAcc -= n * 80;
+  S.clip = false; step(n * (e.shiftKey ? 1 : STEP));
+}
+$('scrub').addEventListener('wheel', onWheel, { passive: false });
+$('timeline').addEventListener('wheel', onWheel, { passive: false });
+$('scrub').addEventListener('click', () => togglePlay());
 $('playBtn').onclick = togglePlay;
 $('back5').onclick = () => { S.clip = false; P.seek(P.t - 5); };
 $('fwd5').onclick = () => { S.clip = false; P.seek(P.t + 5); };
