@@ -266,11 +266,7 @@ td.when { font-family: var(--font-mono); font-size: 13px; white-space: nowrap; c
   .shot-phone .shot { max-width: 300px; margin: 0 auto; }
 }
 
-/* aviso de novedad en el inicio y etiqueta «Nuevo» en las pestañas */
-.newpill { display: inline-flex; align-items: center; gap: 10px; margin: 0 0 18px; padding: 5px 14px 5px 5px; border-radius: var(--r-pill); background: #fff1e6; color: #7a3408; font-size: 14px; font-weight: 500; text-decoration: none; border: 1px solid #f6c9a6; }
-.newpill b { background: #e8742a; color: #fff; border-radius: var(--r-pill); padding: 2px 10px; font-size: 12px; font-weight: 700; }
-.newpill:hover { border-color: #e8742a; }
-.tabnew { background: #e8742a; color: #fff; border-radius: var(--r-pill); padding: 1px 8px; font-size: 11px; font-weight: 700; }
+/* barra de subida animada en la pestaña «Subir video» */
 .upbar { animation: upgrow 6s ease-in-out infinite; transform-box: fill-box; transform-origin: left; }
 @keyframes upgrow { 0% { transform: scaleX(.15); } 85%, 100% { transform: scaleX(1.48); } }
 @media (prefers-reduced-motion: reduce) { .upbar { animation: none; } }

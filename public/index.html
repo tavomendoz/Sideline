@@ -256,7 +256,7 @@
         <button class="tab" role="tab" id="t-dibujar" aria-controls="p-dibujar" aria-selected="false" tabindex="-1"><span class="dot"></span>Dibujar</button>
         <button class="tab" role="tab" id="t-compartir" aria-controls="p-compartir" aria-selected="false" tabindex="-1"><span class="dot"></span>Compartir</button>
         <button class="tab" role="tab" id="t-playbook" aria-controls="p-playbook" aria-selected="false" tabindex="-1"><span class="dot"></span>Playbook</button>
-        <button class="tab" role="tab" id="t-subir" aria-controls="p-subir" aria-selected="false" tabindex="-1"><span class="dot"></span>Subir video <span class="tabnew">Nuevo</span></button>
+        <button class="tab" role="tab" id="t-subir" aria-controls="p-subir" aria-selected="false" tabindex="-1"><span class="dot"></span>Subir video</button>
       </div>
 
       <div class="panel" role="tabpanel" id="p-etiquetar" aria-labelledby="t-etiquetar">
@@ -522,11 +522,8 @@
       document.getElementById(x.getAttribute('aria-controls')).hidden = !on;
     });
   }
-  // el aviso «Nuevo» del inicio lleva directo a la pestaña de subir video
-  function showUpload() { const t = document.getElementById('t-subir'); pick(t); document.getElementById('funciones').scrollIntoView({ behavior: 'smooth' }); }
-  const pill = document.getElementById('newPill');
-  if (pill) pill.addEventListener('click', e => { e.preventDefault(); showUpload(); history.replaceState(null, '', '#subir-video'); });
-  if (location.hash === '#subir-video') showUpload();
+  // el enlace /#subir-video abre directo la pestaña de subir video
+  if (location.hash === '#subir-video') { pick(document.getElementById('t-subir')); document.getElementById('funciones').scrollIntoView({ behavior: 'smooth' }); }
   tabs.forEach((t, i) => {
     t.addEventListener('click', () => pick(t));
     t.addEventListener('keydown', e => {
