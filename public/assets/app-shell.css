@@ -116,16 +116,10 @@
 .hello .modnav .mod:hover { background: none; color: #10202f; border-bottom-color: rgba(16,32,47,.35); }
 .hello .modnav .mod.on { background: none; color: #10202f; font-weight: 700; border-bottom-color: #10202f; }
 @media (max-width: 640px) { .hello .modnav { order: initial; width: auto; } .hello .modnav .mod { flex: none; } .hello.compact { padding: 12px 14px 0; } }
-/* cielo nocturno en modo oscuro */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .hello { color: #e6f1fb; background: radial-gradient(60% 120% at 92% -10%, rgba(255,255,255,.10) 0 30%, transparent 31%), radial-gradient(40% 90% at 78% 8%, rgba(255,255,255,.07) 0 30%, transparent 31%), linear-gradient(180deg, #1c4566 0%, #15344f 100%); }
-  :root:not([data-theme="light"]) .hello .sub { color: #a9c4dc; }
-  :root:not([data-theme="light"]) .hello .modnav { border-bottom-color: rgba(230,241,251,.2); }
-  :root:not([data-theme="light"]) .hello .modnav .mod, :root:not([data-theme="light"]) .hello .modnav .mod:hover { color: #e6f1fb; }
-  :root:not([data-theme="light"]) .hello .modnav .mod.on { color: #fff; border-bottom-color: #fff; }
-}
-:root[data-theme="dark"] .hello { color: #e6f1fb; background: radial-gradient(60% 120% at 92% -10%, rgba(255,255,255,.10) 0 30%, transparent 31%), radial-gradient(40% 90% at 78% 8%, rgba(255,255,255,.07) 0 30%, transparent 31%), linear-gradient(180deg, #1c4566 0%, #15344f 100%); }
-:root[data-theme="dark"] .hello .sub { color: #a9c4dc; }
-:root[data-theme="dark"] .hello .modnav { border-bottom-color: rgba(230,241,251,.2); }
-:root[data-theme="dark"] .hello .modnav .mod, :root[data-theme="dark"] .hello .modnav .mod:hover { color: #e6f1fb; }
-:root[data-theme="dark"] .hello .modnav .mod.on { color: #fff; border-bottom-color: #fff; }
+/* en la app la franja usa la misma paleta que el resto (claro u oscuro), sin el cielo azul */
+.hello.compact { background: var(--panel); border: 1px solid var(--line); color: var(--fg); box-shadow: 0 1px 2px rgba(20,40,60,.05); }
+.hello.compact .sub { color: var(--muted); }
+.hello.compact .modnav { border-bottom-color: var(--line); }
+.hello.compact .modnav .mod { color: var(--muted); }
+.hello.compact .modnav .mod:hover { color: var(--fg); border-bottom-color: var(--line); }
+.hello.compact .modnav .mod.on { color: var(--fg); border-bottom-color: var(--accent); }
