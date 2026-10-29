@@ -173,12 +173,17 @@
   // ---------- saludo ----------
   const NAME_KEY = 'sideline:adminName';
   const greeting = () => { const h = new Date().getHours(); return h >= 5 && h < 12 ? 'Buenos días' : h >= 12 && h < 19 ? 'Buenas tardes' : 'Buenas noches'; };
+  // nombre: el del perfil con el que este navegador tiene sesión en la app; si no hay sesión, el que se escriba a mano
+  let profile = null;
   function paintHello() {
     let name = ''; try { name = localStorage.getItem(NAME_KEY) || ''; } catch (e) {}
+    if (profile) name = profile.user.name || profile.user.username;
     $('greet').textContent = greeting();
     const w = $('nameWrap'); w.textContent = '';
     if (name) { w.append(', '); const b = document.createElement('b'); b.textContent = name; w.append(b); }
+    if (profile) return;
     const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'namebtn'; btn.textContent = name ? 'cambiar' : '¿cómo te llamas?';
+    btn.title = 'Si entras a la app con tu usuario en este navegador, el panel toma tu nombre de tu perfil.';
     btn.onclick = () => {
       const v = (prompt('¿Cómo quieres que te salude el panel?', name) || '').trim().slice(0, 40);
       try { v ? localStorage.setItem(NAME_KEY, v) : localStorage.removeItem(NAME_KEY); } catch (e) {}
@@ -187,6 +192,15 @@
     w.append(' ', btn);
   }
   paintHello();
+  fetch('/api/me', { credentials: 'same-origin' }).then(r => r.ok ? r.json() : null).then(d => {
+    if (!d || !d.user) return;
+    profile = d; paintHello();
+    if (!$('main').hidden) paintSub();
+  }).catch(() => {});
+  function paintSub() {
+    $('helloSub').textContent = 'Panel de administrador de Sideline · aquí ves y administras a todos los equipos.'
+      + (profile ? ` También eres ${profile.user.role === 'coach' ? 'coach' : 'jugador'} de ${profile.team.name}.` : '');
+  }
 
   // ---------- pestañas ----------
   const TABS = ['resumen', 'equipos', 'nuevo', 'solicitudes', 'herramientas'];
@@ -263,7 +277,7 @@
     try { sessionStorage.setItem(KEY, key); } catch (e) {}
     const first = $('main').hidden;
     $('keyForm').hidden = true; $('main').hidden = false; $('out').hidden = false; $('tabs').hidden = false;
-    $('helloSub').textContent = 'Panel de administrador de Sideline · aquí ves y administras a todos los equipos.';
+    paintSub();
     teams = r.teams || [];
     $('migrate').hidden = !(r.legacy_plays > 0 && teams.length); $('toolsTab').hidden = $('migrate').hidden;
     $('migrateText').textContent = `Hay ${r.legacy_plays} jugadas guardadas antes de que existieran los equipos. Elige a qué equipo pertenecen; se copian sin borrar las originales.`;
