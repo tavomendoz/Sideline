@@ -35,6 +35,11 @@
   if (media && media.addEventListener) media.addEventListener('change', () => { if (pref() === 'auto') applyTheme('auto'); });
   applyTheme(pref());
 
+  // saludo según la hora del dispositivo; se actualiza solo si la página queda abierta
+  const greeting = () => { const h = new Date().getHours(); return h >= 5 && h < 12 ? 'Buenos días' : h >= 12 && h < 19 ? 'Buenas tardes' : 'Buenas noches'; };
+  function paintGreeting() { if ($('helloGreet')) $('helloGreet').textContent = greeting(); }
+  setInterval(paintGreeting, 5 * 60000);
+
   const LOCK ='<svg class="lock" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>';
   window.SidelineShell = {
     isDark,
@@ -42,13 +47,20 @@
     setUser(user, team) {
       const m = $('userMenu'); if (!m) return;
       m.hidden = !user;
-      if (!user) return;
+      if (!user) { if ($('hello')) $('hello').hidden = true; return; }
       const ini = String(user.name || user.username || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
       $('userIni').textContent = ini || '?';
       $('userName').textContent = user.name || user.username;
       $('userSub').textContent = `${user.role === 'coach' ? 'Coach' : 'Jugador'} · ${team ? team.name : ''}`;
       if ($('userHead')) $('userHead').textContent = team ? team.name : '';
       document.querySelectorAll('[data-coach-only]').forEach(e => e.hidden = user.role !== 'coach');
+      // franja de bienvenida: saludo según la hora y el nombre de la persona
+      if ($('hello')) {
+        $('hello').hidden = false;
+        $('helloName').textContent = user.name || user.username;
+        $('helloSub').textContent = `${user.role === 'coach' ? 'Coach' : 'Jugador'} · ${team ? team.name : ''}`;
+        paintGreeting();
+      }
     },
     // marca con candado los módulos que el plan del equipo no incluye
     setModules(mods) {
