@@ -67,6 +67,10 @@ kbd { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); bor
 .ib svg { width: 21px; height: 21px; }
 .ib:hover { background: var(--panel-2); border-color: var(--line); }
 .ib:disabled { opacity: .4; cursor: not-allowed; }
+.ib.on { background: var(--fg); color: var(--on-fg); }
+/* si el video es más angosto que su columna, queda centrado */
+@media (min-width: 981px) { #stage, #timeline { align-self: center; } }
+@media (max-width: 980px) { #bigBtn { display: none; } }
 
 /* segmentados (velocidad, herramientas y campos del formulario) */
 .seg { display: inline-flex; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 2px; gap: 2px; }
@@ -377,6 +381,7 @@ canvas#draw { inset: 0; width: 100%; height: 100%; }
         <span class="tc" id="tc"><b>0:00.0</b> / 0:00.0</span>
         <span class="spacer"></span>
         <div class="speedwrap"><span class="lbl">Velocidad</span><div class="seg" id="speeds"></div></div>
+        <button class="ib" id="bigBtn" title="Video grande: el video sube hasta arriba y crece" aria-label="Video grande" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M8 10l-2 2 2 2M16 10l2 2-2 2"/></svg></button>
         <button class="ib" id="fsBtn" title="Pantalla completa (F)" aria-label="Pantalla completa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
       </div>
 
@@ -761,6 +766,7 @@ async function signedIn(d, fresh) {
   cloud.mods = Array.isArray(d.team.modules) ? d.team.modules : ['video', 'playbook'];
   $('gate').hidden = true;
   paintAuth(); paintModule();
+  requestAnimationFrame(fitStage);   // la franja de saludo empuja el video hacia abajo: recalcular su tamaño
   // con contraseña temporal el servidor no entrega datos hasta que la cambie
   if (d.user.must_change) { openPw(true); return; }
   // accesos directos desde el módulo de playbook
@@ -913,22 +919,43 @@ function layoutCanvas() {
 }
 new ResizeObserver(layoutCanvas).observe(stage);
 // Fit video + timeline + controls + pizarrón in one screen on desktop (no scrolling).
+// «Video grande»: la página se desplaza para que el video quede arriba y crezca lo más posible
+let bigVideo = false; try { bigVideo = localStorage.getItem('sideline:bigVideo') === '1'; } catch (e) {}
+// ancho que ocupan los controles (transporte y pizarrón) en un solo renglón
+function controlsWidth() {
+  let m = 0;
+  for (const el of document.querySelectorAll('.transport, .drawbar')) { const prev = el.style.width; el.style.width = 'max-content'; m = Math.max(m, el.offsetWidth); el.style.width = prev; }
+  return m;
+}
 function fitStage() {
   const tlEl = document.getElementById('timeline');
-  const aside = document.querySelector('aside.right');
-  if (window.innerWidth <= 980 || document.fullscreenElement) { stage.style.width = ''; tlEl.style.width = ''; aside.classList.remove('fit'); aside.style.height = ''; return; }
-  aside.classList.add('fit'); aside.style.height = Math.max(420, window.innerHeight - (aside.getBoundingClientRect().top + window.scrollY) - 14) + 'px';
-  const col = stage.parentElement.clientWidth;
-  const top = stage.getBoundingClientRect().top + window.scrollY;
-  const below = tlEl.offsetHeight + document.querySelector('.transport').offsetHeight + document.querySelector('.drawbar').offsetHeight + 3 * 8 + 14;
-  const avail = window.innerHeight - top - below;
-  const w = Math.round(Math.max(360, Math.min(col, avail * 16 / 9)));
+  const aside = document.querySelector('aside.right'), main = stage.closest('main');
+  $('bigBtn').classList.toggle('on', bigVideo); $('bigBtn').setAttribute('aria-pressed', String(bigVideo));
+  if (window.innerWidth <= 980 || document.fullscreenElement) { stage.style.width = ''; tlEl.style.width = ''; main.style.gridTemplateColumns = ''; aside.classList.remove('fit'); aside.style.height = ''; return; }
+  const mainTop = main.getBoundingClientRect().top + window.scrollY;
+  const viewTop = bigVideo ? 8 : mainTop;
+  aside.classList.add('fit'); aside.style.height = Math.max(420, window.innerHeight - viewTop - 14) + 'px';
+  const colMax = main.clientWidth - 410 - 14;
+  const below = tlEl.offsetHeight + document.querySelector('.transport').offsetHeight + document.querySelector('.drawbar').offsetHeight + 3 * 10 + 14;
+  const avail = window.innerHeight - viewTop - below;
+  const w = Math.round(Math.max(360, Math.min(colMax, avail * 16 / 9)));
   stage.style.width = w + 'px'; tlEl.style.width = w + 'px';
+  // la columna mide lo que el video, pero nunca menos de lo que piden los controles en un renglón (si no, se
+  // apilan, le quitan altura al video y este se encoge); el panel de la derecha ocupa el resto
+  const colW = Math.min(colMax, Math.max(w, controlsWidth()));
+  main.style.gridTemplateColumns = `${colW}px minmax(410px, 1fr)`;
 }
 window.addEventListener('resize', fitStage);
 document.addEventListener('fullscreenchange', fitStage);
-new ResizeObserver(fitStage).observe(stage.parentElement);
+new ResizeObserver(fitStage).observe(document.querySelector('main'));
 fitStage();
+function scrollToVideo() { const top = stage.closest('main').getBoundingClientRect().top + window.scrollY - 8; window.scrollTo({ top: bigVideo ? top : 0, behavior: 'smooth' }); }
+$('bigBtn').onclick = () => {
+  bigVideo = !bigVideo;
+  try { localStorage.setItem('sideline:bigVideo', bigVideo ? '1' : '0'); } catch (e) {}
+  fitStage(); scrollToVideo();
+};
+if (bigVideo) setTimeout(scrollToVideo, 300);
 
 function redraw() {
   ctx.clearRect(0, 0, cv.width, cv.height);
