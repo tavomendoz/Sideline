@@ -1,0 +1,32 @@
+/* Sideline — franja de bienvenida: cielo azul con nubes, saludo con el nombre y pestañas subrayadas.
+   La usan el panel de admin y los módulos de la app (Video y Playbook). */
+.hello {
+  position: relative; overflow: hidden; border-radius: 14px; color: #10202f;
+  background:
+    radial-gradient(60% 120% at 92% -10%, rgba(255,255,255,.75) 0 30%, transparent 31%),
+    radial-gradient(40% 90% at 78% 8%, rgba(255,255,255,.55) 0 30%, transparent 31%),
+    radial-gradient(35% 70% at 100% 70%, rgba(255,255,255,.45) 0 30%, transparent 31%),
+    linear-gradient(180deg, #9fd8ff 0%, #8ccfff 100%);
+  padding: 22px 28px 0;
+}
+.hello .hi { margin: 0; font-weight: 300; font-size: clamp(24px, 3.2vw, 34px); line-height: 1.15; letter-spacing: -.01em; }
+.hello .hi b { font-weight: 300; }
+.hello .sub { margin: 6px 0 0; font-size: 14px; color: #2c4256; }
+.hello .namebtn { background: none; border: 0; padding: 0 4px; margin-left: 2px; color: #2c4256; font: inherit; font-size: 14px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+/* pestañas: texto oscuro, la activa con subrayado grueso */
+.hello .tabs { display: flex; gap: 4px 30px; margin-top: 16px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid rgba(16,32,47,.18); }
+.hello .tabs::-webkit-scrollbar { display: none; }
+.hello .tabs a, .hello .tabs button {
+  display: inline-flex; align-items: center; gap: 8px; padding: 10px 2px 11px; border: 0; background: none; color: #10202f;
+  font: inherit; font-size: 16px; text-decoration: none; white-space: nowrap; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -1px;
+}
+.hello .tabs a:hover, .hello .tabs button:hover { border-bottom-color: rgba(16,32,47,.35); }
+.hello .tabs .on, .hello .tabs [aria-selected="true"] { border-bottom-color: #10202f; font-weight: 600; }
+.hello .tabs svg { width: 18px; height: 18px; flex: none; }
+.hello .tabs .off { opacity: .55; }
+.hello .tabs .badge { font-size: 11px; font-weight: 700; background: #10202f; color: #fff; border-radius: 999px; padding: 1px 7px; }
+@media (max-width: 640px) {
+  .hello { padding: 16px 16px 0; border-radius: 12px; }
+  .hello .tabs { gap: 4px 20px; }
+  .hello .tabs a, .hello .tabs button { font-size: 15px; }
+}
