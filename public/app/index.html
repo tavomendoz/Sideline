@@ -119,6 +119,10 @@ canvas#draw { position: absolute; touch-action: none; }
 /* capa para la rueda del mouse: el reproductor de YouTube es un iframe y se quedaría con el evento.
    Deja libre la franja inferior para los controles de YouTube; solo con mouse (en pantallas táctiles no estorba) */
 .scrub { position: absolute; left: 0; right: 0; top: 0; bottom: 56px; cursor: ns-resize; }
+.scrub.zoomed { cursor: grab; } .scrub.panning { cursor: grabbing; }
+/* el video y el pizarrón se acercan juntos, así los dibujos quedan sobre la misma parte de la imagen */
+.zoomwrap { position: absolute; inset: 0; transform-origin: 0 0; }
+.hud .zm { color: #fff; font-size: 13px; font-weight: 500; }
 @media (hover: none), (pointer: coarse) { .scrub { display: none; } }
 canvas#draw.active { cursor: crosshair; }
 .drop { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px; color: rgba(255,255,255,.75);
@@ -151,6 +155,8 @@ canvas#draw.active { cursor: crosshair; }
 .play .i-pause { display: none; }
 .play.playing .i-play { display: none; } .play.playing .i-pause { display: block; }
 .tc { font-family: var(--font-mono); font-size: 14px; font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
+/* ancho fijo para «1:06:42.6 / 1:06:42.6»: si crece al cargar la duración, los controles saltarían de renglón */
+.transport .tc { min-width: 21ch; }
 .tc b { color: var(--fg); font-weight: 600; }
 .speedwrap { display: inline-flex; align-items: center; gap: 8px; }
 .lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
@@ -347,10 +353,12 @@ canvas#draw { inset: 0; width: 100%; height: 100%; }
   <main id="videoMain">
     <section class="left">
       <div class="stagebox" id="stage">
-        <div id="yt"></div>
-        <div class="scrub" id="scrub" hidden title="Rueda del mouse: cuadro por cuadro (Shift: 1 s) · Clic: reproducir o pausar"></div>
-        <canvas id="draw"></canvas>
-        <div class="hud" id="hud" hidden><span class="spd" id="hudSpd"></span></div>
+        <div class="zoomwrap" id="zoomwrap">
+          <div id="yt"></div>
+          <canvas id="draw"></canvas>
+        </div>
+        <div class="scrub" id="scrub" hidden title="Rueda: cuadro por cuadro (Shift: 1 s) · Ctrl + rueda: zoom · Clic: reproducir o pausar"></div>
+        <div class="hud" id="hud" hidden><span class="spd" id="hudSpd"></span><span class="zm" id="hudZoom" hidden></span></div>
         <div class="drop" id="drop">
           <div>
             <svg class="big" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></svg>
@@ -380,7 +388,7 @@ canvas#draw { inset: 0; width: 100%; height: 100%; }
         </div>
         <span class="tc" id="tc"><b>0:00.0</b> / 0:00.0</span>
         <span class="spacer"></span>
-        <div class="speedwrap"><span class="lbl">Velocidad</span><div class="seg" id="speeds"></div></div>
+        <div class="speedwrap"><div class="seg" id="speeds" role="group" aria-label="Velocidad" title="Velocidad de reproducción (teclas 1 a 5)"></div></div>
         <button class="ib" id="bigBtn" title="Video grande: el video sube hasta arriba y crece" aria-label="Video grande" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M8 10l-2 2 2 2M16 10l2 2-2 2"/></svg></button>
         <button class="ib" id="fsBtn" title="Pantalla completa (F)" aria-label="Pantalla completa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
       </div>
@@ -471,6 +479,7 @@ canvas#draw { inset: 0; width: 100%; height: 100%; }
       <dt><kbd>D</kbd></dt><dd>Activar pizarrón · <kbd>Z</kbd> deshace el último trazo</dd>
       <dt><kbd>F</kbd></dt><dd>Pantalla completa (para proyectar)</dd>
       <dt>Rueda del mouse</dt><dd>Sobre el video o la línea de tiempo: 0.1 segundos por giro · con <kbd>Shift</kbd>, 1 segundo</dd>
+      <dt><kbd>Ctrl</kbd> + rueda</dt><dd>Zoom al video (hasta 4×); arrastra para moverte · doble clic o <kbd>Esc</kbd> lo quita</dd>
     </dl>
   </div>
 </div>
@@ -900,6 +909,7 @@ function paintTools() {
   $('drawToggle').classList.toggle('on', S.draw);
   cv.classList.toggle('active', S.draw);
   cv.style.pointerEvents = S.draw ? 'auto' : 'none';
+  $('scrub').style.pointerEvents = S.draw ? 'none' : '';   // con el pizarrón activo, el mouse va al lienzo
   $('saveDrawBtn').disabled = !(selPlay() && S.strokes.length && canEdit());
 }
 function setSpeed(s) {
@@ -919,13 +929,15 @@ function layoutCanvas() {
 }
 new ResizeObserver(layoutCanvas).observe(stage);
 // Fit video + timeline + controls + pizarrón in one screen on desktop (no scrolling).
+// zoom del video: escala y desplazamiento de la capa del video (ver «zoom del video» más abajo)
+const Z = { k: 1, x: 0, y: 0 };
 // «Video grande»: la página se desplaza para que el video quede arriba y crezca lo más posible
 let bigVideo = false; try { bigVideo = localStorage.getItem('sideline:bigVideo') === '1'; } catch (e) {}
 // ancho que ocupan los controles (transporte y pizarrón) en un solo renglón
 function controlsWidth() {
   let m = 0;
-  for (const el of document.querySelectorAll('.transport, .drawbar')) { const prev = el.style.width; el.style.width = 'max-content'; m = Math.max(m, el.offsetWidth); el.style.width = prev; }
-  return m;
+  for (const el of document.querySelectorAll('.transport, .drawbar')) { const prev = el.style.width; el.style.width = 'max-content'; m = Math.max(m, el.getBoundingClientRect().width); el.style.width = prev; }
+  return Math.ceil(m) + 2;   // hacia arriba: con medio pixel de menos los controles ya saltan de renglón
 }
 function fitStage() {
   const tlEl = document.getElementById('timeline');
@@ -944,6 +956,7 @@ function fitStage() {
   // apilan, le quitan altura al video y este se encoge); el panel de la derecha ocupa el resto
   const colW = Math.min(colMax, Math.max(w, controlsWidth()));
   main.style.gridTemplateColumns = `${colW}px minmax(410px, 1fr)`;
+  applyZoom();
 }
 window.addEventListener('resize', fitStage);
 document.addEventListener('fullscreenchange', fitStage);
@@ -1007,10 +1020,50 @@ $('saveDrawBtn').onclick = () => {
 // ---------- transport ----------
 function togglePlay() { if (!P.ok) return; P.paused ? P.play() : P.pause(); }
 function step(dt) { P.pause(); P.seek(P.t + dt); }
+// ---------- zoom del video (Ctrl + rueda o pellizco en el touchpad) ----------
+function applyZoom() {
+  const W = stage.clientWidth, H = stage.clientHeight;
+  if (Z.k <= 1.001) { Z.k = 1; Z.x = 0; Z.y = 0; }
+  Z.x = Math.min(0, Math.max(W - W * Z.k, Z.x)); Z.y = Math.min(0, Math.max(H - H * Z.k, Z.y));
+  $('zoomwrap').style.transform = Z.k === 1 ? '' : `translate(${Z.x}px, ${Z.y}px) scale(${Z.k})`;
+  $('scrub').classList.toggle('zoomed', Z.k > 1);
+  $('hudZoom').hidden = Z.k === 1; $('hudZoom').textContent = `Zoom ${Z.k.toFixed(1)}× · doble clic o Esc para quitar`;
+  if (Z.k > 1) $('hud').hidden = false;
+}
+function resetZoom() { Z.k = 1; applyZoom(); }
+// acerca o aleja hacia el punto del mouse (rango 1× a 4×)
+function onZoomWheel(e) {
+  if (!(e.ctrlKey || e.metaKey) || !P.ok) return false;
+  e.preventDefault();
+  let d = e.deltaY; if (e.deltaMode === 1) d *= 33; else if (e.deltaMode === 2) d *= 400;
+  const r = stage.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+  const k2 = Math.max(1, Math.min(4, Z.k * Math.exp(-d * 0.002)));
+  Z.x = px - (px - Z.x) * (k2 / Z.k); Z.y = py - (py - Z.y) * (k2 / Z.k); Z.k = k2;
+  applyZoom();
+  return true;
+}
+// con zoom, arrastrar mueve la imagen; un arrastre no cuenta como clic
+let pan = null, panned = false, clickT;
+$('scrub').addEventListener('pointerdown', e => {
+  if (e.button !== 0 || Z.k === 1) return;
+  pan = { sx: e.clientX, sy: e.clientY, x: Z.x, y: Z.y }; panned = false;
+  $('scrub').setPointerCapture(e.pointerId);
+});
+$('scrub').addEventListener('pointermove', e => {
+  if (!pan) return;
+  const dx = e.clientX - pan.sx, dy = e.clientY - pan.sy;
+  if (!panned && Math.hypot(dx, dy) < 4) return;
+  panned = true; $('scrub').classList.add('panning');
+  Z.x = pan.x + dx; Z.y = pan.y + dy; applyZoom();
+});
+const endPan = () => { pan = null; $('scrub').classList.remove('panning'); };
+$('scrub').addEventListener('pointerup', endPan); $('scrub').addEventListener('pointercancel', endPan);
+
 // rueda del mouse: cada giro pausa y mueve 0.1 s (Shift: 1 s); hacia abajo avanza, hacia arriba retrocede.
 // Los touchpads mandan muchos movimientos pequeños: se acumulan y cuentan como un paso cada ~80 px.
 let wheelAcc = 0;
 function onWheel(e) {
+  if (e.currentTarget !== $('timeline') && onZoomWheel(e)) return;
   if (!P.ok || S.draw) return;
   e.preventDefault();
   let d = e.deltaY || e.deltaX;              // con Shift algunos navegadores lo mandan como horizontal
@@ -1024,7 +1077,15 @@ function onWheel(e) {
 }
 $('scrub').addEventListener('wheel', onWheel, { passive: false });
 $('timeline').addEventListener('wheel', onWheel, { passive: false });
-$('scrub').addEventListener('click', () => togglePlay());
+// clic: reproducir o pausar; con zoom se espera un poco por si es doble clic (que quita el zoom)
+$('scrub').addEventListener('click', () => {
+  if (panned) { panned = false; return; }
+  if (Z.k === 1) return togglePlay();
+  clearTimeout(clickT); clickT = setTimeout(togglePlay, 230);
+});
+$('scrub').addEventListener('dblclick', () => { clearTimeout(clickT); resetZoom(); });
+// con el pizarrón activo también se puede hacer zoom (el lienzo queda encima de la capa)
+cv.addEventListener('wheel', e => { onZoomWheel(e); }, { passive: false });
 $('playBtn').onclick = togglePlay;
 $('back5').onclick = () => { S.clip = false; P.seek(P.t - 5); };
 $('fwd5').onclick = () => { S.clip = false; P.seek(P.t + 5); };
@@ -1270,7 +1331,7 @@ $('helpClose').onclick = () => $('help').hidden = true;
 $('help').onclick = e => { if (e.target === $('help')) $('help').hidden = true; };
 document.addEventListener('keydown', e => {
   const tag = (e.target.tagName || '').toLowerCase();
-  if (e.key === 'Escape') { $('help').hidden = true; if (['input', 'textarea', 'select'].includes(tag)) e.target.blur(); if (S.draw) setDraw(false); return; }
+  if (e.key === 'Escape') { if (Z.k > 1) resetZoom(); $('help').hidden = true; if (['input', 'textarea', 'select'].includes(tag)) e.target.blur(); if (S.draw) setDraw(false); return; }
   if (['input', 'textarea', 'select'].includes(tag) || e.metaKey || e.ctrlKey || e.altKey) return;
   if (!hasVideo()) return;   // sin el módulo de video la sala está oculta: sin atajos
   const k = e.key;
