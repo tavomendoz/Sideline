@@ -1157,15 +1157,20 @@ function fitStage() {
   const mainTop = main.getBoundingClientRect().top + window.scrollY;
   const viewTop = bigVideo ? 8 : mainTop;
   aside.classList.add('fit'); aside.style.height = Math.max(420, window.innerHeight - viewTop - 14) + 'px';
-  const colMax = main.clientWidth - 410 - 14;
-  const below = tlEl.offsetHeight + document.querySelector('.transport').offsetHeight + document.querySelector('.drawbar').offsetHeight + 3 * 10 + 14;
+  // grande (como Hudl): panel más angosto y la barra del pizarrón queda justo abajo (se baja un poco para usarla)
+  const panelMin = bigVideo ? 360 : 410;
+  const colMax = main.clientWidth - panelMin - 14;
+  const below = tlEl.offsetHeight + document.querySelector('.transport').offsetHeight + (bigVideo ? 0 : document.querySelector('.drawbar').offsetHeight + 10) + 2 * 10 + 14;
   const avail = window.innerHeight - viewTop - below;
-  const w = Math.round(Math.max(360, Math.min(colMax, avail * 16 / 9)));
+  // normal: el video ocupa al menos ~56% del ancho (como antes), aunque los controles queden un poco abajo;
+  // grande: lo más grande que quepa en la pantalla completa
+  const minW = bigVideo ? 360 : Math.max(360, main.clientWidth * 0.56, controlsWidth());
+  const w = Math.round(Math.min(colMax, Math.max(minW, avail * 16 / 9)));
   stage.style.width = w + 'px'; tlEl.style.width = w + 'px';
   // la columna mide lo que el video, pero nunca menos de lo que piden los controles en un renglón (si no, se
   // apilan, le quitan altura al video y este se encoge); el panel de la derecha ocupa el resto
   const colW = Math.min(colMax, Math.max(w, controlsWidth()));
-  main.style.gridTemplateColumns = `${colW}px minmax(410px, 1fr)`;
+  main.style.gridTemplateColumns = `${colW}px minmax(${panelMin}px, 1fr)`;
   applyZoom();
 }
 window.addEventListener('resize', fitStage);
