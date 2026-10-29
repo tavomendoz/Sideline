@@ -31,6 +31,13 @@
   .box { background: var(--taupe); border-radius: var(--r-card); padding: 24px; margin-top: 24px; }
   .box h2 { margin: 0 0 16px; }
   .adm { padding-block: 16px 96px; }
+  /* la franja usa la paleta del sitio (crema y tinta), sin el cielo azul */
+  .adm .hello { background: var(--taupe); color: var(--ink); }
+  .adm .hello .sub, .adm .hello .namebtn { color: var(--smoke); }
+  .adm .hello .tabs { border-bottom-color: var(--stone); }
+  .adm .hello .tabs button { color: var(--graphite); }
+  .adm .hello .tabs button:hover { color: var(--ink); border-bottom-color: var(--ash); }
+  .adm .hello .tabs [aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
   .topline { display: flex; align-items: center; gap: 8px; height: 56px; margin-bottom: 12px; }
   .topline .logo svg { height: 24px; width: auto; display: block; }
   .topline .spacer { flex: 1; }
