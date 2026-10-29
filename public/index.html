@@ -524,7 +524,8 @@
   }
   // el aviso «Nuevo» del inicio lleva directo a la pestaña de subir video
   function showUpload() { const t = document.getElementById('t-subir'); pick(t); document.getElementById('funciones').scrollIntoView({ behavior: 'smooth' }); }
-  document.getElementById('newPill').addEventListener('click', e => { e.preventDefault(); showUpload(); history.replaceState(null, '', '#subir-video'); });
+  const pill = document.getElementById('newPill');
+  if (pill) pill.addEventListener('click', e => { e.preventDefault(); showUpload(); history.replaceState(null, '', '#subir-video'); });
   if (location.hash === '#subir-video') showUpload();
   tabs.forEach((t, i) => {
     t.addEventListener('click', () => pick(t));
