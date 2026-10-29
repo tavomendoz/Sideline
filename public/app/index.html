@@ -167,6 +167,19 @@ canvas#draw.active { cursor: crosshair; }
 .swatches { display: inline-flex; gap: 6px; align-items: center; }
 .sw { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--panel); box-shadow: 0 0 0 1px var(--line); padding: 0; }
 .sw.on { box-shadow: 0 0 0 2px var(--fg); }
+#tools svg { display: none; width: 18px; height: 18px; }
+/* «Video grande»: el pizarrón va en una columna angosta a la derecha del video, siempre a la vista */
+section.left.bigmode { position: relative; padding-right: 62px; }
+.bigmode .drawbar { position: absolute; top: 0; right: 0; width: 52px; flex-direction: column; flex-wrap: nowrap; gap: 8px; padding: 8px 0; }
+.bigmode .drawbar .tx, .bigmode #tools .tn { display: none; }
+.bigmode .drawbar .spacer { display: none; }
+.bigmode #drawToggle, .bigmode #saveDrawBtn { width: 40px; height: 40px; padding: 0; justify-content: center; }
+.bigmode #drawToggle svg, .bigmode #saveDrawBtn svg { margin: 0; }
+.bigmode #tools { flex-direction: column; }
+.bigmode #tools svg { display: block; }
+.bigmode #tools button { padding: 7px; }
+.bigmode .swatches { flex-direction: column; gap: 8px; }
+.bigmode .tipline { display: none; }
 
 /* panel derecho */
 .right { display: flex; flex-direction: column; gap: 14px; min-width: 0; min-height: 0; }
@@ -408,13 +421,13 @@ canvas#draw { inset: 0; width: 100%; height: 100%; }
       </div>
 
       <div class="drawbar">
-        <button class="btn" id="drawToggle" title="Activar o desactivar el pizarrón (D)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/></svg>Pizarrón</button>
+        <button class="btn" id="drawToggle" title="Activar o desactivar el pizarrón (D)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/></svg><span class="tx">Pizarrón</span></button>
         <div class="seg" id="tools"></div>
         <div class="swatches" id="colors"></div>
         <button class="ib" id="undoBtn" title="Deshacer el último trazo (Z)" aria-label="Deshacer el último trazo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14l-5-5 5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
         <button class="ib" id="clearBtn" title="Borrar el dibujo" aria-label="Borrar el dibujo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 20h12"/><path d="M5.5 15.5l9-9a2 2 0 0 1 2.8 0l1.2 1.2a2 2 0 0 1 0 2.8L12 17l-2.5 3H8z"/></svg></button>
         <span class="spacer"></span>
-        <button class="btn" id="saveDrawBtn" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/></svg>Guardar en la jugada</button>
+        <button class="btn" id="saveDrawBtn" title="Guardar el dibujo en la jugada" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/></svg><span class="tx">Guardar en la jugada</span></button>
       </div>
       <div class="note tipline">Tip: si tocas dentro del video, YouTube toma el teclado. Toca fuera del video para volver a usar los atajos.</div>
     </section>
@@ -575,6 +588,10 @@ const UNIT_COLOR = { O: 'var(--off)', D: 'var(--def)', ST: 'var(--st)' };
 const UNIT_NAME = { O: 'Ofensiva', D: 'Defensiva', ST: 'Eq. esp.' };
 const COLORS = ['#ffd400', '#ff4040', '#ffffff', '#33d6ff'];
 const TOOLS = [['arrow', 'Flecha'], ['line', 'Línea'], ['circle', 'Círculo'], ['pen', 'Libre']];
+const TOOL_ICONS = {
+  arrow: '<path d="M5 19L19 5M10 5h9v9"/>', line: '<path d="M5 19L19 5"/>',
+  circle: '<circle cx="12" cy="12" r="8"/>', pen: '<path d="M4 16c3-6 5 4 8-2s5-7 8-4"/>',
+};
 
 const S = {
   plays: [], sel: null, key: null, example: true, vid: null,
@@ -1106,7 +1123,7 @@ fetch('/api/health', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).th
 
 // ---------- static controls ----------
 SPEEDS.forEach((s, i) => { const b = document.createElement('button'); b.className = 'btn sm'; b.textContent = s + '×'; b.dataset.s = s; b.title = 'Tecla ' + (i + 1); b.onclick = () => setSpeed(s); $('speeds').append(b); });
-TOOLS.forEach(([k, n]) => { const b = document.createElement('button'); b.className = 'btn sm'; b.textContent = n; b.dataset.t = k; b.onclick = () => { S.tool = k; setDraw(true); paintTools(); }; $('tools').append(b); });
+TOOLS.forEach(([k, n]) => { const b = document.createElement('button'); b.className = 'btn sm'; b.title = n; b.setAttribute('aria-label', n); b.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TOOL_ICONS[k]}</svg><span class="tn">${n}</span>`; b.dataset.t = k; b.onclick = () => { S.tool = k; setDraw(true); paintTools(); }; $('tools').append(b); });
 COLORS.forEach(c => { const b = document.createElement('button'); b.className = 'sw'; b.style.background = c; b.dataset.c = c; b.setAttribute('aria-label', 'Color ' + c); b.onclick = () => { S.color = c; setDraw(true); paintTools(); }; $('colors').append(b); });
 TYPES.forEach(t => { $('fType').add(new Option(t, t)); $('qType').add(new Option(t, t)); });
 $('fType').insertBefore(new Option('—', ''), $('fType').firstChild);
@@ -1153,13 +1170,15 @@ function fitStage() {
   const tlEl = document.getElementById('timeline');
   const aside = document.querySelector('aside.right'), main = stage.closest('main');
   $('bigBtn').classList.toggle('on', bigVideo); $('bigBtn').setAttribute('aria-pressed', String(bigVideo));
+  const left = stage.closest('section.left');
+  left.classList.toggle('bigmode', bigVideo && window.innerWidth > 980 && !document.fullscreenElement);
   if (window.innerWidth <= 980 || document.fullscreenElement) { stage.style.width = ''; tlEl.style.width = ''; main.style.gridTemplateColumns = ''; aside.classList.remove('fit'); aside.style.height = ''; return; }
   const mainTop = main.getBoundingClientRect().top + window.scrollY;
   const viewTop = bigVideo ? 8 : mainTop;
   aside.classList.add('fit'); aside.style.height = Math.max(420, window.innerHeight - viewTop - 14) + 'px';
-  // grande (como Hudl): panel más angosto y la barra del pizarrón queda justo abajo (se baja un poco para usarla)
-  const panelMin = bigVideo ? 360 : 410;
-  const colMax = main.clientWidth - panelMin - 14;
+  // grande (como Hudl): panel más angosto y el pizarrón en una columna a la derecha del video
+  const panelMin = bigVideo ? 360 : 410, side = bigVideo ? 62 : 0;
+  const colMax = main.clientWidth - panelMin - 14 - side;
   const below = tlEl.offsetHeight + document.querySelector('.transport').offsetHeight + (bigVideo ? 0 : document.querySelector('.drawbar').offsetHeight + 10) + 2 * 10 + 14;
   const avail = window.innerHeight - viewTop - below;
   // normal: el video ocupa al menos ~56% del ancho (como antes), aunque los controles queden un poco abajo;
@@ -1169,7 +1188,7 @@ function fitStage() {
   stage.style.width = w + 'px'; tlEl.style.width = w + 'px';
   // la columna mide lo que el video, pero nunca menos de lo que piden los controles en un renglón (si no, se
   // apilan, le quitan altura al video y este se encoge); el panel de la derecha ocupa el resto
-  const colW = Math.min(colMax, Math.max(w, controlsWidth()));
+  const colW = Math.min(colMax, Math.max(w, controlsWidth())) + side;
   main.style.gridTemplateColumns = `${colW}px minmax(${panelMin}px, 1fr)`;
   applyZoom();
 }
