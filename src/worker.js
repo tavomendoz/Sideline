@@ -483,16 +483,17 @@ async function handleApi(request, env, path) {
 
 // ---------- dominio y cabeceras de seguridad ----------
 const CANONICAL = 'sidelinemx.com';
-// Política de contenido: solo scripts de este sitio (con nonce por respuesta) y de YouTube; fuentes de Google.
+// Política de contenido: solo scripts de este sitio (con nonce por respuesta), de YouTube y del contador de
+// Cloudflare Web Analytics (no usa cookies); fuentes de Google.
 // Va en modo «solo reportar» hasta confirmar en producción que nada legítimo se bloquea.
 const csp = nonce => [
   "default-src 'self'",
-  `script-src 'self' 'nonce-${nonce}' https://www.youtube.com https://s.ytimg.com`,
+  `script-src 'self' 'nonce-${nonce}' https://www.youtube.com https://s.ytimg.com https://static.cloudflareinsights.com`,
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: blob: https://i.ytimg.com",
   'frame-src https://www.youtube.com https://www.youtube-nocookie.com',
-  "connect-src 'self'",
+  "connect-src 'self' https://cloudflareinsights.com",
   "media-src 'self' blob:",
   "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'none'",
   'report-uri /api/csp-report',
