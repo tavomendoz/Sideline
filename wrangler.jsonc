@@ -9,6 +9,8 @@
     { "pattern": "sidelinemx.com", "custom_domain": true },
     { "pattern": "www.sidelinemx.com", "custom_domain": true }
   ],
+  // registros del worker (errores de la subida de video, reportes csp-report) en Observability → Logs
+  "observability": { "enabled": true },
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",

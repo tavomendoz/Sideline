@@ -59,6 +59,7 @@
   .mods b { font-weight: 500; }
   .mods label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
   .mods input { width: 16px; height: 16px; accent-color: #000; }
+  .mods.vh input[type="number"] { width: 72px; height: auto; font: 400 14px/1.4 var(--font-body); padding: 5px 8px; border: 1px solid var(--stone); border-radius: var(--r-input); background: var(--eggshell); }
 </style>
 </head>
 <body>
@@ -300,6 +301,11 @@
           <label><input type="checkbox" value="video" ${(t.modules || []).includes('video') ? 'checked' : ''}> Video</label>
           <label><input type="checkbox" value="playbook" ${(t.modules || []).includes('playbook') ? 'checked' : ''}> Playbook</label>
         </div>
+        <form class="mods vh" data-vh="${esc(t.id)}"><b>Video propio:</b>
+          <label><input type="number" name="hours" min="0" max="1000" step="1" value="${+t.video_hours || 0}" aria-label="Horas de video"> horas</label>
+          <span class="muted">${((+t.video_used || 0) / 3600).toFixed(1)} h usadas${+t.video_hours ? ` de ${+t.video_hours}` : ' · 0 = no puede subir'}</span>
+          <button class="btn btn-line" type="submit" style="height:32px;padding:0 14px">Guardar</button>
+        </form>
         <div class="users" id="u-${esc(t.id)}" ${open.has(t.id) ? '' : 'hidden'}></div>
       </div>`).join('') : `<p class="muted" style="margin-top:24px">${q ? 'Ningún equipo coincide con la búsqueda.' : 'Todavía no hay equipos. Créalo en la pestaña «Nuevo equipo».'}</p>`;
     for (const id of open) loadUsers(id);
@@ -348,6 +354,13 @@
   });
   const checkedMods = box => [...box.querySelectorAll('input:checked')].map(i => i.value);
   // cambiar los módulos de un equipo existente
+  // horas de video propio del plan (Cloudflare Stream)
+  $('teams').addEventListener('submit', async e => {
+    const f = e.target.closest('form[data-vh]'); if (!f) return;
+    e.preventDefault(); err('');
+    try { await api('admin/teams/videohours', { method: 'POST', body: JSON.stringify({ id: f.dataset.vh, hours: f.hours.value }) }); await load(); }
+    catch (x) { await load(); err(x.message); }
+  });
   $('teams').addEventListener('change', async e => {
     const box = e.target.closest('[data-mods]'); if (!box) return;
     err('');

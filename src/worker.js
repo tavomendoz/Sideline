@@ -23,10 +23,14 @@ async function init(db) {
     db.prepare(`CREATE TABLE IF NOT EXISTS tvideos (team_id TEXT NOT NULL, id TEXT NOT NULL, title TEXT, updated_at INTEGER NOT NULL, PRIMARY KEY (team_id, id))`),
     // playbooks: format = modalidad (11 y 8 tacleo; 80 flag 8 vs 8; 7 y 5 flag); side = O (ofensiva) o D (defensiva)
     db.prepare(`CREATE TABLE IF NOT EXISTS pbooks (team_id TEXT NOT NULL, id TEXT NOT NULL, name TEXT NOT NULL, format INTEGER NOT NULL, side TEXT NOT NULL, updated_at INTEGER NOT NULL, PRIMARY KEY (team_id, id))`),
+    // videos subidos a Cloudflare Stream por cada equipo; seconds = duración real cuando ya se procesó
+    db.prepare(`CREATE TABLE IF NOT EXISTS uploads (team_id TEXT NOT NULL, uid TEXT NOT NULL, name TEXT NOT NULL, status TEXT NOT NULL, seconds REAL NOT NULL DEFAULT 0, max_seconds INTEGER NOT NULL DEFAULT 0, size INTEGER NOT NULL DEFAULT 0, host TEXT, created_at INTEGER NOT NULL, PRIMARY KEY (team_id, uid))`),
     db.prepare(`CREATE TABLE IF NOT EXISTS pbplays (team_id TEXT NOT NULL, book_id TEXT NOT NULL, id TEXT NOT NULL, pos INTEGER NOT NULL, data TEXT NOT NULL, updated_at INTEGER NOT NULL, PRIMARY KEY (team_id, book_id, id))`),
   ]);
   // equipos creados antes de los módulos: se agrega la columna con ambos módulos activos (falla si ya existe)
   try { await db.prepare(`ALTER TABLE teams ADD COLUMN modules TEXT NOT NULL DEFAULT 'video,playbook'`).run(); } catch (e) {}
+  // horas de video propio que incluye el plan del equipo (0 = no puede subir)
+  try { await db.prepare(`ALTER TABLE teams ADD COLUMN video_hours INTEGER NOT NULL DEFAULT 0`).run(); } catch (e) {}
   ready = true;
 }
 
@@ -34,7 +38,9 @@ const json = (obj, status = 200, headers = {}) => new Response(JSON.stringify(ob
   status,
   headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...headers },
 });
-const VID = /^[\w-]{11}$/;
+const YTID = /^[\w-]{11}$/;
+const SVID = /^s[0-9a-f]{32}$/;           // video subido: «s» + uid de Cloudflare Stream
+const VID = { test: v => YTID.test(v) || SVID.test(v) };
 const PID = /^[\w-]{1,40}$/;
 const USERNAME = /^[a-z0-9._-]{3,32}$/;
 const SESSION_DAYS = 30;
@@ -208,7 +214,8 @@ async function handleApi(request, env, path) {
         const r = await db.prepare(`SELECT t.id, t.name, t.active, t.created_at, t.modules,
             (SELECT COUNT(*) FROM users u WHERE u.team_id = t.id AND u.role = 'coach') AS coaches,
             (SELECT COUNT(*) FROM users u WHERE u.team_id = t.id AND u.role = 'player') AS players,
-            (SELECT COUNT(*) FROM tvideos v WHERE v.team_id = t.id) AS games
+            (SELECT COUNT(*) FROM tvideos v WHERE v.team_id = t.id) AS games,
+            t.video_hours, (SELECT COALESCE(SUM(seconds), 0) FROM uploads x WHERE x.team_id = t.id AND x.status = 'ready') AS video_used
           FROM teams t ORDER BY t.created_at DESC`).all();
         const legacy = await db.prepare('SELECT COUNT(*) AS n FROM plays').first();
         return json({ teams: (r.results || []).map(t => ({ ...t, modules: parseModules(t.modules) })), legacy_plays: legacy ? legacy.n : 0 });
@@ -229,6 +236,13 @@ async function handleApi(request, env, path) {
         const b = await body();
         await db.prepare('UPDATE teams SET active = ?1 WHERE id = ?2').bind(b.active ? 1 : 0, str(b.id, 20)).run();
         return json({ ok: true });
+      }
+      if (sub === 'teams/videohours' && method === 'POST') {
+        const b = await body();
+        const hours = Math.floor(+b.hours);
+        if (!(hours >= 0 && hours <= 1000)) return json({ error: 'bad_request', message: 'Escribe un número de horas entre 0 y 1000.' }, 400);
+        const r = await db.prepare('UPDATE teams SET video_hours = ?1 WHERE id = ?2').bind(hours, str(b.id, 20)).run();
+        return r.meta && r.meta.changes ? json({ ok: true, hours }) : json({ error: 'not_found' }, 404);
       }
       if (sub === 'teams/modules' && method === 'POST') {
         const b = await body();
@@ -350,8 +364,14 @@ async function handleApi(request, env, path) {
     // cada módulo solo responde si el plan del equipo lo incluye
     const modules = parseModules(u.team_modules);
     const off = m => json({ error: 'module_off', module: m, message: m === 'video' ? 'Tu plan no incluye el módulo de video.' : 'Tu plan no incluye el módulo de playbook.' }, 403);
-    if ((path === 'videos' || path === 'plays') && !modules.includes('video')) return off('video');
+    if ((path === 'videos' || path === 'plays' || path.startsWith('stream')) && !modules.includes('video')) return off('video');
     if (path.startsWith('playbooks') && !modules.includes('playbook')) return off('playbook');
+
+    // ---------- video propio (Cloudflare Stream) ----------
+    if (path.startsWith('stream')) {
+      const S = await streamRoutes(request, env, db, path, method, url, team, coach, body);
+      if (S) return S;
+    }
 
     if (path === 'videos') {
       if (method === 'GET') {
@@ -481,6 +501,106 @@ async function handleApi(request, env, path) {
   }
 }
 
+// ---------- Cloudflare Stream ----------
+// Secretos del worker: STREAM_TOKEN (permiso Stream: Edit) y STREAM_ACCOUNT_ID.
+const streamOn = env => !!(env.STREAM_TOKEN && env.STREAM_ACCOUNT_ID);
+const streamApi = (env, path = '', opts = {}) => fetch(`https://api.cloudflare.com/client/v4/accounts/${env.STREAM_ACCOUNT_ID}/stream${path}`,
+  { ...opts, headers: { authorization: 'Bearer ' + env.STREAM_TOKEN, ...(opts.headers || {}) } });
+const b64 = s => btoa(String.fromCharCode(...enc.encode(s)));
+const PENDING = ['uploading', 'processing'];
+const publicUpload = v => ({ uid: v.uid, id: 's' + v.uid, name: v.name, status: v.status, seconds: Math.round(v.seconds || 0), size: v.size, created_at: v.created_at });
+// segundos ocupados: los listos cuentan su duración real
+const usedSeconds = rows => rows.reduce((a, v) => a + (v.status === 'ready' ? (+v.seconds || 0) : 0), 0);
+// consulta en Stream el estado de un video que no está listo y lo guarda
+async function refreshUpload(env, db, team, v) {
+  const r = await streamApi(env, '/' + v.uid);
+  if (r.status === 404) {
+    // nunca se terminó de subir: después de 1 día se da por perdido
+    if (Date.now() - v.created_at > 864e5) { v.status = 'error'; await db.prepare('UPDATE uploads SET status = ?1 WHERE team_id = ?2 AND uid = ?3').bind('error', team, v.uid).run(); }
+    return v;
+  }
+  if (!r.ok) return v;
+  const d = (await r.json().catch(() => ({}))).result || {};
+  const state = d.status && d.status.state;
+  const host = (() => { try { const h = new URL(d.preview || '').hostname; return /^customer-[a-z0-9]+\.cloudflarestream\.com$/.test(h) ? h : null; } catch (e) { return null; } })();
+  const status = d.readyToStream && state === 'ready' ? 'ready' : state === 'error' ? 'error' : state === 'pendingupload' ? 'uploading' : 'processing';
+  v.status = status; v.seconds = +d.duration > 0 ? +d.duration : 0; v.host = host || v.host;
+  await db.prepare('UPDATE uploads SET status = ?1, seconds = ?2, host = ?3 WHERE team_id = ?4 AND uid = ?5').bind(status, v.seconds, v.host, team, v.uid).run();
+  // ya listo: aparece en «Partidos guardados»
+  if (status === 'ready') await db.prepare(`INSERT INTO tvideos (team_id, id, title, updated_at) VALUES (?1, ?2, ?3, ?4)
+    ON CONFLICT(team_id, id) DO NOTHING`).bind(team, 's' + v.uid, v.name, Date.now()).run();
+  return v;
+}
+async function streamRoutes(request, env, db, path, method, url, team, coach, body) {
+  const listRows = async () => (await db.prepare('SELECT * FROM uploads WHERE team_id = ?1 ORDER BY created_at DESC').bind(team).all()).results || [];
+  const quotaOf = async () => { const t = await db.prepare('SELECT video_hours FROM teams WHERE id = ?1').bind(team).first(); return (t ? +t.video_hours || 0 : 0) * 3600; };
+  if (path === 'stream' && method === 'GET') {
+    const rows = await listRows();
+    if (streamOn(env)) for (const v of rows.filter(v => PENDING.includes(v.status)).slice(0, 5)) await refreshUpload(env, db, team, v);
+    return json({ enabled: streamOn(env), quota: await quotaOf(), used: Math.round(usedSeconds(rows)), videos: rows.map(publicUpload) });
+  }
+  if (path === 'stream/upload' && method === 'POST') {
+    if (!coach) return json({ error: 'forbidden', message: 'Solo los coaches suben videos.' }, 403);
+    if (!streamOn(env)) return json({ error: 'stream_off', message: 'La subida de video todavía no está activada.' }, 503);
+    const b = await body();
+    const name = str(b.name, 120), size = Math.floor(+b.size);
+    if (!name) return json({ error: 'bad_request', message: 'Escribe el nombre del partido.' }, 400);
+    if (!(size > 0 && size <= 30e9)) return json({ error: 'bad_request', message: 'El archivo debe pesar menos de 30 GB.' }, 400);
+    const quota = await quotaOf();
+    if (!quota) return json({ error: 'no_quota', message: 'Tu plan no incluye horas para subir video. Pide que te las agreguen.' }, 403);
+    const rows = await listRows();
+    for (const v of rows.filter(v => PENDING.includes(v.status))) await refreshUpload(env, db, team, v);
+    // un video a la vez: así la duración máxima de cada uno nunca pasa de lo que le queda al equipo
+    if (rows.some(v => PENDING.includes(v.status) && Date.now() - v.created_at < 6 * 3600e3))
+      return json({ error: 'busy', message: 'Espera a que termine de subirse y procesarse el video anterior.' }, 409);
+    const left = Math.floor(quota - usedSeconds(rows));
+    if (left < 60) return json({ error: 'quota', message: `Ya usaste las ${Math.round(quota / 3600)} horas de video de tu plan. Borra partidos viejos o pide horas extra.` }, 403);
+    // subida directa (tus): el navegador manda el archivo a Cloudflare por pedazos, sin pasar por este worker
+    const r = await streamApi(env, '?direct_user=true', { method: 'POST', headers: {
+      'Tus-Resumable': '1.0.0', 'Upload-Length': String(size),
+      'Upload-Metadata': `name ${b64(name)},requiresignedurls,maxdurationseconds ${b64(String(left))}`,
+    } });
+    const uploadUrl = r.headers.get('location') || '', uid = r.headers.get('stream-media-id') || '';
+    if (r.status !== 201 || !/^[0-9a-f]{32}$/.test(uid) || !/^https:\/\//.test(uploadUrl)) {
+      console.error('stream upload', r.status, await r.text().catch(() => ''));
+      return json({ error: 'stream_error', message: 'Cloudflare no aceptó la subida. Intenta de nuevo en unos minutos.' }, 502);
+    }
+    await db.prepare('INSERT INTO uploads (team_id, uid, name, status, seconds, max_seconds, size, created_at) VALUES (?1, ?2, ?3, ?4, 0, ?5, ?6, ?7)')
+      .bind(team, uid, name, 'uploading', left, size, Date.now()).run();
+    return json({ uid, id: 's' + uid, url: uploadUrl, max_seconds: left });
+  }
+  if (path === 'stream/token' && method === 'POST') {
+    if (!streamOn(env)) return json({ error: 'stream_off', message: 'La reproducción de videos subidos no está activada.' }, 503);
+    const b = await body(), uid = String(b.id || '').replace(/^s/, '');
+    let v = /^[0-9a-f]{32}$/.test(uid) ? await db.prepare('SELECT * FROM uploads WHERE team_id = ?1 AND uid = ?2').bind(team, uid).first() : null;
+    if (!v) return json({ error: 'not_found', message: 'Ese video no es de tu equipo.' }, 404);
+    if (v.status !== 'ready' || !v.host) v = await refreshUpload(env, db, team, v);
+    if (v.status !== 'ready') return json({ error: 'not_ready', message: 'El video todavía se está procesando. Intenta en unos minutos.' }, 409);
+    // enlace firmado que vence en 4 horas: solo quien tiene sesión en el equipo lo obtiene
+    const r = await streamApi(env, `/${uid}/token`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 4 * 3600 }) });
+    const token = r.ok ? ((await r.json().catch(() => ({}))).result || {}).token : null;
+    if (!token || !v.host) { console.error('stream token', r.status); return json({ error: 'stream_error', message: 'No se pudo abrir el video. Intenta de nuevo.' }, 502); }
+    return json({ token, iframe: `https://${v.host}/${token}/iframe`, name: v.name, seconds: Math.round(v.seconds) });
+  }
+  if (path === 'stream' && method === 'DELETE') {
+    if (!coach) return json({ error: 'forbidden', message: 'Solo los coaches borran videos.' }, 403);
+    const uid = String(url.searchParams.get('uid') || '');
+    const v = /^[0-9a-f]{32}$/.test(uid) ? await db.prepare('SELECT uid FROM uploads WHERE team_id = ?1 AND uid = ?2').bind(team, uid).first() : null;
+    if (!v) return json({ error: 'not_found' }, 404);
+    if (streamOn(env)) {
+      const r = await streamApi(env, '/' + uid, { method: 'DELETE' });
+      if (!r.ok && r.status !== 404) return json({ error: 'stream_error', message: 'Cloudflare no pudo borrar el video. Intenta de nuevo.' }, 502);
+    }
+    await db.batch([
+      db.prepare('DELETE FROM uploads WHERE team_id = ?1 AND uid = ?2').bind(team, uid),
+      db.prepare('DELETE FROM tvideos WHERE team_id = ?1 AND id = ?2').bind(team, 's' + uid),
+      db.prepare('DELETE FROM tplays WHERE team_id = ?1 AND video = ?2').bind(team, 's' + uid),
+    ]);
+    return json({ ok: true });
+  }
+  return null;
+}
+
 // ---------- dominio y cabeceras de seguridad ----------
 const CANONICAL = 'sidelinemx.com';
 // Política de contenido: solo scripts de este sitio (con nonce por respuesta), de YouTube y del contador de
@@ -488,12 +608,13 @@ const CANONICAL = 'sidelinemx.com';
 // Va en modo «solo reportar» hasta confirmar en producción que nada legítimo se bloquea.
 const csp = nonce => [
   "default-src 'self'",
-  `script-src 'self' 'nonce-${nonce}' https://www.youtube.com https://s.ytimg.com https://static.cloudflareinsights.com`,
+  `script-src 'self' 'nonce-${nonce}' https://www.youtube.com https://s.ytimg.com https://static.cloudflareinsights.com https://embed.cloudflarestream.com`,
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
-  "img-src 'self' data: blob: https://i.ytimg.com",
-  'frame-src https://www.youtube.com https://www.youtube-nocookie.com',
-  "connect-src 'self' https://cloudflareinsights.com",
+  "img-src 'self' data: blob: https://i.ytimg.com https://*.cloudflarestream.com",
+  'frame-src https://www.youtube.com https://www.youtube-nocookie.com https://*.cloudflarestream.com',
+  // subida por pedazos (tus) directo a Cloudflare Stream
+  "connect-src 'self' https://cloudflareinsights.com https://*.cloudflarestream.com https://upload.videodelivery.net https://edge-production.gateway.api.cloudflare.com",
   "media-src 'self' blob:",
   "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'none'",
   'report-uri /api/csp-report',

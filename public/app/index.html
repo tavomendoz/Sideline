@@ -67,6 +67,10 @@ kbd { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); bor
 .ib svg { width: 21px; height: 21px; }
 .ib:hover { background: var(--panel-2); border-color: var(--line); }
 .ib:disabled { opacity: .4; cursor: not-allowed; }
+.ib.on { background: var(--fg); color: var(--on-fg); }
+/* si el video es más angosto que su columna, queda centrado */
+@media (min-width: 981px) { #stage, #timeline { align-self: center; } }
+@media (max-width: 980px) { #bigBtn { display: none; } }
 
 /* segmentados (velocidad, herramientas y campos del formulario) */
 .seg { display: inline-flex; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 2px; gap: 2px; }
@@ -112,9 +116,13 @@ main { display: grid; grid-template-columns: minmax(0, 1fr) 410px; gap: 14px; fl
   .right.fit .rows { flex: 1 1 auto; min-height: 0; max-height: none; } }
 video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; }
 canvas#draw { position: absolute; touch-action: none; }
-/* capa para la rueda del mouse: el reproductor de YouTube es un iframe y se quedaría con el evento.
+/* capa para la rueda del mouse (zoom): el reproductor de YouTube es un iframe y se quedaría con el evento.
    Deja libre la franja inferior para los controles de YouTube; solo con mouse (en pantallas táctiles no estorba) */
-.scrub { position: absolute; left: 0; right: 0; top: 0; bottom: 56px; cursor: ns-resize; }
+.scrub { position: absolute; left: 0; right: 0; top: 0; bottom: 56px; cursor: zoom-in; }
+.scrub.zoomed { cursor: grab; } .scrub.panning { cursor: grabbing; }
+/* el video y el pizarrón se acercan juntos, así los dibujos quedan sobre la misma parte de la imagen */
+.zoomwrap { position: absolute; inset: 0; transform-origin: 0 0; }
+.hud .zm { color: #fff; font-size: 13px; font-weight: 500; }
 @media (hover: none), (pointer: coarse) { .scrub { display: none; } }
 canvas#draw.active { cursor: crosshair; }
 .drop { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px; color: rgba(255,255,255,.75);
@@ -147,6 +155,8 @@ canvas#draw.active { cursor: crosshair; }
 .play .i-pause { display: none; }
 .play.playing .i-play { display: none; } .play.playing .i-pause { display: block; }
 .tc { font-family: var(--font-mono); font-size: 14px; font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
+/* ancho fijo para «1:06:42.6 / 1:06:42.6»: si crece al cargar la duración, los controles saltarían de renglón */
+.transport .tc { min-width: 21ch; }
 .tc b { color: var(--fg); font-weight: 600; }
 .speedwrap { display: inline-flex; align-items: center; gap: 8px; }
 .lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
@@ -235,6 +245,18 @@ canvas#draw.active { cursor: crosshair; }
 .users td.act { text-align: right; white-space: nowrap; }
 .userform { display: grid; grid-template-columns: minmax(0,1.2fr) minmax(0,1fr) minmax(0,.8fr) auto; gap: 8px; align-items: end; }
 @media (max-width: 640px) { .userform { grid-template-columns: minmax(0,1fr); } }
+.quota { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--muted); }
+.qbar { flex: 1; height: 8px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line); overflow: hidden; }
+.qbar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s; }
+.upform { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+@media (max-width: 640px) { .upform { grid-template-columns: minmax(0, 1fr); } }
+.upprog { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+.uplist { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
+.uprow { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 10px 2px; border-bottom: 1px solid var(--line); font-size: 13px; }
+.uprow b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.uprow .st { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--panel-2); color: var(--muted); }
+.uprow .st.ready { background: var(--ok-soft); color: var(--good); } .uprow .st.error { background: var(--bad-soft); color: var(--bad); }
+.uprow .acts { display: flex; gap: 6px; }
 .creds { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 12px; font-size: 14px; }
 .creds code { font-family: var(--font-mono); font-size: 15px; background: var(--panel); padding: 1px 6px; border-radius: 4px; border: 1px solid var(--line); }
 .help dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; padding: 14px; margin: 0; }
@@ -317,6 +339,7 @@ canvas#draw { inset: 0; width: 100%; height: 100%; }
       <input id="urlInput" type="url" placeholder="Pega el enlace de YouTube del partido" aria-label="Enlace de YouTube">
       <button class="btn primary" type="submit">Cargar</button>
     </form>
+    <button class="btn" id="upBtn" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M8 8l4-4 4 4"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>Subir video</button>
     <span class="spacer"></span>
     <div class="umenu more">
       <button class="btn" id="moreBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="19" cy="12" r="1.3" fill="currentColor"/></svg>Más</button>
@@ -343,15 +366,18 @@ canvas#draw { inset: 0; width: 100%; height: 100%; }
   <main id="videoMain">
     <section class="left">
       <div class="stagebox" id="stage">
-        <div id="yt"></div>
-        <div class="scrub" id="scrub" hidden title="Rueda del mouse: cuadro por cuadro (Shift: 1 s) · Clic: reproducir o pausar"></div>
-        <canvas id="draw"></canvas>
-        <div class="hud" id="hud" hidden><span class="spd" id="hudSpd"></span></div>
+        <div class="zoomwrap" id="zoomwrap">
+          <div id="ytbox"><div id="yt"></div></div>
+          <canvas id="draw"></canvas>
+        </div>
+        <div class="scrub" id="scrub" hidden title="Rueda: zoom · Flechas ← →: cuadro por cuadro · Clic: reproducir o pausar"></div>
+        <div class="hud" id="hud" hidden><span class="spd" id="hudSpd"></span><span class="zm" id="hudZoom" hidden></span></div>
         <div class="drop" id="drop">
           <div>
             <svg class="big" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></svg>
             <strong>Carga el partido desde YouTube</strong>
             <p>Pega el enlace de la transmisión de la liga, en vivo o ya terminada. El video se ve con el reproductor oficial de YouTube y aquí solo se guardan tus etiquetas.</p>
+            <button class="btn" id="upBtn2" type="button" hidden style="margin:0 auto 12px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M8 8l4-4 4 4"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>Subir el video del partido</button>
             <form class="urlbar" id="urlForm2">
               <input id="urlInput2" type="url" placeholder="https://www.youtube.com/watch?v=…" aria-label="Enlace de YouTube">
               <button class="btn primary" type="submit">Cargar</button>
@@ -376,7 +402,8 @@ canvas#draw { inset: 0; width: 100%; height: 100%; }
         </div>
         <span class="tc" id="tc"><b>0:00.0</b> / 0:00.0</span>
         <span class="spacer"></span>
-        <div class="speedwrap"><span class="lbl">Velocidad</span><div class="seg" id="speeds"></div></div>
+        <div class="speedwrap"><div class="seg" id="speeds" role="group" aria-label="Velocidad" title="Velocidad de reproducción (teclas 1 a 5)"></div></div>
+        <button class="ib" id="bigBtn" title="Video grande: el video sube hasta arriba y crece" aria-label="Video grande" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M8 10l-2 2 2 2M16 10l2 2-2 2"/></svg></button>
         <button class="ib" id="fsBtn" title="Pantalla completa (F)" aria-label="Pantalla completa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
       </div>
 
@@ -465,7 +492,7 @@ canvas#draw { inset: 0; width: 100%; height: 100%; }
       <dt><kbd>C</kbd></dt><dd>Ver el clip de la jugada</dd>
       <dt><kbd>D</kbd></dt><dd>Activar pizarrón · <kbd>Z</kbd> deshace el último trazo</dd>
       <dt><kbd>F</kbd></dt><dd>Pantalla completa (para proyectar)</dd>
-      <dt>Rueda del mouse</dt><dd>Sobre el video o la línea de tiempo: 0.1 segundos por giro · con <kbd>Shift</kbd>, 1 segundo</dd>
+      <dt>Rueda del mouse</dt><dd>Zoom al video (hasta 4×); arrastra para moverte · doble clic o <kbd>Esc</kbd> lo quita</dd>
     </dl>
   </div>
 </div>
@@ -495,6 +522,24 @@ canvas#draw { inset: 0; width: 100%; height: 100%; }
       <div><button class="btn primary" type="submit">Guardar contraseña</button></div>
     </div>
   </form>
+</div>
+
+<div class="modal" id="upModal" hidden>
+  <div class="card">
+    <div class="hd"><h2>Videos del equipo</h2><span class="spacer"></span><button type="button" class="btn sm" id="upClose">Cerrar</button></div>
+    <div class="body">
+      <div class="quota"><div class="qbar"><i id="upBar"></i></div><span id="upQuota"></span></div>
+      <form class="upform" id="upForm">
+        <div class="lf"><label for="upName">Nombre del partido</label><input id="upName" maxlength="120" required placeholder="Halcones vs Lobos · Semana 5"></div>
+        <div class="lf"><label for="upFile">Archivo de video</label><input id="upFile" type="file" accept="video/*,.mp4,.mov,.m4v,.mkv,.avi" required></div>
+        <button class="btn primary" type="submit" id="upGo">Subir</button>
+      </form>
+      <div class="upprog" id="upProg" hidden><div class="qbar"><i id="upProgBar"></i></div><span id="upProgTxt"></span><button type="button" class="btn sm" id="upCancel">Cancelar</button></div>
+      <p class="lerr" id="upErr" hidden></p>
+      <div class="uplist" id="upList"></div>
+      <p class="note">Sube solo el partido, sin calentamiento ni medio tiempo: cada minuto cuenta para tus horas. Al terminar, Cloudflare tarda unos minutos en procesarlo. No cierres esta pestaña mientras se sube.</p>
+    </div>
+  </div>
 </div>
 
 <div class="modal" id="teamModal" hidden>
@@ -545,8 +590,11 @@ S.plays = [
   { id: 'e3', start: 77, end: 84, q: '1', unit: 'D', down: '3', dist: 7, side: 'R', yard: 38, hash: 'I', form: 'Nickel', type: 'Pase corto', res: 'Sack', gain: -6, player: '#55', notes: 'Blitz por el lado débil.', ex: true },
 ];
 
-// ---------- YouTube player wrapper ----------
+// ---------- reproductor: YouTube o video subido a Cloudflare Stream ----------
+// `yt` es el reproductor activo; los dos exponen getCurrentTime, getDuration, getPlayerState, playVideo,
+// pauseVideo, seekTo, setPlaybackRate, getVideoData y destroy, así P (abajo) no distingue cuál es.
 let yt = null, ready = false, apiReady = false, pendingId = null;
+const isUploaded = id => /^s[0-9a-f]{32}$/.test(id || '');
 const P = {
   get t() { try { return ready ? yt.getCurrentTime() || 0 : 0; } catch (e) { return 0; } },
   get d() { try { return ready ? yt.getDuration() || 0 : 0; } catch (e) { return 0; } },
@@ -564,12 +612,8 @@ function createPlayer(id) {
   yt = new YT.Player('yt', {
     videoId: id, playerVars: vars,
     events: {
-      onReady: () => { ready = true; $('scrub').hidden = false; P.rate(S.rate); grabTitle(); renderAll(); },
-      onStateChange: e => {
-        updPlay();
-        if (e.data === 1 && Date.now() > S.keepDrawUntil) { if (S.strokes.length) { S.strokes = []; redraw(); } if (S.draw) setDraw(false); }
-        if (e.data === 1) { P.rate(S.rate); grabTitle(); }
-      },
+      onReady: () => playerReady(),
+      onStateChange: e => playerState(e.data),
       onError: e => {
         const msg = { 2: 'El enlace no es válido.', 5: 'El video no se puede reproducir aquí.', 100: 'El video no existe o es privado.', 101: 'El dueño del video no permite verlo fuera de YouTube.', 150: 'El dueño del video no permite verlo fuera de YouTube.', 153: 'Abre esta página desde un sitio web (no como archivo local).' }[e.data];
         toast(msg || 'YouTube no pudo cargar el video.');
@@ -577,10 +621,69 @@ function createPlayer(id) {
     },
   });
 }
+function playerReady() { ready = true; $('scrub').hidden = false; P.rate(S.rate); grabTitle(); renderAll(); }
+// 1 = reproduciendo (como YouTube)
+function playerState(code) {
+  updPlay();
+  if (code === 1 && Date.now() > S.keepDrawUntil) { if (S.strokes.length) { S.strokes = []; redraw(); } if (S.draw) setDraw(false); }
+  if (code === 1) { P.rate(S.rate); grabTitle(); }
+}
+// quita el reproductor actual (al cambiar entre YouTube y un video subido)
+function teardownPlayer() {
+  if (yt) { try { yt.destroy(); } catch (e) {} }
+  yt = null; ready = false; $('scrub').hidden = true;
+  $('ytbox').innerHTML = '<div id="yt"></div>';
+}
+// video subido: pide un enlace firmado (vence en 4 h) y usa el reproductor de Cloudflare con su SDK
+let streamSdk = null;
+const loadStreamSdk = () => streamSdk || (streamSdk = new Promise((res, rej) => {
+  if (window.Stream) return res();
+  const sc = document.createElement('script'); sc.src = 'https://embed.cloudflarestream.com/embed/sdk.latest.js';
+  sc.onload = () => res(); sc.onerror = () => { streamSdk = null; rej(new Error('sdk')); };
+  document.head.append(sc);
+}));
+async function createStreamPlayer(id) {
+  // el enlace firmado requiere sesión: si todavía no hay, se abre al terminar de entrar (signedIn)
+  if (!cloud.on || !cloud.user) return;
+  let tk;
+  try { tk = await api('stream/token', { method: 'POST', body: JSON.stringify({ id }) }); }
+  catch (e) { toast(e.message || 'No se pudo abrir el video.'); return; }
+  try { await loadStreamSdk(); } catch (e) { toast('No se pudo cargar el reproductor de video. Revisa tu conexión.'); return; }
+  if (S.vid !== id) return;
+  const box = $('yt');
+  const fr = document.createElement('iframe');
+  fr.src = tk.iframe + '?preload=auto';
+  fr.allow = 'accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture; fullscreen';
+  fr.setAttribute('allowfullscreen', ''); fr.title = tk.name;
+  box.append(fr);
+  const sp = window.Stream(fr);
+  let playing = false;
+  yt = {
+    kind: 'stream',
+    getCurrentTime: () => +sp.currentTime || 0, getDuration: () => +sp.duration || tk.seconds || 0,
+    getPlayerState: () => (playing ? 1 : 2),
+    playVideo: () => sp.play(), pauseVideo: () => sp.pause(),
+    seekTo: t => { sp.currentTime = t; }, setPlaybackRate: r => { sp.playbackRate = r; },
+    getVideoData: () => ({ title: tk.name }),
+    destroy: () => { box.textContent = ''; },
+  };
+  sp.addEventListener('loadedmetadata', () => { if (!ready && S.vid === id) playerReady(); });
+  sp.addEventListener('play', () => { playing = true; playerState(1); });
+  sp.addEventListener('pause', () => { playing = false; playerState(2); });
+  sp.addEventListener('ended', () => { playing = false; playerState(0); });
+}
+// abre el video en el reproductor que le toca
+function openPlayer(id) {
+  if (!isUploaded(id) && yt && yt.kind !== 'stream' && ready) { yt.cueVideoById(id); return; }
+  if (yt || ready) teardownPlayer();
+  pendingId = null;
+  if (isUploaded(id)) { createStreamPlayer(id); return; }
+  if (apiReady) createPlayer(id); else pendingId = id;
+}
 function grabTitle() { try { const d = yt.getVideoData(); if (d && d.title) { const was = S.title; S.title = d.title; $('fileName').textContent = d.title; if (!was && cloud.on && cloud.ok && S.plays.length) { cloud.lastTouch = 0; touchVideo(); } } } catch (e) {} }
 function parseId(u) {
   u = (u || '').trim();
-  if (/^[\w-]{11}$/.test(u)) return u;
+  if (/^[\w-]{11}$/.test(u) || isUploaded(u)) return u;
   let id = null;
   try {
     const url = new URL(u);
@@ -595,8 +698,8 @@ function loadUrl(u) {
   if (!id) { toast('No reconozco ese enlace. Copia el enlace completo del video de YouTube.'); return; }
   S.vid = id;
   $('drop').hidden = true; $('hud').hidden = false;
-  $('fileName').textContent = 'YouTube · ' + id;
-  $('urlInput').value = 'https://www.youtube.com/watch?v=' + id;
+  $('fileName').textContent = isUploaded(id) ? 'Video subido' : 'YouTube · ' + id;
+  $('urlInput').value = isUploaded(id) ? '' : 'https://www.youtube.com/watch?v=' + id;
   S.key = 'salavideo-yt:' + (cloud.team ? cloud.team.id + ':' : '') + id;
   let saved = null;
   try { saved = JSON.parse(localStorage.getItem(S.key) || 'null'); localStorage.setItem('salavideo-yt:last', id); } catch (e) {}
@@ -605,9 +708,7 @@ function loadUrl(u) {
   dirty.clear(); timers.forEach(clearTimeout); timers.clear();
   try { history.replaceState(null, '', location.pathname + '?v=' + id); } catch (e) {}
   if (cloud.on) { subscribe(id); const gs = $('gamesSel'); if ([...gs.options].some(o => o.value === id)) gs.value = id; }
-  if (yt && ready) yt.cueVideoById(id);
-  else if (apiReady) { if (!yt) createPlayer(id); }
-  else pendingId = id;
+  openPlayer(id);
   renderAll();
   if (!cloud.on && saved && saved.length) toast(`Se recuperaron ${saved.length} jugadas de este video.`);
 }
@@ -733,6 +834,126 @@ async function loadGames() {
     gs.value = (r.videos || []).some(v => v.id === S.vid) ? S.vid : '';
   } catch (e) {}
 }
+// ---------- videos subidos (Cloudflare Stream) ----------
+// El archivo va directo del navegador a Cloudflare con el protocolo tus, en pedazos de 50 MB
+// (múltiplo de 256 KB, como pide Stream); si se corta la conexión, se pregunta cuánto llegó y se sigue de ahí.
+const UP = { enabled: false, quota: 0, used: 0, videos: [], uploading: false, abort: null, poll: 0 };
+const CHUNK = 50 * 1024 * 1024;
+const hrs = sec => (sec / 3600).toFixed(1).replace('.0', '');
+const mins = sec => { sec = Math.round(sec); const h = Math.floor(sec / 3600), m = Math.round((sec % 3600) / 60); return h ? `${h} h ${m} min` : `${m} min`; };
+async function loadUploads() {
+  if (!cloud.ok || !hasVideo()) { $('upBtn').hidden = $('upBtn2').hidden = true; return; }
+  try { Object.assign(UP, await api('stream')); } catch (e) { return; }
+  const can = UP.enabled && UP.quota > 0;
+  $('upBtn').hidden = $('upBtn2').hidden = !can;
+  paintUploads();
+  // mientras haya videos procesándose, se revisa cada 15 s; al quedar listos aparecen en «Partidos guardados»
+  clearTimeout(UP.poll);
+  if (UP.videos.some(v => v.status === 'uploading' || v.status === 'processing')) UP.poll = setTimeout(async () => {
+    const before = new Set(UP.videos.filter(v => v.status === 'ready').map(v => v.uid));
+    await loadUploads();
+    const fresh = UP.videos.filter(v => v.status === 'ready' && !before.has(v.uid));
+    if (fresh.length) { loadGames(); toast(`«${fresh[0].name}» ya está listo. Ábrelo en «Partidos guardados».`); }
+  }, 15000);
+}
+function paintUploads() {
+  const pct = UP.quota ? Math.min(100, UP.used / UP.quota * 100) : 0;
+  $('upBar').style.width = pct + '%';
+  $('upQuota').textContent = UP.quota ? `${hrs(UP.used)} de ${hrs(UP.quota)} horas usadas · te quedan ${mins(Math.max(0, UP.quota - UP.used))}` : 'Tu plan no incluye horas de video propio.';
+  const list = $('upList'); list.textContent = '';
+  const LABEL = { uploading: 'Subiendo', processing: 'Procesando', ready: 'Listo', error: 'Error' };
+  for (const v of UP.videos) {
+    const row = document.createElement('div'); row.className = 'uprow';
+    const info = document.createElement('div');
+    const b = document.createElement('b'); b.textContent = v.name;
+    const sub = document.createElement('div'); sub.className = 'note';
+    sub.textContent = [v.seconds ? mins(v.seconds) : '', v.size ? (v.size / 1e9).toFixed(2) + ' GB' : '', new Date(v.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })].filter(Boolean).join(' · ');
+    info.append(b, sub);
+    const st = document.createElement('span'); st.className = 'st ' + v.status; st.textContent = LABEL[v.status] || v.status;
+    const acts = document.createElement('div'); acts.className = 'acts';
+    if (v.status === 'ready') { const o = document.createElement('button'); o.type = 'button'; o.className = 'btn sm'; o.textContent = 'Abrir'; o.onclick = () => { $('upModal').hidden = true; loadUrl(v.id); }; acts.append(o); }
+    const del = document.createElement('button'); del.type = 'button'; del.className = 'btn sm ghost'; del.textContent = 'Borrar';
+    del.onclick = async () => {
+      if (del.dataset.arm !== '1') { del.dataset.arm = '1'; del.textContent = '¿Borrar video y sus jugadas?'; setTimeout(() => { del.dataset.arm = ''; del.textContent = 'Borrar'; }, 3000); return; }
+      try {
+        await api('stream?uid=' + encodeURIComponent(v.uid), { method: 'DELETE' });
+        if (S.vid === v.id) { teardownPlayer(); S.vid = null; S.plays = []; $('drop').hidden = false; $('fileName').textContent = 'Sin video cargado'; history.replaceState(null, '', location.pathname); renderAll(); }
+        toast('Video borrado; sus horas quedan libres.'); loadUploads(); loadGames();
+      } catch (x) { upErr(x.message); }
+    };
+    acts.append(del);
+    row.append(info, st, acts); list.append(row);
+  }
+}
+const upErr = m => { $('upErr').textContent = m || ''; $('upErr').hidden = !m; };
+function openUploads() { upErr(''); $('upModal').hidden = false; loadUploads(); }
+$('upBtn').onclick = openUploads; $('upBtn2').onclick = openUploads;
+$('upClose').onclick = () => { $('upModal').hidden = true; };
+// duración del archivo antes de subirlo (si el navegador puede leerla), para no gastar tiempo en uno que no cabe
+function fileDuration(file) {
+  return new Promise(res => {
+    const v = document.createElement('video'), url = URL.createObjectURL(file);
+    const done = d => { URL.revokeObjectURL(url); res(d); };
+    v.preload = 'metadata'; v.onloadedmetadata = () => done(isFinite(v.duration) ? v.duration : null); v.onerror = () => done(null);
+    setTimeout(() => done(null), 8000); v.src = url;
+  });
+}
+function patchChunk(url, blob, offset, onProgress) {
+  return new Promise((res, rej) => {
+    const x = new XMLHttpRequest();
+    UP.abort = () => x.abort();
+    x.open('PATCH', url);
+    x.setRequestHeader('Tus-Resumable', '1.0.0'); x.setRequestHeader('Upload-Offset', String(offset));
+    x.setRequestHeader('Content-Type', 'application/offset+octet-stream');
+    x.upload.onprogress = e => onProgress(offset + e.loaded);
+    x.onload = () => (x.status === 204 ? res(+x.getResponseHeader('Upload-Offset') || offset + blob.size) : rej(new Error('http ' + x.status)));
+    x.onerror = () => rej(new Error('red'));
+    x.onabort = () => rej(Object.assign(new Error('cancelado'), { name: 'AbortError' }));
+    x.send(blob);
+  });
+}
+async function tusUpload(url, file, onProgress) {
+  let offset = 0, fails = 0;
+  while (offset < file.size) {
+    try { offset = await patchChunk(url, file.slice(offset, Math.min(file.size, offset + CHUNK)), offset, onProgress); fails = 0; }
+    catch (e) {
+      if (e.name === 'AbortError' || ++fails > 6) throw e;
+      onProgress(offset, `Se cortó la conexión; reintentando (${fails}/6)…`);
+      await new Promise(r => setTimeout(r, 2000 * fails));
+      try { const h = await fetch(url, { method: 'HEAD', headers: { 'Tus-Resumable': '1.0.0' } }); offset = +h.headers.get('Upload-Offset') || offset; } catch (x) {}
+    }
+    onProgress(offset);
+  }
+}
+$('upForm').onsubmit = async e => {
+  e.preventDefault(); upErr('');
+  const file = $('upFile').files[0], name = $('upName').value.trim();
+  if (!file || !name || UP.uploading) return;
+  const left = UP.quota - UP.used;
+  const dur = await fileDuration(file);
+  if (dur && dur > left) return upErr(`Este video dura ${mins(dur)} y a tu equipo le quedan ${mins(left)}. Recórtalo, borra partidos viejos o pide horas extra.`);
+  let up;
+  try { up = await api('stream/upload', { method: 'POST', body: JSON.stringify({ name, size: file.size }) }); }
+  catch (x) { return upErr(x.message); }
+  UP.uploading = true; $('upGo').disabled = true; $('upForm').hidden = true; $('upProg').hidden = false;
+  const t0 = Date.now();
+  const show = (sent, note) => {
+    $('upProgBar').style.width = (sent / file.size * 100).toFixed(1) + '%';
+    const secs = (Date.now() - t0) / 1000, speed = sent / Math.max(1, secs), rest = (file.size - sent) / Math.max(1, speed);
+    $('upProgTxt').textContent = note || `${(sent / 1e9).toFixed(2)} de ${(file.size / 1e9).toFixed(2)} GB · ${Math.round(sent / file.size * 100)}%` + (sent > 0 && sent < file.size ? ` · faltan ~${mins(rest)}` : '');
+  };
+  try {
+    show(0); await tusUpload(up.url, file, show);
+    toast('Video subido. Cloudflare lo está procesando; te aviso cuando esté listo.');
+    $('upName').value = ''; $('upFile').value = '';
+  } catch (x) {
+    upErr(x.name === 'AbortError' ? 'Subida cancelada.' : 'No se pudo terminar de subir. Revisa tu conexión e intenta de nuevo.');
+  } finally {
+    UP.uploading = false; UP.abort = null; $('upGo').disabled = false; $('upForm').hidden = false; $('upProg').hidden = true;
+    loadUploads();
+  }
+};
+$('upCancel').onclick = () => { if (UP.abort) UP.abort(); };
 function paintAuth() {
   if (!cloud.on) return;
   const on = !!cloud.user;
@@ -761,6 +982,7 @@ async function signedIn(d, fresh) {
   cloud.mods = Array.isArray(d.team.modules) ? d.team.modules : ['video', 'playbook'];
   $('gate').hidden = true;
   paintAuth(); paintModule();
+  requestAnimationFrame(fitStage);   // la franja de saludo empuja el video hacia abajo: recalcular su tamaño
   // con contraseña temporal el servidor no entrega datos hasta que la cambie
   if (d.user.must_change) { openPw(true); return; }
   // accesos directos desde el módulo de playbook
@@ -778,7 +1000,8 @@ async function signedIn(d, fresh) {
     subscribe(S.vid);
     dirty.forEach((p, k) => flush(k));
   } else { S.plays = []; S.example = false; S.sel = null; dirty.clear(); setStatus('Conectado', 'ok'); }
-  loadGames();
+  loadGames(); loadUploads();
+  if (isUploaded(S.vid) && !yt) openPlayer(S.vid);
   renderAll();
   if (fresh) toast(`Hola, ${d.user.name.split(' ')[0]}.`);
 }
@@ -866,6 +1089,7 @@ $('uRows').addEventListener('click', async e => {
 });
 $('gamesSel').onchange = () => { const v = $('gamesSel').value; if (v) loadUrl(v); };
 window.addEventListener('beforeunload', e => {
+  if (UP.uploading) { e.preventDefault(); e.returnValue = ''; return; }
   cacheLocal();
   if (timers.size) { cloud.unloading = true; [...timers.keys()].forEach(id => { clearTimeout(timers.get(id)); flush(id); }); e.preventDefault(); e.returnValue = ''; }
 });
@@ -894,6 +1118,7 @@ function paintTools() {
   $('drawToggle').classList.toggle('on', S.draw);
   cv.classList.toggle('active', S.draw);
   cv.style.pointerEvents = S.draw ? 'auto' : 'none';
+  $('scrub').style.pointerEvents = S.draw ? 'none' : '';   // con el pizarrón activo, el mouse va al lienzo
   $('saveDrawBtn').disabled = !(selPlay() && S.strokes.length && canEdit());
 }
 function setSpeed(s) {
@@ -913,22 +1138,46 @@ function layoutCanvas() {
 }
 new ResizeObserver(layoutCanvas).observe(stage);
 // Fit video + timeline + controls + pizarrón in one screen on desktop (no scrolling).
+// zoom del video: escala y desplazamiento de la capa del video (ver «zoom del video» más abajo)
+const Z = { k: 1, x: 0, y: 0 };
+// «Video grande»: la página se desplaza para que el video quede arriba y crezca lo más posible
+let bigVideo = false; try { bigVideo = localStorage.getItem('sideline:bigVideo') === '1'; } catch (e) {}
+// ancho que ocupan los controles (transporte y pizarrón) en un solo renglón
+function controlsWidth() {
+  let m = 0;
+  for (const el of document.querySelectorAll('.transport, .drawbar')) { const prev = el.style.width; el.style.width = 'max-content'; m = Math.max(m, el.getBoundingClientRect().width); el.style.width = prev; }
+  return Math.ceil(m) + 2;   // hacia arriba: con medio pixel de menos los controles ya saltan de renglón
+}
 function fitStage() {
   const tlEl = document.getElementById('timeline');
-  const aside = document.querySelector('aside.right');
-  if (window.innerWidth <= 980 || document.fullscreenElement) { stage.style.width = ''; tlEl.style.width = ''; aside.classList.remove('fit'); aside.style.height = ''; return; }
-  aside.classList.add('fit'); aside.style.height = Math.max(420, window.innerHeight - (aside.getBoundingClientRect().top + window.scrollY) - 14) + 'px';
-  const col = stage.parentElement.clientWidth;
-  const top = stage.getBoundingClientRect().top + window.scrollY;
-  const below = tlEl.offsetHeight + document.querySelector('.transport').offsetHeight + document.querySelector('.drawbar').offsetHeight + 3 * 8 + 14;
-  const avail = window.innerHeight - top - below;
-  const w = Math.round(Math.max(360, Math.min(col, avail * 16 / 9)));
+  const aside = document.querySelector('aside.right'), main = stage.closest('main');
+  $('bigBtn').classList.toggle('on', bigVideo); $('bigBtn').setAttribute('aria-pressed', String(bigVideo));
+  if (window.innerWidth <= 980 || document.fullscreenElement) { stage.style.width = ''; tlEl.style.width = ''; main.style.gridTemplateColumns = ''; aside.classList.remove('fit'); aside.style.height = ''; return; }
+  const mainTop = main.getBoundingClientRect().top + window.scrollY;
+  const viewTop = bigVideo ? 8 : mainTop;
+  aside.classList.add('fit'); aside.style.height = Math.max(420, window.innerHeight - viewTop - 14) + 'px';
+  const colMax = main.clientWidth - 410 - 14;
+  const below = tlEl.offsetHeight + document.querySelector('.transport').offsetHeight + document.querySelector('.drawbar').offsetHeight + 3 * 10 + 14;
+  const avail = window.innerHeight - viewTop - below;
+  const w = Math.round(Math.max(360, Math.min(colMax, avail * 16 / 9)));
   stage.style.width = w + 'px'; tlEl.style.width = w + 'px';
+  // la columna mide lo que el video, pero nunca menos de lo que piden los controles en un renglón (si no, se
+  // apilan, le quitan altura al video y este se encoge); el panel de la derecha ocupa el resto
+  const colW = Math.min(colMax, Math.max(w, controlsWidth()));
+  main.style.gridTemplateColumns = `${colW}px minmax(410px, 1fr)`;
+  applyZoom();
 }
 window.addEventListener('resize', fitStage);
 document.addEventListener('fullscreenchange', fitStage);
-new ResizeObserver(fitStage).observe(stage.parentElement);
+new ResizeObserver(fitStage).observe(document.querySelector('main'));
 fitStage();
+function scrollToVideo() { const top = stage.closest('main').getBoundingClientRect().top + window.scrollY - 8; window.scrollTo({ top: bigVideo ? top : 0, behavior: 'smooth' }); }
+$('bigBtn').onclick = () => {
+  bigVideo = !bigVideo;
+  try { localStorage.setItem('sideline:bigVideo', bigVideo ? '1' : '0'); } catch (e) {}
+  fitStage(); scrollToVideo();
+};
+if (bigVideo) setTimeout(scrollToVideo, 300);
 
 function redraw() {
   ctx.clearRect(0, 0, cv.width, cv.height);
@@ -980,24 +1229,56 @@ $('saveDrawBtn').onclick = () => {
 // ---------- transport ----------
 function togglePlay() { if (!P.ok) return; P.paused ? P.play() : P.pause(); }
 function step(dt) { P.pause(); P.seek(P.t + dt); }
-// rueda del mouse: cada giro pausa y mueve 0.1 s (Shift: 1 s); hacia abajo avanza, hacia arriba retrocede.
-// Los touchpads mandan muchos movimientos pequeños: se acumulan y cuentan como un paso cada ~80 px.
-let wheelAcc = 0;
-function onWheel(e) {
-  if (!P.ok || S.draw) return;
-  e.preventDefault();
-  let d = e.deltaY || e.deltaX;              // con Shift algunos navegadores lo mandan como horizontal
-  if (e.deltaMode === 1) d *= 33; else if (e.deltaMode === 2) d *= 400;
-  if (Math.sign(d) !== Math.sign(wheelAcc)) wheelAcc = 0;
-  wheelAcc += d;
-  const n = Math.max(-5, Math.min(5, Math.trunc(wheelAcc / 80)));
-  if (!n) return;
-  wheelAcc -= n * 80;
-  S.clip = false; step(n * (e.shiftKey ? 1 : STEP));
+// ---------- zoom del video (rueda del mouse o pellizco en el touchpad) ----------
+function applyZoom() {
+  const W = stage.clientWidth, H = stage.clientHeight;
+  if (Z.k <= 1.001) { Z.k = 1; Z.x = 0; Z.y = 0; }
+  Z.x = Math.min(0, Math.max(W - W * Z.k, Z.x)); Z.y = Math.min(0, Math.max(H - H * Z.k, Z.y));
+  $('zoomwrap').style.transform = Z.k === 1 ? '' : `translate(${Z.x}px, ${Z.y}px) scale(${Z.k})`;
+  $('scrub').classList.toggle('zoomed', Z.k > 1);
+  $('hudZoom').hidden = Z.k === 1; $('hudZoom').textContent = `Zoom ${Z.k.toFixed(1)}× · doble clic o Esc para quitar`;
+  if (Z.k > 1) $('hud').hidden = false;
 }
-$('scrub').addEventListener('wheel', onWheel, { passive: false });
-$('timeline').addEventListener('wheel', onWheel, { passive: false });
-$('scrub').addEventListener('click', () => togglePlay());
+function resetZoom() { Z.k = 1; applyZoom(); }
+// rueda del mouse (o pellizco en el touchpad): acerca o aleja hacia el punto del mouse (rango 1× a 4×).
+// Para avanzar cuadro por cuadro están las flechas ← →.
+function onZoomWheel(e) {
+  if (!P.ok) return false;
+  e.preventDefault();
+  let d = e.deltaY; if (e.deltaMode === 1) d *= 33; else if (e.deltaMode === 2) d *= 400;
+  const r = stage.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+  const k2 = Math.max(1, Math.min(4, Z.k * Math.exp(-d * 0.002)));
+  Z.x = px - (px - Z.x) * (k2 / Z.k); Z.y = py - (py - Z.y) * (k2 / Z.k); Z.k = k2;
+  applyZoom();
+  return true;
+}
+// con zoom, arrastrar mueve la imagen; un arrastre no cuenta como clic
+let pan = null, panned = false, clickT;
+$('scrub').addEventListener('pointerdown', e => {
+  if (e.button !== 0 || Z.k === 1) return;
+  pan = { sx: e.clientX, sy: e.clientY, x: Z.x, y: Z.y }; panned = false;
+  $('scrub').setPointerCapture(e.pointerId);
+});
+$('scrub').addEventListener('pointermove', e => {
+  if (!pan) return;
+  const dx = e.clientX - pan.sx, dy = e.clientY - pan.sy;
+  if (!panned && Math.hypot(dx, dy) < 4) return;
+  panned = true; $('scrub').classList.add('panning');
+  Z.x = pan.x + dx; Z.y = pan.y + dy; applyZoom();
+});
+const endPan = () => { pan = null; $('scrub').classList.remove('panning'); };
+$('scrub').addEventListener('pointerup', endPan); $('scrub').addEventListener('pointercancel', endPan);
+
+$('scrub').addEventListener('wheel', onZoomWheel, { passive: false });
+// clic: reproducir o pausar; con zoom se espera un poco por si es doble clic (que quita el zoom)
+$('scrub').addEventListener('click', () => {
+  if (panned) { panned = false; return; }
+  if (Z.k === 1) return togglePlay();
+  clearTimeout(clickT); clickT = setTimeout(togglePlay, 230);
+});
+$('scrub').addEventListener('dblclick', () => { clearTimeout(clickT); resetZoom(); });
+// con el pizarrón activo también se puede hacer zoom (el lienzo queda encima de la capa)
+cv.addEventListener('wheel', onZoomWheel, { passive: false });
 $('playBtn').onclick = togglePlay;
 $('back5').onclick = () => { S.clip = false; P.seek(P.t - 5); };
 $('fwd5').onclick = () => { S.clip = false; P.seek(P.t + 5); };
@@ -1243,7 +1524,7 @@ $('helpClose').onclick = () => $('help').hidden = true;
 $('help').onclick = e => { if (e.target === $('help')) $('help').hidden = true; };
 document.addEventListener('keydown', e => {
   const tag = (e.target.tagName || '').toLowerCase();
-  if (e.key === 'Escape') { $('help').hidden = true; if (['input', 'textarea', 'select'].includes(tag)) e.target.blur(); if (S.draw) setDraw(false); return; }
+  if (e.key === 'Escape') { if (Z.k > 1) resetZoom(); $('help').hidden = true; if (['input', 'textarea', 'select'].includes(tag)) e.target.blur(); if (S.draw) setDraw(false); return; }
   if (['input', 'textarea', 'select'].includes(tag) || e.metaKey || e.ctrlKey || e.altKey) return;
   if (!hasVideo()) return;   // sin el módulo de video la sala está oculta: sin atajos
   const k = e.key;
