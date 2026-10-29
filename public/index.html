@@ -51,9 +51,10 @@
   <section class="hero">
     <div class="wrap hero-grid">
       <div>
+        <a class="newpill" href="#subir-video" id="newPill"><b>Nuevo</b> Ya puedes subir tus propios partidos <span aria-hidden="true">→</span></a>
         <p class="eyebrow">Sala de video y playbook para football y flag</p>
         <h1 class="display">Analiza cada jugada con tu equipo, sin pagar de más.</h1>
-        <p class="lead">Sideline es la herramienta mexicana para que coaches etiqueten jugadas, dibujen sobre el video, diseñen su playbook y lo compartan con sus jugadores. Funciona en el navegador, en español y con planes económicos.</p>
+        <p class="lead">Sideline es la herramienta mexicana para que coaches etiqueten jugadas, dibujen sobre el video, diseñen su playbook y lo compartan con sus jugadores. Usa la transmisión de YouTube o sube tus propios partidos. Funciona en el navegador, en español y con planes económicos.</p>
         <div class="actions">
           <a class="btn btn-fill btn-lg" href="/contacto">Solicitar una demo</a>
           <a class="btn btn-line btn-lg" href="/app/">Ingresar a Sideline</a>
@@ -167,7 +168,7 @@
             <p class="tagline"><span class="dot" style="background:#f26b1d"></span>Módulo Video</p>
             <h3 class="h3">Analiza el partido jugada por jugada.</h3>
             <ul>
-              <li>Pega el enlace de YouTube de la transmisión y etiqueta cada jugada</li>
+              <li>Pega el enlace de YouTube o sube tus propios partidos, y etiqueta cada jugada</li>
               <li>Pausa, dibuja flechas y círculos, y guárdalo en la jugada</li>
               <li>Filtra, encadena clips y ve las estadísticas al momento</li>
             </ul>
@@ -188,7 +189,7 @@
         </article>
       </div>
       <div class="plans" role="group" aria-label="Elige un plan para ver qué incluye">
-        <button type="button" class="plan" data-plan="video" aria-pressed="false"><b>Video</b><span>Para analizar partidos y compartir clips.</span></button>
+        <button type="button" class="plan" data-plan="video" aria-pressed="false"><b>Video</b><span>Para analizar partidos de YouTube o subidos por ti.</span></button>
         <button type="button" class="plan" data-plan="playbook" aria-pressed="false"><b>Playbook</b><span>Para diseñar e imprimir tus jugadas.</span></button>
         <button type="button" class="plan" data-plan="full" aria-pressed="true"><b>Completo</b><span>Video y Playbook juntos, con el mismo usuario.</span></button>
         <a class="btn btn-fill btn-lg" href="/contacto">Pedir una propuesta</a>
@@ -239,7 +240,7 @@
       <p class="eyebrow">Cómo funciona</p>
       <h2 class="h1">Del partido a la junta de video en tres pasos.</h2>
       <ol class="steps">
-        <li><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor" stroke="none"/></svg><span class="n">01</span><h3 class="h3">Carga el partido</h3><p>Pega el enlace de YouTube de la transmisión, en vivo o ya terminada. No hay que descargar nada.</p></li>
+        <li><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor" stroke="none"/></svg><span class="n">01</span><h3 class="h3">Carga el partido</h3><p>Pega el enlace de YouTube de la transmisión, o sube el archivo del partido desde tu computadora.</p></li>
         <li><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.4"/></svg><span class="n">02</span><h3 class="h3">Etiqueta cada jugada</h3><p>Marca inicio y fin, down, distancia, formación, tipo de jugada, resultado y yardas. El siguiente down se calcula solo.</p></li>
         <li><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.2c2.6.3 4.5 2.6 4.5 5.8"/></svg><span class="n">03</span><h3 class="h3">Repásalo con tu equipo</h3><p>Proyecta los clips en la junta o comparte el enlace. Cada jugador los ve en su celular con su usuario.</p></li>
       </ol>
@@ -256,6 +257,7 @@
         <button class="tab" role="tab" id="t-dibujar" aria-controls="p-dibujar" aria-selected="false" tabindex="-1"><span class="dot"></span>Dibujar</button>
         <button class="tab" role="tab" id="t-compartir" aria-controls="p-compartir" aria-selected="false" tabindex="-1"><span class="dot"></span>Compartir</button>
         <button class="tab" role="tab" id="t-playbook" aria-controls="p-playbook" aria-selected="false" tabindex="-1"><span class="dot"></span>Playbook</button>
+        <button class="tab" role="tab" id="t-subir" aria-controls="p-subir" aria-selected="false" tabindex="-1"><span class="dot"></span>Subir video <span class="tabnew">Nuevo</span></button>
       </div>
 
       <div class="panel" role="tabpanel" id="p-etiquetar" aria-labelledby="t-etiquetar">
@@ -335,6 +337,39 @@
           </svg>
         </div>
       </div>
+      <div class="panel" role="tabpanel" id="p-subir" aria-labelledby="t-subir" hidden>
+        <div>
+          <h3 class="h2">Sube tus propios partidos.</h3>
+          <ul>
+            <li>Sube el video de tu cámara, de tu celular o el que descargas de Hudl (MP4 o MOV)</li>
+            <li>Archivos grandes sin problema: se suben por partes y, si se corta el internet, sigue donde iba</li>
+            <li>Privados: solo los ve tu equipo, con su usuario</li>
+            <li>Se etiquetan y se dibujan igual que los partidos de YouTube</li>
+            <li>Incluye horas de video según tu plan, y puedes agregar más</li>
+          </ul>
+        </div>
+        <div class="art" aria-hidden="true">
+          <svg viewBox="0 0 420 260" font-family="Inter, system-ui, sans-serif">
+            <rect x="20" y="10" width="380" height="240" rx="14" fill="#fff" stroke="#d8d3cc"/>
+            <text x="40" y="42" font-size="14" font-weight="700" fill="#000">Videos del equipo</text>
+            <text x="40" y="66" font-size="10" fill="#777169">12.5 de 35 horas usadas · te quedan 22 h 30 min</text>
+            <rect x="40" y="74" width="340" height="8" rx="4" fill="#f5f3f1"/><rect x="40" y="74" width="121" height="8" rx="4" fill="#e8742a"/>
+            <rect x="40" y="96" width="340" height="52" rx="10" fill="#fff1e6"/>
+            <path d="M62 128v-14m-6 6l6-6 6 6" fill="none" stroke="#c9570f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M54 132h16" stroke="#c9570f" stroke-width="2.2" stroke-linecap="round"/>
+            <text x="82" y="116" font-size="11" font-weight="600" fill="#000">Jornada 5 vs Halcones.mp4</text>
+            <rect x="82" y="124" width="282" height="6" rx="3" fill="#fff"/><rect class="upbar" x="82" y="124" width="190" height="6" rx="3" fill="#e8742a"/>
+            <text x="82" y="142" font-size="9" fill="#777169">2.41 de 3.60 GB · 67% · faltan ~6 min</text>
+            <g font-size="11">
+              <rect x="40" y="158" width="340" height="38" rx="10" fill="#f5f3f1"/>
+              <text x="54" y="181" font-weight="600" fill="#000">Jornada 4 vs Lobos</text><text x="200" y="181" fill="#777169">1 h 58 min</text>
+              <rect x="300" y="168" width="66" height="18" rx="9" fill="#e9f5ec"/><text x="333" y="181" text-anchor="middle" font-size="10" font-weight="700" fill="#1f6b2e">Listo</text>
+              <rect x="40" y="202" width="340" height="38" rx="10" fill="#f5f3f1"/>
+              <text x="54" y="225" font-weight="600" fill="#000">Scrimmage pretemporada</text><text x="200" y="225" fill="#777169">2 h 11 min</text>
+              <rect x="300" y="212" width="66" height="18" rx="9" fill="#e9f5ec"/><text x="333" y="225" text-anchor="middle" font-size="10" font-weight="700" fill="#1f6b2e">Listo</text>
+            </g>
+          </svg>
+        </div>
+      </div>
       <div class="panel" role="tabpanel" id="p-playbook" aria-labelledby="t-playbook" hidden>
         <div>
           <h3 class="h2">Tu playbook, impreso o en el celular.</h3>
@@ -377,7 +412,7 @@
         <details><summary>¿Tengo que instalar algo?</summary><p>No. Sideline funciona en el navegador de la computadora, la tablet o el celular.</p></details>
         <details><summary>¿Mis jugadores necesitan una cuenta?</summary><p>Sí, cada jugador tiene su usuario y contraseña, y solo ve las jugadas de su equipo. Tú los das de alta desde la app, en «Equipo y jugadores», y les mandas sus datos por WhatsApp.</p></details>
         <details><summary>¿Puedo usar la transmisión de mi liga?</summary><p>Sí, si está en YouTube y el canal permite ver sus videos fuera de YouTube. Sideline usa el reproductor oficial y no descarga el video.</p></details>
-        <details><summary>¿Puedo subir mis propios videos?</summary><p>Sí, depende del plan puedes usar las transmision en youtube o directamente de tus videos con horas de video</p></details>
+        <details id="faq-subir"><summary>¿Puedo subir mis propios videos?</summary><p>Sí. Además de usar partidos de YouTube, puedes subir tus propios videos desde la computadora: los de tu cámara, tu celular o los que descargas de Hudl (MP4 o MOV). Tu plan incluye horas de video propio y puedes agregar más cuando las necesites. Los videos son privados para tu equipo y cada uno puede durar hasta 6 horas.</p></details>
         <details><summary>¿Qué hacen con los datos de mis jugadores?</summary><p>Solo los usamos para que tu equipo funcione en Sideline: no los vendemos ni los compartimos con otros equipos. Si hay menores de edad, solo se registra su nombre y usuario, con permiso de sus papás. Los detalles están en el <a href="/privacidad">aviso de privacidad</a>.</p></details>
         <details><summary>¿Puedo contratar solo el playbook?</summary><p>Sí. Sideline tiene dos módulos, Video y Playbook, y puedes contratar uno o los dos. Si después quieres agregar el otro, se activa en la misma cuenta de tu equipo, sin perder nada de lo que ya tienes.</p></details>
         <details><summary>¿Cuánto cuesta?</summary><p>Hay planes por temporada para todo tipo de equipo y para ligas completas. Llena el cuestionario y te mandamos una propuesta según tu equipo.</p></details>
@@ -488,6 +523,10 @@
       document.getElementById(x.getAttribute('aria-controls')).hidden = !on;
     });
   }
+  // el aviso «Nuevo» del inicio lleva directo a la pestaña de subir video
+  function showUpload() { const t = document.getElementById('t-subir'); pick(t); document.getElementById('funciones').scrollIntoView({ behavior: 'smooth' }); }
+  document.getElementById('newPill').addEventListener('click', e => { e.preventDefault(); showUpload(); history.replaceState(null, '', '#subir-video'); });
+  if (location.hash === '#subir-video') showUpload();
   tabs.forEach((t, i) => {
     t.addEventListener('click', () => pick(t));
     t.addEventListener('keydown', e => {
