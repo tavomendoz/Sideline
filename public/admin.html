@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Geist+Mono&display=swap">
 <link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="/assets/hello.css">
 <style>
   .teams { display: grid; gap: 12px; margin-top: 24px; }
   .team { background: var(--eggshell); border-radius: var(--r-card); box-shadow: var(--shadow-whisper); padding: 20px 24px; }
@@ -29,6 +30,24 @@
   .creds { background: var(--taupe); border-radius: 14px; padding: 16px 18px; margin-top: 16px; font-size: 14px; color: var(--graphite); }
   .box { background: var(--taupe); border-radius: var(--r-card); padding: 24px; margin-top: 24px; }
   .box h2 { margin: 0 0 16px; }
+  .adm { padding-block: 16px 96px; }
+  .topline { display: flex; align-items: center; gap: 8px; height: 56px; margin-bottom: 12px; }
+  .topline .logo svg { height: 24px; width: auto; display: block; }
+  .topline .spacer { flex: 1; }
+  .panel-t { margin-top: 24px; padding-block: 0; }
+  .panel-t > h2 { margin: 0 0 6px; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-top: 20px; }
+  .stat { background: var(--eggshell); border-radius: var(--r-card); box-shadow: var(--shadow-whisper); padding: 18px 20px; }
+  .stat b { display: block; font-size: 34px; font-weight: 300; letter-spacing: -.02em; line-height: 1.1; }
+  .stat span { color: var(--smoke); font-size: 14px; }
+  .quick { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  .tbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .tbar input { font: 400 15px/1.4 var(--font-body); background: var(--eggshell); border: 1px solid var(--stone); border-radius: var(--r-input); padding: 10px 12px; flex: 0 1 360px; min-width: 0; }
+  .table-wrap { overflow-x: auto; margin-top: 16px; background: var(--eggshell); border-radius: var(--r-card); box-shadow: var(--shadow-whisper); }
+  .table-wrap table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .table-wrap th, .table-wrap td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--stone); vertical-align: top; }
+  .table-wrap th { font-weight: 500; color: var(--smoke); font-size: 13px; white-space: nowrap; }
+  .table-wrap td.when { white-space: nowrap; color: var(--smoke); }
   .mods { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-top: 12px; font-size: 14px; color: var(--graphite); }
   .mods b { font-weight: 500; }
   .mods label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
@@ -36,8 +55,8 @@
 </style>
 </head>
 <body>
-<header class="wrap">
-  <nav class="nav" aria-label="Principal">
+<div class="wrap adm">
+  <header class="topline">
     <a class="logo" href="/" aria-label="Sideline, inicio"><svg class='brandmark' viewBox='0 0 593 104' height='28' role='img' aria-label='Sideline'><circle cx='52' cy='52' r='50' fill='#000000'/>
 <rect x='48.25' y='8.25' width='7.50' height='7.50' rx='1.35' fill='var(--bg)' transform='rotate(0.0 52.00 12.00)'/>
 <rect x='65.61' y='12.21' width='7.50' height='7.50' rx='1.35' fill='var(--bg)' transform='rotate(25.7 69.36 15.96)'/>
@@ -56,52 +75,83 @@
 <circle cx='52' cy='52' r='31.00' fill='var(--bg)'/>
 <circle cx='52' cy='52' r='25.00' fill='none' stroke='#000000' stroke-width='3.75'/>
 <path d='M42.25 39.00 L65.65 52.00 L42.25 65.00 Z' fill='#F26B1D' stroke='#F26B1D' stroke-width='2.50' stroke-linejoin='round'/><g transform='translate(128 85)'><path d='M3.588 -13.34Q28.796 -11.959999999999999 37.72 -11.959999999999999Q39.836 -11.959999999999999 41.078 -13.201999999999998Q42.32 -14.443999999999999 42.32 -16.56V-24.84H21.16Q11.5 -24.84 7.13 -29.21Q2.76 -33.58 2.76 -43.24V-46.0Q2.76 -55.66 7.13 -60.03Q11.5 -64.4 21.16 -64.4H53.452V-51.519999999999996H24.84Q19.32 -51.519999999999996 19.32 -46.0V-44.16Q19.32 -38.64 24.84 -38.64H41.4Q50.416 -38.64 54.647999999999996 -34.408Q58.879999999999995 -30.176 58.879999999999995 -21.16V-16.56Q58.879999999999995 -7.544 54.647999999999996 -3.312Q50.416 0.9199999999999999 41.4 0.9199999999999999Q36.708 0.9199999999999999 31.464 0.736L23.0 0.368Q13.616 -0.092 3.588 -0.9199999999999999ZM99.36000000000001 0.0H66.24000000000001V-12.879999999999999H74.52000000000001V-51.519999999999996H66.24000000000001V-64.4H99.36000000000001V-51.519999999999996H91.08V-12.879999999999999H99.36000000000001ZM145.36 -64.4Q155.756 -64.4 161.138 -59.018Q166.52 -53.635999999999996 166.52 -43.24V-21.16Q166.52 -10.764 161.138 -5.382Q155.756 0.0 145.36 0.0H109.48V-64.4ZM149.96 -43.24Q149.96 -51.519999999999996 141.68 -51.519999999999996H126.04V-12.879999999999999H141.68Q149.96 -12.879999999999999 149.96 -21.16ZM228.62 0.0H177.56000000000003V-64.4H228.62V-51.519999999999996H194.12V-39.1H221.26000000000002V-26.22H194.12V-12.879999999999999H228.62ZM254.38 -12.879999999999999H287.96000000000004V0.0H237.82000000000002V-64.4H254.38ZM326.6 0.0H293.48V-12.879999999999999H301.76000000000005V-51.519999999999996H293.48V-64.4H326.6V-51.519999999999996H318.32000000000005V-12.879999999999999H326.6ZM392.84000000000003 0.0H375.36L353.28000000000003 -38.64V0.0H336.72V-64.4H354.20000000000005L376.28000000000003 -25.759999999999998V-64.4H392.84000000000003ZM456.78000000000003 0.0H405.72V-64.4H456.78000000000003V-51.519999999999996H422.28000000000003V-39.1H449.4200000000001V-26.22H422.28000000000003V-12.879999999999999H456.78000000000003Z' fill='#000000'/></g></svg></a>
-    <div class="links"><a class="btn btn-ghost" href="/solicitudes">Solicitudes</a><a class="btn btn-ghost" href="/app/">Sala de video</a><button class="btn btn-line" id="out" hidden>Salir</button></div>
-  </nav>
-</header>
-<main>
-  <section style="padding-block:40px 96px">
-    <div class="wrap">
-      <p class="eyebrow">Administrador</p>
-      <h1 class="h1">Equipos y usuarios</h1>
-      <p class="lead" style="margin-top:12px">Crea un equipo con su primer coach. Ese coach puede agregar al resto de coaches y jugadores desde la app, en su menú de usuario → «Equipo y jugadores». Marca qué módulos incluye el plan de cada equipo: Video, Playbook o los dos.</p>
+    <span class="spacer"></span>
+    <a class="btn btn-ghost" href="/app/">Ir a la app</a>
+    <button class="btn btn-line" id="out" hidden>Salir</button>
+  </header>
 
-      <form id="keyForm" class="fields" style="max-width:520px;margin-top:24px" hidden>
-        <div class="field full"><label for="key">Clave de administrador (COACH_KEY)</label><input id="key" type="password" autocomplete="current-password"></div>
-        <div><button class="btn btn-fill" type="submit">Entrar</button></div>
-      </form>
-      <p class="err" id="err" hidden></p>
-
-      <div id="main" hidden>
-        <form class="box" id="newTeam">
-          <h2 class="h3">Nuevo equipo</h2>
-          <div class="inline">
-            <div class="field"><label for="tName">Nombre del equipo</label><input id="tName" placeholder="Jaguares Coacalco Femenil" maxlength="80" required></div>
-            <div class="field"><label for="cName">Coach principal</label><input id="cName" placeholder="Ana López" maxlength="80" required></div>
-            <div class="field"><label for="cUser">Usuario del coach</label><input id="cUser" placeholder="ana.lopez" maxlength="32" autocapitalize="none" spellcheck="false" required></div>
-            <button class="btn btn-fill" type="submit">Crear equipo</button>
-          </div>
-          <div class="mods" id="newMods"><b>Módulos del plan:</b>
-            <label><input type="checkbox" value="video" checked> Video</label>
-            <label><input type="checkbox" value="playbook" checked> Playbook</label>
-          </div>
-          <div class="creds" id="newCreds" hidden></div>
-        </form>
-
-        <div class="box" id="migrate" hidden>
-          <h2 class="h3">Jugadas anteriores</h2>
-          <p class="muted" id="migrateText" style="margin:0 0 12px"></p>
-          <div class="inline" style="grid-template-columns:minmax(0,1fr) auto">
-            <div class="field"><label for="mTeam">Pasarlas al equipo</label><select id="mTeam"></select></div>
-            <button class="btn btn-fill" type="button" id="mBtn">Pasar jugadas</button>
-          </div>
-        </div>
-
-        <div class="teams" id="teams"></div>
-      </div>
-    </div>
+  <section class="hello" id="hello">
+    <p class="hi"><span id="greet">Hola</span><span id="nameWrap"></span></p>
+    <p class="sub" id="helloSub">Panel de administrador de Sideline</p>
+    <nav class="tabs" role="tablist" id="tabs" aria-label="Secciones del panel" hidden>
+      <button type="button" role="tab" data-tab="resumen" aria-selected="true">Resumen</button>
+      <button type="button" role="tab" data-tab="equipos" aria-selected="false">Equipos</button>
+      <button type="button" role="tab" data-tab="nuevo" aria-selected="false">Nuevo equipo</button>
+      <button type="button" role="tab" data-tab="solicitudes" aria-selected="false">Solicitudes <span class="badge" id="leadBadge" hidden></span></button>
+      <button type="button" role="tab" data-tab="herramientas" aria-selected="false" id="toolsTab" hidden>Herramientas</button>
+    </nav>
   </section>
-</main>
+
+  <form id="keyForm" class="fields box" style="max-width:560px" hidden>
+    <div class="field full"><label for="key">Clave de administrador (COACH_KEY)</label><input id="key" type="password" autocomplete="current-password"></div>
+    <div><button class="btn btn-fill" type="submit">Entrar</button></div>
+  </form>
+  <p class="err" id="err" hidden></p>
+
+  <div id="main" hidden>
+    <section class="panel-t" data-panel="resumen">
+      <h2 class="h3">Así va Sideline</h2>
+      <p class="muted" style="margin:0">Un vistazo a tus equipos y a las solicitudes del cuestionario.</p>
+      <div class="stats" id="stats"></div>
+      <div class="quick">
+        <button class="btn btn-fill" type="button" data-go="nuevo">Crear un equipo</button>
+        <button class="btn btn-line" type="button" data-go="solicitudes">Ver solicitudes</button>
+        <button class="btn btn-line" type="button" data-go="equipos">Administrar equipos</button>
+      </div>
+    </section>
+
+    <section class="panel-t" data-panel="equipos" hidden>
+      <div class="tbar"><input id="tSearch" type="search" placeholder="Buscar equipo" aria-label="Buscar equipo"><span class="muted" id="tCount"></span></div>
+      <div class="teams" id="teams"></div>
+    </section>
+
+    <section class="panel-t" data-panel="nuevo" hidden>
+      <form class="box" id="newTeam" style="margin-top:0">
+        <h2 class="h3">Nuevo equipo</h2>
+        <p class="muted" style="margin:-8px 0 16px">Crea el equipo con su primer coach. Ese coach agrega al resto de coaches y jugadores desde la app, en su menú → «Equipo y jugadores».</p>
+        <div class="inline">
+          <div class="field"><label for="tName">Nombre del equipo</label><input id="tName" placeholder="Jaguares Coacalco Femenil" maxlength="80" required></div>
+          <div class="field"><label for="cName">Coach principal</label><input id="cName" placeholder="Ana López" maxlength="80" required></div>
+          <div class="field"><label for="cUser">Usuario del coach</label><input id="cUser" placeholder="ana.lopez" maxlength="32" autocapitalize="none" spellcheck="false" required></div>
+          <button class="btn btn-fill" type="submit">Crear equipo</button>
+        </div>
+        <div class="mods" id="newMods"><b>Módulos del plan:</b>
+          <label><input type="checkbox" value="video" checked> Video</label>
+          <label><input type="checkbox" value="playbook" checked> Playbook</label>
+        </div>
+        <div class="creds" id="newCreds" hidden></div>
+      </form>
+    </section>
+
+    <section class="panel-t" data-panel="solicitudes" hidden>
+      <div class="tbar"><span class="muted" id="lCount"></span><span style="flex:1"></span><button class="btn btn-line" type="button" id="csv">Copiar como CSV</button></div>
+      <div class="table-wrap"><table><thead><tr>
+        <th>Fecha</th><th>Nombre</th><th>Contacto</th><th>Equipo · ciudad</th><th>Perfil</th><th>Necesidades</th><th>Plan sugerido</th><th>Mensaje</th>
+      </tr></thead><tbody id="lrows"></tbody></table></div>
+    </section>
+
+    <section class="panel-t" data-panel="herramientas" hidden>
+      <div class="box" id="migrate" style="margin-top:0" hidden>
+        <h2 class="h3">Jugadas anteriores</h2>
+        <p class="muted" id="migrateText" style="margin:0 0 12px"></p>
+        <div class="inline" style="grid-template-columns:minmax(0,1fr) auto">
+          <div class="field"><label for="mTeam">Pasarlas al equipo</label><select id="mTeam"></select></div>
+          <button class="btn btn-fill" type="button" id="mBtn">Pasar jugadas</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
 <script>
 (() => {
   const $ = id => document.getElementById(id);
@@ -111,10 +161,80 @@
   const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const err = m => { $('err').textContent = m || ''; $('err').hidden = !m; };
   const open = new Set();
+  let teams = [], leads = [];
+
+  // ---------- saludo ----------
+  const NAME_KEY = 'sideline:adminName';
+  const greeting = () => { const h = new Date().getHours(); return h >= 5 && h < 12 ? 'Buenos días' : h >= 12 && h < 19 ? 'Buenas tardes' : 'Buenas noches'; };
+  function paintHello() {
+    let name = ''; try { name = localStorage.getItem(NAME_KEY) || ''; } catch (e) {}
+    $('greet').textContent = greeting();
+    const w = $('nameWrap'); w.textContent = '';
+    if (name) { w.append(', '); const b = document.createElement('b'); b.textContent = name; w.append(b); }
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'namebtn'; btn.textContent = name ? 'cambiar' : '¿cómo te llamas?';
+    btn.onclick = () => {
+      const v = (prompt('¿Cómo quieres que te salude el panel?', name) || '').trim().slice(0, 40);
+      try { v ? localStorage.setItem(NAME_KEY, v) : localStorage.removeItem(NAME_KEY); } catch (e) {}
+      paintHello();
+    };
+    w.append(' ', btn);
+  }
+  paintHello();
+
+  // ---------- pestañas ----------
+  const TABS = ['resumen', 'equipos', 'nuevo', 'solicitudes', 'herramientas'];
+  function show(tab) {
+    if (!TABS.includes(tab) || ($('toolsTab').hidden && tab === 'herramientas')) tab = 'resumen';
+    document.querySelectorAll('#tabs [data-tab]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
+    document.querySelectorAll('[data-panel]').forEach(p => p.hidden = p.dataset.panel !== tab);
+    try { history.replaceState(null, '', '#' + tab); } catch (e) {}
+  }
+  $('tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) show(b.dataset.tab); });
+  document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) show(b.dataset.go); });
+
+  // ---------- resumen ----------
+  function paintStats() {
+    const sum = k => teams.reduce((a, t) => a + (+t[k] || 0), 0);
+    const week = leads.filter(l => Date.now() - l.created_at < 7 * 864e5).length;
+    const both = teams.filter(t => (t.modules || []).length === 2).length;
+    const cards = [
+      [teams.filter(t => t.active).length, `equipos activos${teams.some(t => !t.active) ? ` · ${teams.filter(t => !t.active).length} suspendidos` : ''}`],
+      [sum('coaches'), 'coaches'], [sum('players'), 'jugadores'], [sum('games'), 'partidos guardados'],
+      [both, `con plan Completo · ${teams.length - both} con un módulo`],
+      [leads.length, `solicitudes · ${week} esta semana`],
+    ];
+    $('stats').textContent = '';
+    for (const [n, label] of cards) { const d = document.createElement('div'); d.className = 'stat'; const b = document.createElement('b'); b.textContent = n; const sp = document.createElement('span'); sp.textContent = label; d.append(b, sp); $('stats').append(d); }
+    $('leadBadge').textContent = week; $('leadBadge').hidden = !week;
+  }
+
+  // ---------- solicitudes ----------
+  async function loadLeads() {
+    try { leads = (await api('leads')).leads || []; } catch (e) { leads = []; }
+    $('lCount').textContent = leads.length === 1 ? '1 solicitud' : `${leads.length} solicitudes`;
+    $('lrows').innerHTML = leads.length ? leads.map(l => {
+      const d = new Date(l.created_at);
+      const when = d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) + ' ' + d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+      return `<tr><td class="when">${esc(when)}</td><td>${esc(l.nombre)}<br><span class="faint">${esc(l.rol)}</span></td>
+        <td>${esc(l.whatsapp)}${l.whatsapp && l.correo ? '<br>' : ''}${esc(l.correo)}</td>
+        <td>${esc(l.equipo)}${l.ciudad ? '<br><span class="faint">' + esc(l.ciudad) + '</span>' : ''}</td>
+        <td>${esc((l.categoria || []).join(', '))}<br><span class="faint">${esc(l.equipos)} equipo(s) · ${esc(l.grabacion)} · usa: ${esc(l.herramienta)} · ${esc(l.presupuesto)}</span></td>
+        <td>${esc((l.prioridad || []).join(', '))}</td><td>${esc(l.plan)}</td><td>${esc(l.mensaje)}</td></tr>`;
+    }).join('') : '<tr><td colspan="8" class="muted">Todavía no hay solicitudes. Comparte la página de contacto.</td></tr>';
+    paintStats();
+  }
+  $('csv').onclick = async () => {
+    const cols = ['created_at', 'nombre', 'rol', 'whatsapp', 'correo', 'equipo', 'ciudad', 'categoria', 'equipos', 'grabacion', 'herramienta', 'prioridad', 'presupuesto', 'plan', 'mensaje'];
+    // las solicitudes vienen de un formulario público: un texto que empiece con = + - @ no debe volverse fórmula en Excel
+    const q = v => { v = Array.isArray(v) ? v.join('; ') : String(v ?? ''); if (/^[=+\-@\t\r]/.test(v)) v = "'" + v; return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    const csv = [cols.join(','), ...leads.map(l => cols.map(c => q(c === 'created_at' ? new Date(l[c]).toISOString() : l[c])).join(','))].join('\n');
+    try { await navigator.clipboard.writeText(csv); $('csv').textContent = 'Copiado'; setTimeout(() => $('csv').textContent = 'Copiar como CSV', 1500); } catch (e) { err('No se pudo copiar.'); }
+  };
+  $('tSearch').addEventListener('input', () => paintTeams());
   async function api(path, opts = {}) {
     const r = await fetch('/api/' + path, { ...opts, headers: { 'content-type': 'application/json', 'x-coach-key': key } });
     let b = null; try { b = await r.json(); } catch (e) {}
-    if (r.status === 401) { key = ''; try { sessionStorage.removeItem(KEY); } catch (e) {} $('main').hidden = true; $('keyForm').hidden = false; $('out').hidden = true; throw new Error('Clave incorrecta.'); }
+    if (r.status === 401) { key = ''; try { sessionStorage.removeItem(KEY); } catch (e) {} $('main').hidden = true; $('tabs').hidden = true; $('keyForm').hidden = false; $('out').hidden = true; throw new Error('Clave incorrecta.'); }
     if (!r.ok) throw new Error((b && b.message) || 'No se pudo completar. Revisa tu conexión.');
     return b;
   }
@@ -134,12 +254,20 @@
     err('');
     const r = await api('admin/teams');
     try { sessionStorage.setItem(KEY, key); } catch (e) {}
-    $('keyForm').hidden = true; $('main').hidden = false; $('out').hidden = false;
-    const teams = r.teams || [];
-    $('migrate').hidden = !(r.legacy_plays > 0 && teams.length);
+    const first = $('main').hidden;
+    $('keyForm').hidden = true; $('main').hidden = false; $('out').hidden = false; $('tabs').hidden = false;
+    $('helloSub').textContent = 'Panel de administrador de Sideline · aquí ves y administras a todos los equipos.';
+    teams = r.teams || [];
+    $('migrate').hidden = !(r.legacy_plays > 0 && teams.length); $('toolsTab').hidden = $('migrate').hidden;
     $('migrateText').textContent = `Hay ${r.legacy_plays} jugadas guardadas antes de que existieran los equipos. Elige a qué equipo pertenecen; se copian sin borrar las originales.`;
     $('mTeam').innerHTML = teams.map(t => `<option value="${esc(t.id)}">${esc(t.name)}</option>`).join('');
-    $('teams').innerHTML = teams.length ? teams.map(t => `
+    paintTeams(); paintStats();
+    if (first) { show(location.hash.slice(1)); loadLeads(); }
+  }
+  function paintTeams() {
+    const q = $('tSearch').value.trim().toLowerCase(), list = teams.filter(t => !q || t.name.toLowerCase().includes(q));
+    $('tCount').textContent = q ? `${list.length} de ${teams.length} equipos` : `${teams.length} equipo${teams.length === 1 ? '' : 's'}`;
+    $('teams').innerHTML = list.length ? list.map(t => `
       <div class="team" data-team="${esc(t.id)}" data-name="${esc(t.name)}">
         <div class="top"><h3>${esc(t.name)}</h3>
           <span class="meta">${t.coaches} coach${t.coaches == 1 ? '' : 'es'} · ${t.players} jugador${t.players == 1 ? '' : 'es'} · ${t.games} partido${t.games == 1 ? '' : 's'}</span>
@@ -152,7 +280,7 @@
           <label><input type="checkbox" value="playbook" ${(t.modules || []).includes('playbook') ? 'checked' : ''}> Playbook</label>
         </div>
         <div class="users" id="u-${esc(t.id)}" ${open.has(t.id) ? '' : 'hidden'}></div>
-      </div>`).join('') : '<p class="muted" style="margin-top:24px">Todavía no hay equipos. Crea el primero arriba.</p>';
+      </div>`).join('') : `<p class="muted" style="margin-top:24px">${q ? 'Ningún equipo coincide con la búsqueda.' : 'Todavía no hay equipos. Créalo en la pestaña «Nuevo equipo».'}</p>`;
     for (const id of open) loadUsers(id);
   }
   async function loadUsers(team) {

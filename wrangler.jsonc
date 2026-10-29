@@ -2,10 +2,18 @@
   "name": "sala-de-video",
   "main": "src/worker.js",
   "compatibility_date": "2025-09-01",
-   "workers_dev": true,
+  // el sitio solo responde en el dominio propio (www redirige a sidelinemx.com desde el worker)
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    { "pattern": "sidelinemx.com", "custom_domain": true },
+    { "pattern": "www.sidelinemx.com", "custom_domain": true }
+  ],
   "assets": {
     "directory": "./public",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+    // todas las peticiones pasan por el worker: redirección de www y cabeceras de seguridad también en las páginas
+    "run_worker_first": true
   },
   "d1_databases": [
     {

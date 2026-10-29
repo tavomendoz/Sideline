@@ -152,6 +152,12 @@ async function handleApi(request, env, path) {
   const method = request.method;
 
   if (path === 'health') return json({ ok: true, db: !!env.DB, key: !!env.COACH_KEY, accounts: true });
+  // reportes de la política de contenido: se ven en Observability → Logs del worker
+  if (path === 'csp-report' && method === 'POST') {
+    const t = await request.text().catch(() => '');
+    console.log('csp-report', t.slice(0, 2000));
+    return new Response(null, { status: 204 });
+  }
   if (!env.DB) return json({ error: 'no_db' }, 503);
 
   try {
@@ -475,18 +481,47 @@ async function handleApi(request, env, path) {
   }
 }
 
+// ---------- dominio y cabeceras de seguridad ----------
+const CANONICAL = 'sidelinemx.com';
+// Política de contenido: solo scripts de este sitio (con nonce por respuesta) y de YouTube; fuentes de Google.
+// Va en modo «solo reportar» hasta confirmar en producción que nada legítimo se bloquea.
+const csp = nonce => [
+  "default-src 'self'",
+  `script-src 'self' 'nonce-${nonce}' https://www.youtube.com https://s.ytimg.com`,
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' https://fonts.gstatic.com",
+  "img-src 'self' data: blob: https://i.ytimg.com",
+  'frame-src https://www.youtube.com https://www.youtube-nocookie.com',
+  "connect-src 'self'",
+  "media-src 'self' blob:",
+  "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'none'",
+  'report-uri /api/csp-report',
+].join('; ');
+function secure(res, url) {
+  res.headers.set('x-content-type-options', 'nosniff');
+  res.headers.set('referrer-policy', 'strict-origin-when-cross-origin');
+  // HSTS solo en el dominio real (https obligatorio en el navegador por 180 días)
+  if (url.hostname === CANONICAL) res.headers.set('strict-transport-security', 'max-age=15552000');
+  return res;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    // www.sidelinemx.com → sidelinemx.com (una sola dirección)
+    if (url.hostname === 'www.' + CANONICAL) { url.hostname = CANONICAL; return Response.redirect(url.toString(), 301); }
     if (url.pathname.startsWith('/api/')) {
-      return handleApi(request, env, url.pathname.slice(5).replace(/\/+$/, ''));
+      const r = await handleApi(request, env, url.pathname.slice(5).replace(/\/+$/, ''));
+      return secure(new Response(r.body, r), url);
     }
-    // cabeceras de seguridad para las páginas: no se pueden incrustar en otros sitios
     const asset = await env.ASSETS.fetch(request);
-    const res = new Response(asset.body, asset);
+    const res = secure(new Response(asset.body, asset), url);
+    // las páginas no se pueden incrustar en otros sitios
     res.headers.set('x-frame-options', 'DENY');
-    res.headers.set('x-content-type-options', 'nosniff');
-    res.headers.set('referrer-policy', 'strict-origin-when-cross-origin');
-    return res;
+    if (!(res.headers.get('content-type') || '').includes('text/html')) return res;
+    const nonce = randHex(16);
+    res.headers.set('content-security-policy-report-only', csp(nonce));
+    if (typeof HTMLRewriter === 'undefined') return res;
+    return new HTMLRewriter().on('script', { element(e) { e.setAttribute('nonce', nonce); } }).transform(res);
   },
 };

@@ -97,3 +97,29 @@
 .themebtn { width: 36px; height: 36px; display: inline-grid; place-items: center; border-radius: 50%; border: 1px solid var(--line); background: var(--panel-2); color: var(--fg); padding: 0; flex: none; }
 .themebtn:hover { border-color: var(--hover-line); }
 .themebtn svg { width: 18px; height: 18px; }
+
+/* ---------- franja de bienvenida dentro de la app (usa /assets/hello.css) ----------
+   Versión compacta para dejar espacio al video; las pestañas de módulo viven aquí. */
+.hello.compact { padding: 14px 22px 0; }
+.hello.compact .hi { font-size: clamp(20px, 2.4vw, 27px); }
+.hello.compact .sub { font-size: 13px; margin-top: 3px; }
+.hello.compact .tabs { margin-top: 10px; }
+/* en pantallas grandes, saludo y pestañas en una sola fila para dejarle altura al video */
+@media (min-width: 981px) {
+  .hello.compact { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; column-gap: 24px; padding: 12px 22px 0; }
+  .hello.compact .hi { grid-column: 1; grid-row: 1; }
+  .hello.compact .sub { grid-column: 1; grid-row: 2; margin-bottom: 12px; }
+  .hello.compact .tabs { grid-column: 2; grid-row: 1 / span 2; margin-top: 0; border-bottom: 0; align-self: end; }
+}
+.hello .modnav { background: none; border: 0; border-bottom: 1px solid rgba(16,32,47,.18); border-radius: 0; padding: 0; gap: 4px 28px; display: flex; }
+.hello .modnav .mod { padding: 8px 2px 10px; border-radius: 0; color: #10202f; font-weight: 500; border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.hello .modnav .mod:hover { background: none; color: #10202f; border-bottom-color: rgba(16,32,47,.35); }
+.hello .modnav .mod.on { background: none; color: #10202f; font-weight: 700; border-bottom-color: #10202f; }
+@media (max-width: 640px) { .hello .modnav { order: initial; width: auto; } .hello .modnav .mod { flex: none; } .hello.compact { padding: 12px 14px 0; } }
+/* en la app la franja usa la misma paleta que el resto (claro u oscuro), sin el cielo azul */
+.hello.compact { background: var(--panel); border: 1px solid var(--line); color: var(--fg); box-shadow: 0 1px 2px rgba(20,40,60,.05); }
+.hello.compact .sub { color: var(--muted); }
+.hello.compact .modnav { border-bottom-color: var(--line); }
+.hello.compact .modnav .mod { color: var(--muted); }
+.hello.compact .modnav .mod:hover { color: var(--fg); border-bottom-color: var(--line); }
+.hello.compact .modnav .mod.on { color: var(--fg); border-bottom-color: var(--accent); }
