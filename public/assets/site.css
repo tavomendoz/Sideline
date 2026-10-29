@@ -247,3 +247,21 @@ td.when { font-family: var(--font-mono); font-size: 13px; white-space: nowrap; c
 .pbart .rt { stroke-dasharray: 100; animation: rt-draw 7s ease-out infinite both; }
 .pbart .rt-end { animation: rt-end 7s ease-out infinite both; }
 @media (prefers-reduced-motion: reduce) { .pbart .rt, .pbart .rt-end { animation: none; stroke-dashoffset: 0; opacity: 1; } }
+
+/* ---------- capturas de la app («Por dentro») ---------- */
+.shot { margin: 40px 0 0; background: var(--taupe); border-radius: var(--r-card-lg); padding: 16px; }
+.shot .browser { display: flex; align-items: center; gap: 6px; padding: 4px 6px 12px; }
+.shot .browser i { width: 11px; height: 11px; border-radius: 50%; background: var(--stone); }
+.shot .browser span { margin-left: 10px; font: 12px/1 var(--font-mono); color: var(--smoke); background: var(--eggshell); border-radius: var(--r-pill); padding: 6px 14px; box-shadow: var(--shadow-whisper); }
+.shot img { display: block; width: 100%; height: auto; border-radius: 12px; box-shadow: var(--shadow-whisper); background: var(--eggshell); }
+.shot figcaption { margin: 16px 6px 4px; color: var(--graphite); font-size: 15px; max-width: 72ch; }
+.shot figcaption b { font-weight: 500; color: var(--ink); }
+.shot-phone { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 48px; align-items: center; margin-top: 40px; }
+.shot-phone .shot { margin: 0; padding: 12px; border-radius: 40px; background: var(--ink); }
+.shot-phone .shot img { border-radius: 30px; }
+@media (max-width: 760px) {
+  .shot { padding: 10px; border-radius: var(--r-card); }
+  .shot .browser span { display: none; }
+  .shot-phone { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .shot-phone .shot { max-width: 300px; margin: 0 auto; }
+}
