@@ -416,6 +416,7 @@ canvas#draw { inset: 0; width: 100%; height: 100%; }
         <span class="tc" id="tc"><b>0:00.0</b> / 0:00.0</span>
         <span class="spacer"></span>
         <div class="speedwrap"><div class="seg" id="speeds" role="group" aria-label="Velocidad" title="Velocidad de reproducción (teclas 1 a 5)"></div></div>
+        <button class="ib" id="ccBtn" title="Subtítulos de YouTube: prender o apagar" aria-label="Subtítulos" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10.5 10.2a2.2 2.2 0 1 0 0 3.6M17 10.2a2.2 2.2 0 1 0 0 3.6"/></svg></button>
         <button class="ib" id="bigBtn" title="Video grande: el video sube hasta arriba y crece" aria-label="Video grande" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M8 10l-2 2 2 2M16 10l2 2-2 2"/></svg></button>
         <button class="ib" id="fsBtn" title="Pantalla completa (F)" aria-label="Pantalla completa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
       </div>
@@ -622,9 +623,10 @@ const P = {
   seek(t) { if (!ready) return; const d = this.d; t = Math.max(0, d ? Math.min(d - 0.05, t) : t); yt.seekTo(t, true); },
   rate(r) { if (ready) yt.setPlaybackRate(r); },
 };
+let subs = false; try { subs = localStorage.getItem('sideline:subs') === '1'; } catch (e) {}
 window.onYouTubeIframeAPIReady = () => { apiReady = true; if (pendingId && !yt) createPlayer(pendingId); };
 function createPlayer(id) {
-  const vars = { rel: 0, playsinline: 1, modestbranding: 1 };
+  const vars = { rel: 0, playsinline: 1, modestbranding: 1, cc_load_policy: subs ? 1 : 0 };
   if (location.protocol.startsWith('http')) vars.origin = location.origin;
   yt = new YT.Player('yt', {
     videoId: id, playerVars: vars,
@@ -638,12 +640,22 @@ function createPlayer(id) {
     },
   });
 }
-function playerReady() { ready = true; $('scrub').hidden = false; P.rate(S.rate); grabTitle(); renderAll(); }
+function playerReady() { ready = true; $('scrub').hidden = false; P.rate(S.rate); grabTitle(); applySubs(); renderAll(); }
+// subtítulos de YouTube: el botón de YouTube queda tapado por la capa de dibujo y zoom, así que hay uno propio.
+// Apagados por omisión; se recuerda en este navegador. Los videos subidos no tienen subtítulos.
+function applySubs() {
+  const can = !!(yt && typeof yt.loadModule === 'function');
+  $('ccBtn').hidden = !can;
+  $('ccBtn').classList.toggle('on', subs); $('ccBtn').setAttribute('aria-pressed', String(subs));
+  if (!can || !ready) return;
+  try { if (subs) yt.loadModule('captions'); else yt.unloadModule('captions'); } catch (e) {}
+}
 // 1 = reproduciendo (como YouTube)
 function playerState(code) {
   updPlay();
   if (code === 1 && Date.now() > S.keepDrawUntil) { if (S.strokes.length) { S.strokes = []; redraw(); } if (S.draw) setDraw(false); }
-  if (code === 1) { P.rate(S.rate); grabTitle(); }
+  // YouTube carga los subtítulos al empezar a reproducir: se vuelven a aplicar
+  if (code === 1) { P.rate(S.rate); grabTitle(); applySubs(); }
 }
 // quita el reproductor actual (al cambiar entre YouTube y un video subido)
 function teardownPlayer() {
@@ -1197,6 +1209,11 @@ document.addEventListener('fullscreenchange', fitStage);
 new ResizeObserver(fitStage).observe(document.querySelector('main'));
 fitStage();
 function scrollToVideo() { const top = stage.closest('main').getBoundingClientRect().top + window.scrollY - 8; window.scrollTo({ top: bigVideo ? top : 0, behavior: 'smooth' }); }
+$('ccBtn').onclick = () => {
+  subs = !subs;
+  try { localStorage.setItem('sideline:subs', subs ? '1' : '0'); } catch (e) {}
+  applySubs(); toast(subs ? 'Subtítulos prendidos.' : 'Subtítulos apagados.');
+};
 $('bigBtn').onclick = () => {
   bigVideo = !bigVideo;
   try { localStorage.setItem('sideline:bigVideo', bigVideo ? '1' : '0'); } catch (e) {}
