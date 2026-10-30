@@ -140,18 +140,48 @@ body.ro .coach { display: none !important; }
   @page { margin: 12mm; }
   body { background: #fff; padding: 0; }
   .app, .toast, .gate, .modal { display: none !important; }
-  #print { display: grid; gap: 8mm; color: #000; font-family: var(--font-body); }
-  #print.l1 { grid-template-columns: 1fr; }
-  #print.l1 .pc { break-after: page; }
-  #print.l4 { grid-template-columns: 1fr 1fr; }
-  #print.l4 .pc:nth-child(4n) { break-after: page; }
-  #print.lband { grid-template-columns: repeat(4, 1fr); gap: 2mm; }
+  #print { display: block; color: #000; font-family: var(--font-body); }
+  #print .ph { display: flex; justify-content: space-between; align-items: baseline; gap: 6mm; border-bottom: 2px solid #000; padding-bottom: 2mm; margin-bottom: 5mm; }
+  #print .ph b { font-size: 16px; } #print .ph span { font-size: 11px; color: #333; }
+  #print .grid { display: grid; gap: 6mm; }
+  #print .grid.l1 { grid-template-columns: minmax(0, 1fr); }
+  #print .grid.l1 .pc:not(:last-child) { break-after: page; }
+  #print .grid.l2 { grid-template-columns: minmax(0, 1fr); }
+  #print .grid.l2 .pc:nth-child(2n):not(:last-child) { break-after: page; }
+  #print .grid.l2 svg { max-height: 95mm; }
+  #print .grid.l4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #print .grid.l4 .pc:nth-child(4n):not(:last-child) { break-after: page; }
+  #print .grid.l9 { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3mm; }
+  #print .grid.l9 .pc:nth-child(9n):not(:last-child) { break-after: page; }
+  #print .grid.l9 .pc h4 { font-size: 10px; }
+  #print .grid.lband { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2mm; }
   #print .pc { break-inside: avoid; border: 1px solid #999; padding: 3mm; }
   #print .pc h4 { margin: 0 0 2mm; font-size: 13px; }
   #print .pc p { margin: 2mm 0 0; font-size: 11px; white-space: pre-wrap; }
-  #print.lband .pc { padding: 1mm; }
-  #print.lband .pc h4 { font-size: 10px; margin: 0; }
+  #print .grid.lband .pc { padding: 1mm; }
+  #print .grid.lband .pc h4 { font-size: 10px; margin: 0; }
   #print svg { width: 100%; height: auto; display: block; }
+  /* hoja del coach: tabla por tipo de jugada con diagrama chico */
+  #print .sec { margin: 0 0 5mm; }
+  #print .sec h3, #print th { break-after: avoid; }
+  #print table { break-before: avoid; }
+  #print .sec h3 { margin: 0 0 2mm; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; background: #e9e9e9; padding: 1.5mm 2mm; }
+  #print table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  #print th { text-align: left; font-size: 9px; text-transform: uppercase; color: #444; border-bottom: 1px solid #000; padding: 1mm 2mm; }
+  #print td { border-bottom: 1px solid #bbb; padding: 1.5mm 2mm; vertical-align: top; }
+  #print tr { break-inside: avoid; }
+  #print td.n { width: 8mm; font-weight: 700; font-size: 13px; }
+  #print td.d { width: 36mm; } #print td.d svg { width: 34mm; }
+  #print td.nm { font-weight: 700; width: 38mm; } #print td.f { width: 34mm; }
+  #print td.nt { white-space: pre-wrap; }
+  #print td.ok { width: 10mm; } #print td.ok i { display: inline-block; width: 4mm; height: 4mm; border: 1px solid #000; }
+  /* lista rápida: solo números y nombres, en dos columnas */
+  #print .qlist { columns: 2; column-gap: 8mm; font-size: 12px; }
+  #print .qlist .sec h3 { font-size: 11px; }
+  #print .qlist .sec { break-inside: avoid-column; }
+  #print .qlist div.it { padding: .8mm 0; border-bottom: 1px dotted #999; }
+  #print .qlist div.it b { display: inline-block; min-width: 8mm; }
+  #print .qlist div.it span { color: #444; }
 }
 </style>
 </head>
@@ -209,10 +239,20 @@ body.ro .coach { display: none !important; }
     <span class="spacer"></span>
     <select id="printSel" aria-label="Imprimir">
       <option value="">Imprimir…</option>
-      <option value="one">Esta jugada</option>
-      <option value="1">Playbook · 1 jugada por hoja</option>
-      <option value="4">Playbook · 4 jugadas por hoja</option>
-      <option value="band">Pulsera · jugadas numeradas</option>
+      <optgroup label="Diagramas">
+        <option value="one">Esta jugada</option>
+        <option value="1">Playbook · 1 jugada por hoja</option>
+        <option value="2">Playbook · 2 jugadas por hoja</option>
+        <option value="4">Playbook · 4 jugadas por hoja</option>
+        <option value="9">Playbook · 9 por hoja (miniaturas)</option>
+      </optgroup>
+      <optgroup label="Para el coach">
+        <option value="sheet">Hoja del coach · lista por tipo con diagrama</option>
+        <option value="list">Lista rápida · solo números y nombres</option>
+      </optgroup>
+      <optgroup label="Para los jugadores">
+        <option value="band">Pulsera · jugadas numeradas</option>
+      </optgroup>
     </select>
     <button class="btn sm" id="pngBtn">Descargar imagen</button>
   </div>
@@ -1157,14 +1197,53 @@ $('printSel').onchange = () => {
   flushAll();
   const list = v === 'one' ? (S.cur ? [S.cur] : []) : S.plays;
   if (!list.length) return toast('No hay jugadas para imprimir.');
-  const out = $('print'); out.textContent = ''; out.className = v === 'band' ? 'lband' : v === '4' ? 'l4' : 'l1';
-  list.forEach(p => {
-    const c = document.createElement('div'); c.className = 'pc';
-    const h = document.createElement('h4'); h.textContent = `${S.plays.indexOf(p) + 1}. ${playName(p)}${v !== 'band' && p.formation ? ' · ' + p.formation : ''}`;
-    c.append(h, thumb(p, true));
-    if (v !== 'band' && p.notes) { const n = document.createElement('p'); n.textContent = p.notes; c.append(n); }
-    out.append(c);
-  });
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  const num = p => S.plays.indexOf(p) + 1;   // el mismo número en el playbook, la hoja del coach y la pulsera
+  const out = $('print'); out.textContent = '';
+  // encabezado: playbook, formato y equipo
+  const ph = el('div', 'ph');
+  ph.append(el('b', '', S.book.name), el('span', '', [formatName(S.book.format), S.book.side === 'D' ? 'Defensiva' : 'Ofensiva', S.team && S.team.name, `${list.length} jugada${list.length === 1 ? '' : 's'}`, new Date().toLocaleDateString('es-MX')].filter(Boolean).join(' · ')));
+  out.append(ph);
+  // agrupa por tipo de jugada, en el orden de la lista de tipos («Sin tipo» al final)
+  const groups = () => {
+    const g = new Map();
+    for (const p of list) { const k = p.type || 'Sin tipo'; if (!g.has(k)) g.set(k, []); g.get(k).push(p); }
+    const order = t => { const i = TYPES.indexOf(t); return i < 0 ? 99 : i; };
+    return [...g.entries()].sort((a, b) => order(a[0]) - order(b[0]));
+  };
+  if (v === 'sheet') {
+    for (const [type, ps] of groups()) {
+      const sec = el('div', 'sec'); sec.append(el('h3', '', `${type} · ${ps.length}`));
+      const t = el('table'), hr = el('tr');
+      ['#', 'Diagrama', 'Jugada', 'Formación', 'Notas', 'Usada'].forEach(h => hr.append(el('th', '', h)));
+      t.append(hr);
+      for (const p of ps) {
+        const tr = el('tr'), d = el('td', 'd'); d.append(thumb(p, true));
+        const ok = el('td', 'ok'); ok.append(el('i'));
+        tr.append(el('td', 'n', num(p)), d, el('td', 'nm', playName(p)), el('td', 'f', p.formation || ''), el('td', 'nt', p.notes || ''), ok);
+        t.append(tr);
+      }
+      sec.append(t); out.append(sec);
+    }
+  } else if (v === 'list') {
+    const q = el('div', 'qlist');
+    for (const [type, ps] of groups()) {
+      const sec = el('div', 'sec'); sec.append(el('h3', '', type));
+      for (const p of ps) { const it = el('div', 'it'); it.append(el('b', '', num(p) + '.'), playName(p) + ' ', el('span', '', p.formation ? '· ' + p.formation : '')); sec.append(it); }
+      q.append(sec);
+    }
+    out.append(q);
+  } else {
+    const grid = el('div', 'grid ' + ({ band: 'lband', 2: 'l2', 4: 'l4', 9: 'l9' }[v] || 'l1'));
+    const full = v === 'one' || v === '1' || v === '2' || v === '4';
+    list.forEach(p => {
+      const c = el('div', 'pc');
+      c.append(el('h4', '', `${num(p)}. ${playName(p)}${v !== 'band' && p.formation ? ' · ' + p.formation : ''}`), thumb(p, true));
+      if (full && p.notes) c.append(el('p', '', p.notes));
+      grid.append(c);
+    });
+    out.append(grid);
+  }
   setTimeout(() => window.print(), 50);
 };
 $('pngBtn').onclick = () => {
