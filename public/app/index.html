@@ -120,6 +120,8 @@ canvas#draw { position: absolute; touch-action: none; }
    Deja libre la franja inferior para los controles de YouTube; solo con mouse (en pantallas táctiles no estorba) */
 .scrub { position: absolute; left: 0; right: 0; top: 0; bottom: 56px; cursor: zoom-in; }
 .scrub.zoomed { cursor: grab; } .scrub.panning { cursor: grabbing; }
+/* al abrir un menú de YouTube (engrane, subtítulos) la capa se quita para que el menú se pueda usar completo */
+.scrub.ytmode { pointer-events: none; }
 /* sin zoom, la esquina de arriba a la derecha queda libre para los botones de YouTube (subtítulos y engrane de calidad) */
 .scrub:not(.zoomed) { clip-path: polygon(0 0, calc(100% - 190px) 0, calc(100% - 190px) 84px, 100% 84px, 100% 100%, 0 100%); }
 /* el video y el pizarrón se acercan juntos, así los dibujos quedan sobre la misma parte de la imagen */
@@ -1320,6 +1322,20 @@ $('scrub').addEventListener('click', () => {
   if (Z.k === 1) return togglePlay();
   clearTimeout(clickT); clickT = setTimeout(togglePlay, 230);
 });
+// clic en los botones de YouTube: el foco se va a su reproductor. Mientras tanto la capa de zoom se quita para
+// que su menú (calidad, subtítulos) funcione en todo el video; al hacer clic fuera del video regresa.
+function ytMode(on) {
+  if ($('scrub').classList.contains('ytmode') === on) return;
+  $('scrub').classList.toggle('ytmode', on);
+  if (on && !ytModeTold) { ytModeTold = true; toast('Menú de YouTube. Haz clic fuera del video para volver al zoom.'); }
+}
+let ytModeTold = false;
+window.addEventListener('blur', () => setTimeout(() => {
+  const f = document.activeElement;
+  if (f && f.tagName === 'IFRAME' && stage.contains(f)) ytMode(true);
+}, 0));
+window.addEventListener('focus', () => ytMode(false));
+document.addEventListener('pointerdown', e => { if (!stage.contains(e.target)) ytMode(false); }, true);
 $('scrub').addEventListener('dblclick', () => { clearTimeout(clickT); resetZoom(); });
 // con el pizarrón activo también se puede hacer zoom (el lienzo queda encima de la capa)
 cv.addEventListener('wheel', onZoomWheel, { passive: false });
