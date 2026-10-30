@@ -120,6 +120,8 @@ canvas#draw { position: absolute; touch-action: none; }
    Deja libre la franja inferior para los controles de YouTube; solo con mouse (en pantallas táctiles no estorba) */
 .scrub { position: absolute; left: 0; right: 0; top: 0; bottom: 56px; cursor: zoom-in; }
 .scrub.zoomed { cursor: grab; } .scrub.panning { cursor: grabbing; }
+/* sin zoom, la esquina de arriba a la derecha queda libre para los botones de YouTube (subtítulos y engrane de calidad) */
+.scrub:not(.zoomed) { clip-path: polygon(0 0, calc(100% - 190px) 0, calc(100% - 190px) 84px, 100% 84px, 100% 100%, 0 100%); }
 /* el video y el pizarrón se acercan juntos, así los dibujos quedan sobre la misma parte de la imagen */
 .zoomwrap { position: absolute; inset: 0; transform-origin: 0 0; }
 .hud .zm { color: #fff; font-size: 13px; font-weight: 500; }
