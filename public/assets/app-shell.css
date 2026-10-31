@@ -65,12 +65,16 @@
 
 @media (max-width: 640px) {
   .topbar { padding: 8px 10px; gap: 10px 8px; }
-  .topbar .status { max-width: 128px; overflow: hidden; text-overflow: ellipsis; font-size: 11px; }
+  /* estado de guardado: solo el punto de color, para que el menú del usuario quepa en el primer renglón */
+  .topbar .status { width: 26px; height: 26px; padding: 0; font-size: 0; flex: none; }
+  .topbar .status::before { left: 50%; margin-left: -3.5px; }
   .topbar .brandmark { height: 22px; }
   .modnav { order: 3; width: 100%; justify-content: stretch; }
   .modnav .mod { flex: 1; justify-content: center; }
   .ubtn .nm { display: none; }
   .ubtn { padding: 3px; }
+  /* el menú nunca se sale de la pantalla */
+  .pop { max-width: calc(100vw - 24px); }
 }
 
 /* ---------- tema claro / oscuro ----------
