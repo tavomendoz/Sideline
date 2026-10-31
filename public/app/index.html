@@ -254,12 +254,25 @@ section.left.bigmode { position: relative; padding-right: 62px; }
 .lf input:focus, .lf select:focus { outline: none; border-color: var(--accent); }
 .lerr { color: var(--bad); font-size: 13px; margin: 0; }
 .modal { position: fixed; inset: 0; z-index: 55; background: var(--scrim); display: grid; place-items: center; padding: 16px; overflow-y: auto; }
-.modal .card { width: 100%; max-width: 640px; }
+.modal { grid-template-columns: minmax(0, 1fr); }
+.modal .card { width: 100%; max-width: 640px; min-width: 0; justify-self: center; }
 .modal .body { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
 .users { width: 100%; border-collapse: collapse; font-size: 13px; }
 .users th, .users td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
 .users th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .02em; }
 .users td.act { text-align: right; white-space: nowrap; }
+/* en el celular cada persona es una tarjeta: nombre, usuario y rol, y abajo los botones */
+@media (max-width: 640px) {
+  .users thead { display: none; }
+  .users, .users tbody, .users tr, .users td { display: block; width: 100%; }
+  .users tr { border-bottom: 1px solid var(--line); padding: 10px 0; }
+  .users td { border: 0; padding: 2px 0; }
+  .users td:first-child { font-weight: 600; font-size: 15px; }
+  .users td:nth-child(2), .users td:nth-child(3) { display: inline; width: auto; color: var(--muted); }
+  .users td:nth-child(2)::after { content: " · "; }
+  .users td.act { text-align: left; white-space: normal; padding-top: 8px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .users td.act:empty { display: none; }
+}
 .userform { display: grid; grid-template-columns: minmax(0,1.2fr) minmax(0,1fr) minmax(0,.8fr) auto; gap: 8px; align-items: end; }
 @media (max-width: 640px) { .userform { grid-template-columns: minmax(0,1fr); } }
 .quota { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--muted); }
