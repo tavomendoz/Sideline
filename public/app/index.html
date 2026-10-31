@@ -284,7 +284,16 @@ section.left.bigmode { position: relative; padding-right: 62px; }
   .transport .tc { order: -1; width: 100%; text-align: center; }
   .speedwrap .lbl { display: none; }
   .gamebar .game { flex-basis: 100%; }
+  /* sin video cargado: aviso corto (el campo del enlace ya está arriba, en la barra del partido) */
+  .drop { padding: 12px; }
+  .drop > div { padding: 14px 16px; }
+  .drop .big { width: 32px; height: 32px; margin-bottom: 2px; }
+  .drop strong { font-size: 17px; }
+  .drop p, .drop #urlForm2 { display: none; }
+  .drop #upBtn2 { margin: 10px auto 0 !important; }
 }
+/* en el celular no hay teclado: el tip de los atajos sobra */
+@media (hover: none), (pointer: coarse) { .tipline { display: none; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 
